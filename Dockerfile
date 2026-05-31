@@ -1,20 +1,20 @@
-FROM oven/bun:1.2.23-alpine AS base
+# ---- Build stage ----
+FROM oven/bun:1.2.23-alpine AS builder
 
 WORKDIR /app
 
-COPY Admin-Panel/package.json ./
-RUN bun install
+COPY Admin-Panel/package.json Admin-Panel/bun.lock* ./
+RUN bun install --frozen-lockfile || bun install
 
-COPY Backend/prisma ./.generated-prisma
 COPY Admin-Panel ./
-
-RUN bun x prisma generate --schema .generated-prisma
 RUN bun run build
 
-ENV NODE_ENV=production
-ENV ADMIN_PORT=3002
-ENV ADMIN_ROOT_PATH=/admin
+# ---- Runtime stage: nginx serves static SPA ----
+FROM nginx:1.27-alpine
 
-EXPOSE 3002
+COPY --from=builder /app/dist /usr/share/nginx/html
+COPY Admin-Panel/nginx.conf /etc/nginx/conf.d/default.conf
 
-CMD ["bun", "dist/main.js"]
+EXPOSE 80
+
+CMD ["nginx", "-g", "daemon off;"]

@@ -7,14 +7,8 @@ services:
     build:
       context: ..
       dockerfile: Admin-Panel/Dockerfile
-    env_file:
-      - .env
-    environment:
-      ADMIN_PORT: ${ADMIN_PORT:-3002}
-      ADMIN_ROOT_PATH: ${ADMIN_ROOT_PATH:-/admin}
-      RAW_ANALYTICS_RETENTION_DAYS: ${RAW_ANALYTICS_RETENTION_DAYS:-180}
     ports:
-      - "${ADMIN_PORT:-3002}:3002"
+      - "${ADMIN_PORT:-3002}:80"
     restart: on-failure
     networks:
       - naucto
