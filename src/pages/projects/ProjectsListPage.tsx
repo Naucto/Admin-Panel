@@ -29,6 +29,8 @@ import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
+import { PlayProjectButton } from "@components/PlayProjectButton";
+import { ProjectStatusChip } from "@components/ProjectStatusChip";
 import { ReasonDialog } from "@components/ReasonDialog";
 import { formatDate } from "@utils/format";
 
@@ -142,8 +144,8 @@ export function ProjectsListPage(): JSX.Element {
                   <TableRow>
                     <TableCell>ID</TableCell>
                     <TableCell>Name</TableCell>
-                    <TableCell>Status</TableCell>
-                    <TableCell>Hidden</TableCell>
+                    <TableCell>Publication</TableCell>
+                    <TableCell>Raw status</TableCell>
                     <TableCell align="right">Views</TableCell>
                     <TableCell align="right">Likes</TableCell>
                     <TableCell>Updated</TableCell>
@@ -156,14 +158,14 @@ export function ProjectsListPage(): JSX.Element {
                       <TableCell>{project.id}</TableCell>
                       <TableCell>{project.publishedName || project.name}</TableCell>
                       <TableCell>
-                        <Chip label={project.status ?? "—"} size="small" />
+                        <ProjectStatusChip project={project} />
                       </TableCell>
                       <TableCell>
-                        {project.hidden ? (
-                          <Chip label="Hidden" color="error" size="small" />
-                        ) : (
-                          <Chip label="Visible" color="success" size="small" variant="outlined" />
-                        )}
+                        <Chip
+                          label={project.status ?? "—"}
+                          size="small"
+                          variant="outlined"
+                        />
                       </TableCell>
                       <TableCell align="right">{project.viewCount}</TableCell>
                       <TableCell align="right">{project.likes}</TableCell>
@@ -174,6 +176,7 @@ export function ProjectsListPage(): JSX.Element {
                             <ViewIcon fontSize="small" />
                           </IconButton>
                         </Tooltip>
+                        <PlayProjectButton project={project} compact />
                         {!project.hidden && (
                           <Tooltip title="Hide">
                             <IconButton

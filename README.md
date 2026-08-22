@@ -28,9 +28,29 @@ Copy `.env.example` to `.env` and set:
 
 - `VITE_BACKEND_URL` — Backend base URL (e.g. `http://localhost:3000` in dev,
   `https://api.naucto.com` in production)
+- `VITE_FRONTEND_URL` — public site base URL (e.g. `http://localhost:3001` in
+  dev, `https://naucto.com` in production). Used to build the "play this game"
+  links on the project pages.
 
 That's it. No database URL, no JWT secret, no session secret — the Backend owns
 all of that.
+
+## Testing a game from the panel
+
+Project rows and the project detail page carry a link that opens the game in a
+new tab on the public site:
+
+- A **published, visible** game opens `/project/:id/play` — the public page,
+  exactly what players see.
+- Anything else (draft, archived, or hidden by moderation) opens
+  `/project/:id/preview` — a staff-only route that loads the project's latest
+  save through the role-guarded `/projects/:id/preview*` API. It records no
+  views, no play history and no likes, so reviewing a game never inflates its
+  stats.
+
+The preview route re-checks `Admin`/`Moderator` on the Backend, so it is not
+reachable by a logged-in player who guesses the URL. It uses the staff member's
+ordinary site session (a bearer token), not the admin cookie.
 
 ## Local Development
 

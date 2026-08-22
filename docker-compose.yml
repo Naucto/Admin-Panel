@@ -10,6 +10,7 @@ services:
       dockerfile: Dockerfile
       args:
         VITE_BACKEND_URL: ${VITE_BACKEND_URL}
+        VITE_FRONTEND_URL: ${VITE_FRONTEND_URL}
     ports:
       - "${ADMIN_PORT:-3002}:80"
     restart: unless-stopped

@@ -11,7 +11,9 @@ COPY . ./
 # Vite inlines VITE_* at build time, so this has to be a build arg -- setting it
 # on the running nginx container has no effect.
 ARG VITE_BACKEND_URL
+ARG VITE_FRONTEND_URL
 ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
+ENV VITE_FRONTEND_URL=${VITE_FRONTEND_URL}
 RUN bun run build
 
 # ---- Runtime stage: nginx serves static SPA ----

@@ -4,7 +4,6 @@ import {
   Card,
   CardContent,
   CardHeader,
-  Chip,
   Divider,
   Grid,
   Stack,
@@ -21,6 +20,9 @@ import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
 import { ReasonDialog } from "@components/ReasonDialog";
 import { formatDate } from "@utils/format";
+import { resolvePublication } from "@utils/projectLinks";
+import { PlayProjectButton } from "@components/PlayProjectButton";
+import { ProjectStatusChip } from "@components/ProjectStatusChip";
 
 type DialogState = "hide" | "restore" | "unpublish" | null;
 
@@ -217,17 +219,16 @@ export function ProjectDetailPage(): JSX.Element {
                 <CardContent>
                   <Stack spacing={1}>
                     <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography>Status:</Typography>
-                      <Chip label={data.status ?? "—"} size="small" />
+                      <Typography>Publication:</Typography>
+                      <ProjectStatusChip project={data} showRawStatus />
                     </Stack>
-                    <Stack direction="row" spacing={1} alignItems="center">
-                      <Typography>Visibility:</Typography>
-                      {data.hidden ? (
-                        <Chip label="Hidden" color="error" size="small" />
-                      ) : (
-                        <Chip label="Visible" color="success" size="small" />
-                      )}
-                    </Stack>
+                    <PlayProjectButton project={data} />
+                    <Typography variant="caption" color="text.secondary">
+                      {resolvePublication(data).isPublic
+                        ? "Opens the public game page — what players see."
+                        : "Opens the staff preview — latest save, no views recorded."}
+                    </Typography>
+                    <Divider sx={{ my: 1 }} />
                     <Typography>Views: {data.viewCount}</Typography>
                     <Typography>Likes: {data.likes}</Typography>
                     <Typography>Created: {formatDate(data.createdAt)}</Typography>
