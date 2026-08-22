@@ -82,6 +82,13 @@ The Dockerfile produces a static bundle served by nginx. Recommended setup:
 - Restrict access via VPN, network ACL, or an authenticating reverse proxy
   if extra defense-in-depth is required
 
+Start the Backend stack first — it creates the shared `naucto` network this
+compose file joins as external.
+
 ```bash
 docker compose up --build
 ```
+
+`VITE_BACKEND_URL` is a **build** arg (Vite inlines `VITE_*` into the bundle), so
+point it at the deployed API before building; setting it on the running nginx
+container has no effect.

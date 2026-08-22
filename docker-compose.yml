@@ -1,14 +1,17 @@
 networks:
+  # Created by the Backend stack, which must be up first.
   naucto:
     external: true
 
 services:
   admin-panel:
     build:
-      context: ..
-      dockerfile: Admin-Panel/Dockerfile
+      context: .
+      dockerfile: Dockerfile
+      args:
+        VITE_BACKEND_URL: ${VITE_BACKEND_URL}
     ports:
       - "${ADMIN_PORT:-3002}:80"
-    restart: on-failure
+    restart: unless-stopped
     networks:
       - naucto
