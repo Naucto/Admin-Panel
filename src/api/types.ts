@@ -1,3 +1,8 @@
+/** Roles that grant access to this panel. Mirrors the backend's STAFF_ROLES. */
+export const STAFF_ROLES = ["Admin", "Moderator"] as const;
+
+export type StaffRole = (typeof STAFF_ROLES)[number];
+
 export type AccountStatus = "ACTIVE" | "SUSPENDED" | "BANNED";
 export type ProjectStatus = "IN_PROGRESS" | "COMPLETED" | "ARCHIVED";
 export type MonetizationType = "NONE" | "ADS" | "PAID";
@@ -28,8 +33,6 @@ export type ModerationActionType =
   | "CREATE_ROLE"
   | "RENAME_ROLE"
   | "DELETE_ROLE";
-
-export type StaffRole = "Admin" | "Moderator";
 
 export type AdminMe = {
   id: number;

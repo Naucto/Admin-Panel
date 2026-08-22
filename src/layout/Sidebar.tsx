@@ -20,8 +20,7 @@ import {
   Forum as CommentIcon,
   Flag as FlagIcon,
   Timeline as TimelineIcon,
-  Security as SecurityIcon,
-  Storage as StorageIcon
+  Security as SecurityIcon
 } from "@mui/icons-material";
 import { NavLink } from "react-router-dom";
 import { useIsAdmin } from "@auth/AdminAuthProvider";
@@ -51,15 +50,6 @@ const MODERATION_NAV: NavItem[] = [
   { to: "/roles", label: "Roles", icon: <SecurityIcon />, adminOnly: true }
 ];
 
-const LOOKUP_NAV: NavItem[] = [
-  { to: "/lookup/likes", label: "Likes", icon: <StorageIcon /> },
-  { to: "/lookup/friendships", label: "Friendships", icon: <StorageIcon /> },
-  { to: "/lookup/subscriptions", label: "Subscriptions", icon: <StorageIcon /> },
-  { to: "/lookup/game-sessions", label: "Game Sessions", icon: <StorageIcon /> },
-  { to: "/lookup/work-sessions", label: "Work Sessions", icon: <StorageIcon /> },
-  { to: "/lookup/analytics-events", label: "Analytics Events", icon: <StorageIcon />, adminOnly: true },
-  { to: "/lookup/daily-rollups", label: "Daily Rollups", icon: <StorageIcon />, adminOnly: true }
-];
 
 export function Sidebar(): JSX.Element {
   const isAdmin = useIsAdmin();
@@ -101,10 +91,6 @@ export function Sidebar(): JSX.Element {
         <Divider />
         <List subheader={<Typography variant="overline" sx={{ pl: 2 }}>Moderation</Typography>}>
           {renderItems(MODERATION_NAV)}
-        </List>
-        <Divider />
-        <List subheader={<Typography variant="overline" sx={{ pl: 2 }}>Lookup</Typography>}>
-          {renderItems(LOOKUP_NAV)}
         </List>
       </Box>
     </Drawer>

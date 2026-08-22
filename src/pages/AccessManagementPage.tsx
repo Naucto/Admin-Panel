@@ -59,10 +59,10 @@ export function AccessManagementPage(): JSX.Element {
     if (!dialog) return;
     try {
       if (dialog.type === "grant") {
-        await adminUserApi.grantModerator(dialog.userId, reason);
+        await adminUserApi.grantRole(dialog.userId, "Moderator", reason);
         enqueueSnackbar(`Granted Moderator to @${dialog.username}`, { variant: "success" });
       } else {
-        await adminUserApi.revokeModerator(dialog.userId, reason);
+        await adminUserApi.revokeRole(dialog.userId, "Moderator", reason);
         enqueueSnackbar(`Revoked Moderator from @${dialog.username}`, { variant: "success" });
       }
       await staffAsync.reload();
@@ -76,7 +76,7 @@ export function AccessManagementPage(): JSX.Element {
     <>
       <PageHeader
         title="Access Management"
-        subtitle="Grant or revoke Moderator role. Admins are read-only here — manage from Users."
+        subtitle="Grant or revoke the Moderator role. Admin is granted per user, from that user\u2019s page."
       />
 
       <Grid container spacing={2}>

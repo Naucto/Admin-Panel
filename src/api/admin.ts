@@ -21,7 +21,8 @@ import type {
   ProjectStatus,
   ReportStatus,
   ReportTargetType,
-  SocialOverviewData
+  SocialOverviewData,
+  StaffRole
 } from "./types";
 
 function buildParams(input: Record<string, unknown>): Record<string, string> {
@@ -105,13 +106,13 @@ export const adminUserApi = {
     apiClient
       .post<AdminUser>(`/admin/users/${id}/restore`, { reason, reportId })
       .then((r) => r.data),
-  grantModerator: (id: number, reason?: string) =>
+  grantRole: (id: number, role: StaffRole, reason?: string) =>
     apiClient
-      .post<AdminUser>(`/admin/users/${id}/roles/moderator`, { reason })
+      .post<AdminUser>(`/admin/users/${id}/roles/${role}`, { reason })
       .then((r) => r.data),
-  revokeModerator: (id: number, reason?: string) =>
+  revokeRole: (id: number, role: StaffRole, reason?: string) =>
     apiClient
-      .delete<AdminUser>(`/admin/users/${id}/roles/moderator`, { data: { reason } })
+      .delete<AdminUser>(`/admin/users/${id}/roles/${role}`, { data: { reason } })
       .then((r) => r.data),
   resetPassword: (id: number, newPassword: string, reason?: string) =>
     apiClient
@@ -278,58 +279,5 @@ export const adminRoleApi = {
   remove: (id: number, reason?: string) =>
     apiClient
       .delete<{ success: true }>(`/admin/roles/${id}`, { data: { reason } })
-      .then((r) => r.data)
-};
-
-// ─── Lookup ──────────────────────────────────────────────────────────────
-
-export const adminLookupApi = {
-  likes: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/likes", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  friendships: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/friendships", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  friendRequests: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/friend-requests", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  subscriptions: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/subscriptions", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  gameSessions: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/game-sessions", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  workSessions: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/work-sessions", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  analyticsEvents: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/analytics-events", {
-        params: buildParams(params)
-      })
-      .then((r) => r.data),
-  dailyRollups: (params: PaginationParams) =>
-    apiClient
-      .get<PaginatedList<Record<string, unknown>>>("/admin/lookup/daily-rollups", {
-        params: buildParams(params)
-      })
       .then((r) => r.data)
 };

@@ -15,6 +15,7 @@ import {
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
 import { adminUserApi } from "@api/admin";
+import { STAFF_ROLES, type StaffRole } from "@api/types";
 import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
 import { useAdminAuth, useIsAdmin } from "@auth/AdminAuthProvider";
@@ -27,8 +28,8 @@ type DialogState =
   | { type: "suspend" }
   | { type: "ban" }
   | { type: "restore" }
-  | { type: "grant" }
-  | { type: "revoke" }
+  | { type: "grant"; role: StaffRole }
+  | { type: "revoke"; role: StaffRole }
   | { type: "delete" }
   | null;
 
@@ -60,10 +61,10 @@ export function UserDetailPage(): JSX.Element {
           await adminUserApi.restore(userId, reason, reportId);
           break;
         case "grant":
-          await adminUserApi.grantModerator(userId, reason);
+          await adminUserApi.grantRole(userId, dialog.role, reason);
           break;
         case "revoke":
-          await adminUserApi.revokeModerator(userId, reason);
+          await adminUserApi.revokeRole(userId, dialog.role, reason);
           break;
         case "delete":
           await adminUserApi.remove(userId, reason);
@@ -234,22 +235,36 @@ export function UserDetailPage(): JSX.Element {
                     )}
                     {isAdmin && (
                       <>
-                        <Divider />
-                        {data.roles.includes("Moderator") ? (
-                          <Button
-                            variant="outlined"
-                            onClick={() => setDialog({ type: "revoke" })}
-                          >
-                            Revoke Moderator
-                          </Button>
-                        ) : (
-                          <Button
-                            variant="outlined"
-                            onClick={() => setDialog({ type: "grant" })}
-                          >
-                            Grant Moderator
-                          </Button>
-                        )}
+                        <Divider>Staff roles</Divider>
+                        {STAFF_ROLES.map((role) => {
+                          const hasRole = data.roles.includes(role);
+                          // An admin cannot drop their own Admin role: it would
+                          // lock them out of every admin-only page.
+                          const isSelfAdminRevoke =
+                            hasRole && role === "Admin" && currentUser?.id === userId;
+
+                          return (
+                            <Button
+                              key={role}
+                              variant="outlined"
+                              color={hasRole ? "warning" : "primary"}
+                              disabled={isSelfAdminRevoke}
+                              title={
+                                isSelfAdminRevoke
+                                  ? "Ask another admin to revoke your Admin role"
+                                  : undefined
+                              }
+                              onClick={() =>
+                                setDialog({
+                                  type: hasRole ? "revoke" : "grant",
+                                  role
+                                })
+                              }
+                            >
+                              {hasRole ? `Revoke ${role}` : `Grant ${role}`}
+                            </Button>
+                          );
+                        })}
                         <Divider />
                         <Button
                           variant="contained"
@@ -295,7 +310,12 @@ export function UserDetailPage(): JSX.Element {
       />
       <ReasonDialog
         open={dialog?.type === "grant"}
-        title="Grant Moderator"
+        title={dialog?.type === "grant" ? `Grant ${dialog.role}` : "Grant role"}
+        description={
+          dialog?.type === "grant" && dialog.role === "Admin"
+            ? "Admins can manage roles, delete accounts and reset passwords."
+            : undefined
+        }
         showReportId={false}
         confirmLabel="Grant"
         onClose={() => setDialog(null)}
@@ -303,9 +323,10 @@ export function UserDetailPage(): JSX.Element {
       />
       <ReasonDialog
         open={dialog?.type === "revoke"}
-        title="Revoke Moderator"
+        title={dialog?.type === "revoke" ? `Revoke ${dialog.role}` : "Revoke role"}
         showReportId={false}
         confirmLabel="Revoke"
+        confirmColor="warning"
         onClose={() => setDialog(null)}
         onConfirm={handleConfirm}
       />

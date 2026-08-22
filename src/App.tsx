@@ -3,7 +3,7 @@ import { AdminShell } from "@layout/AdminShell";
 import { ProtectedRoute } from "@auth/ProtectedRoute";
 import { LoginPage } from "@auth/LoginPage";
 import { ForbiddenPage } from "@auth/ForbiddenPage";
-import { DashboardPage } from "@pages/DashboardPage";
+import { HomeRoute } from "@auth/HomeRoute";
 import { LiveActivityPage } from "@pages/LiveActivityPage";
 import { SocialOverviewPage } from "@pages/SocialOverviewPage";
 import { AccessManagementPage } from "@pages/AccessManagementPage";
@@ -18,7 +18,6 @@ import { ReportDetailPage } from "@pages/reports/ReportDetailPage";
 import { ModerationLogPage } from "@pages/moderation/ModerationLogPage";
 import { ModerationLogDetailPage } from "@pages/moderation/ModerationLogDetailPage";
 import { RolesPage } from "@pages/roles/RolesPage";
-import { LookupPage } from "@pages/lookup/LookupPage";
 
 export function App(): JSX.Element {
   return (
@@ -28,12 +27,13 @@ export function App(): JSX.Element {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminShell />}>
+          {/* Not inside `requireAdmin`: HomeRoute decides per role, so a
+              moderator lands on their queue instead of "Access denied". */}
+          <Route index element={<HomeRoute />} />
+
           <Route element={<ProtectedRoute requireAdmin />}>
-            <Route index element={<DashboardPage />} />
             <Route path="access" element={<AccessManagementPage />} />
             <Route path="roles" element={<RolesPage />} />
-            <Route path="lookup/analytics-events" element={<LookupPage resource="analyticsEvents" />} />
-            <Route path="lookup/daily-rollups" element={<LookupPage resource="dailyRollups" />} />
           </Route>
 
           <Route path="live" element={<LiveActivityPage />} />
@@ -48,12 +48,6 @@ export function App(): JSX.Element {
           <Route path="reports/:id" element={<ReportDetailPage />} />
           <Route path="moderation-log" element={<ModerationLogPage />} />
           <Route path="moderation-log/:id" element={<ModerationLogDetailPage />} />
-          <Route path="lookup/likes" element={<LookupPage resource="likes" />} />
-          <Route path="lookup/friendships" element={<LookupPage resource="friendships" />} />
-          <Route path="lookup/friend-requests" element={<LookupPage resource="friendRequests" />} />
-          <Route path="lookup/subscriptions" element={<LookupPage resource="subscriptions" />} />
-          <Route path="lookup/game-sessions" element={<LookupPage resource="gameSessions" />} />
-          <Route path="lookup/work-sessions" element={<LookupPage resource="workSessions" />} />
         </Route>
       </Route>
     </Routes>
