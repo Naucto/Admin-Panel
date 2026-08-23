@@ -1,10 +1,10 @@
 # ---- Build stage ----
-FROM oven/bun:1.2.23-alpine AS builder
+FROM node:20-alpine AS builder
 
 WORKDIR /app
 
-COPY package.json bun.lock* ./
-RUN bun install --frozen-lockfile
+COPY package.json package-lock.json ./
+RUN npm ci
 
 COPY . ./
 
@@ -14,7 +14,7 @@ ARG VITE_BACKEND_URL
 ARG VITE_FRONTEND_URL
 ENV VITE_BACKEND_URL=${VITE_BACKEND_URL}
 ENV VITE_FRONTEND_URL=${VITE_FRONTEND_URL}
-RUN bun run build
+RUN npm run build
 
 # ---- Runtime stage: nginx serves static SPA ----
 FROM nginx:1.27-alpine

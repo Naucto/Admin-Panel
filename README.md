@@ -18,7 +18,7 @@ session secret. The Backend owns all of that and is the only security boundary.
 
 ## Requirements
 
-- Bun 1.2+ (or Node 22+ if you prefer `npm`)
+- Node 20+ and npm
 - A reachable Naucto Backend with the `/admin/*` endpoints
 - A user account in the Backend with the `Admin` or `Moderator` role
 
@@ -55,8 +55,8 @@ ordinary site session (a bearer token), not the admin cookie.
 ## Local Development
 
 ```bash
-bun install
-bun run dev
+npm install
+npm run dev
 ```
 
 Available at `http://localhost:3002`. The dev server proxies cookies through to
@@ -66,9 +66,9 @@ this origin (configurable via `ADMIN_PANEL_URL` env var on the Backend).
 ## Type-check and build
 
 ```bash
-bun run typecheck     # tsc --noEmit
-bun run build         # tsc -b && vite build
-bun run preview       # serve dist/ for smoke-testing
+npm run typecheck     # tsc -b --noEmit
+npm run build         # tsc -b && vite build
+npm run preview       # serve dist/ for smoke-testing
 ```
 
 ## Regenerating the API SDK (optional)
@@ -81,7 +81,7 @@ The Admin-Panel currently uses a hand-written, typed axios client in
 # In Backend/, first regenerate swagger.json:
 cd ../Backend && npm run generate:swagger
 # Then in Admin-Panel/:
-cd ../Admin-Panel && bun run api:generate
+cd ../Admin-Panel && npm run api:generate
 ```
 
 The generated client lands in `src/api/` and can be wired up alongside (or in

@@ -5,6 +5,6 @@
 .env
 README.md
 
-# `COPY . ./` runs after `bun install`, so the host tree must not clobber it.
+# `COPY . ./` runs after `npm ci`, so the host tree must not clobber it.
 node_modules
 dist

@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+# A new push to a PR makes the previous run pointless; stop it rather than
+# queue behind it.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  checks:
+    name: Typecheck and build
+    runs-on: ubuntu-latest
+
+    # Vite inlines VITE_* at build time. CI only needs the build to succeed, so
+    # these are placeholders -- the real values are Docker build args on deploy.
+    env:
+      VITE_BACKEND_URL: http://localhost:3000
+      VITE_FRONTEND_URL: http://localhost:3001
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        # `ci` (not `install`) fails if package-lock.json is out of date with
+        # package.json, so a PR cannot silently drift from the lockfile.
+        run: npm ci
+
+      - name: Typecheck
+        run: npm run typecheck
+
+      - name: Build
+        run: npm run build

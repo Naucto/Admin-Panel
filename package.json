@@ -8,7 +8,7 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "preview": "vite preview",
-    "typecheck": "tsc --noEmit",
+    "typecheck": "tsc -b --noEmit",
     "api:generate": "openapi-ts"
   },
   "dependencies": {
@@ -35,6 +35,5 @@
     "typescript": "^5.9.3",
     "vite": "^6.4.1",
     "vite-tsconfig-paths": "^5.1.4"
-  },
-  "packageManager": "bun@1.2.23"
+  }
 }
