@@ -67,19 +67,40 @@ export type AdminUserFilter = PaginationParams & {
   role?: string;
 };
 
+/**
+ * `/users` returns roles as `{ id, name }` records, which is the shape the
+ * public site needs. The panel only ever displays or tests role names, so it
+ * flattens them once here rather than at every call site -- rendering the raw
+ * record is what crashed the users table.
+ */
+type RawUser<T> = Omit<T, "roles"> & {
+  roles?: Array<{ id: number; name: string }> | string[] | null;
+};
+
+function withRoleNames<T extends { roles: string[] }>(user: RawUser<T>): T {
+  const roles = (user.roles ?? []).map((role) =>
+    typeof role === "string" ? role : role.name
+  );
+
+  return { ...user, roles } as T;
+}
+
 export const adminUserApi = {
   // /users serves the staff view: it returns roles and refuses the moderation
   // filters to non-staff, so there is no /admin mirror of it.
   list: (filter: AdminUserFilter) =>
     apiClient
-      .get<{ data: AdminUser[]; meta: PaginatedMeta }>("/users", {
+      .get<{ data: Array<RawUser<AdminUser>>; meta: PaginatedMeta }>("/users", {
         params: buildParams(filter)
       })
-      .then((r) => ({ data: r.data.data, meta: r.data.meta })),
+      .then((r) => ({
+        data: r.data.data.map(withRoleNames<AdminUser>),
+        meta: r.data.meta
+      })),
   get: (id: number) =>
     apiClient
-      .get<{ data: AdminUserDetail }>(`/users/${id}`)
-      .then((r) => r.data.data),
+      .get<{ data: RawUser<AdminUserDetail> }>(`/users/${id}`)
+      .then((r) => withRoleNames<AdminUserDetail>(r.data.data)),
   create: (data: {
     email: string;
     username: string;

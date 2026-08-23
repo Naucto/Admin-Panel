@@ -18,6 +18,7 @@ import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
 import { ReasonDialog } from "@components/ReasonDialog";
+import { ModerationHistory } from "@components/ModerationHistory";
 import { formatDate } from "@utils/format";
 
 export function CommentDetailPage(): JSX.Element {
@@ -161,6 +162,7 @@ export function CommentDetailPage(): JSX.Element {
                   </Stack>
                 </CardContent>
               </Card>
+              <ModerationHistory targetType="COMMENT" targetId={commentId} />
             </Grid>
           </Grid>
         )}

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { adminProjectApi, auditApi } from "@api/admin";
+import { adminProjectApi } from "@api/admin";
 import type { AdminProject } from "@api/types";
 import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
@@ -23,6 +23,7 @@ import { formatDate } from "@utils/format";
 import { resolvePublication } from "@utils/projectLinks";
 import { PlayProjectButton } from "@components/PlayProjectButton";
 import { ProjectStatusChip } from "@components/ProjectStatusChip";
+import { ModerationHistory } from "@components/ModerationHistory";
 
 type DialogState = "hide" | "restore" | "unpublish" | null;
 
@@ -41,13 +42,6 @@ export function ProjectDetailPage(): JSX.Element {
     [projectId]
   );
 
-  // The reason/when/who are no longer columns on the project; they are the
-  // latest entry in its audit log.
-  const { data: history } = useAsync(
-    () => auditApi.historyOf("PROJECT", projectId, { page: 1, limit: 1 }),
-    [projectId]
-  );
-  const moderation = history?.data[0] ?? null;
 
   useEffect(() => {
     if (data) {
@@ -239,21 +233,6 @@ export function ProjectDetailPage(): JSX.Element {
                     <Typography>Created: {formatDate(data.createdAt)}</Typography>
                     <Typography>Updated: {formatDate(data.updatedAt)}</Typography>
                     <Typography>Published: {formatDate(data.publishedAt)}</Typography>
-                    {moderation && (
-                      <>
-                        <Divider sx={{ my: 1 }} />
-                        <Typography variant="overline">
-                          Last moderation action
-                        </Typography>
-                        <Typography variant="body2">
-                          {moderation.reason || "No reason recorded"}
-                        </Typography>
-                        <Typography variant="caption" color="text.secondary">
-                          {moderation.action} · {formatDate(moderation.createdAt)}
-                          {moderation.actorLabel ? ` by ${moderation.actorLabel}` : ""}
-                        </Typography>
-                      </>
-                    )}
                   </Stack>
                 </CardContent>
               </Card>
@@ -288,6 +267,8 @@ export function ProjectDetailPage(): JSX.Element {
                   </Stack>
                 </CardContent>
               </Card>
+
+              <ModerationHistory targetType="PROJECT" targetId={projectId} />
             </Grid>
           </Grid>
         )}

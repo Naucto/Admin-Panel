@@ -22,6 +22,7 @@ import { useAdminAuth, useIsAdmin } from "@auth/AdminAuthProvider";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
 import { ReasonDialog } from "@components/ReasonDialog";
+import { ModerationHistory } from "@components/ModerationHistory";
 import { formatDate } from "@utils/format";
 
 type DialogState =
@@ -279,6 +280,7 @@ export function UserDetailPage(): JSX.Element {
                   </Stack>
                 </CardContent>
               </Card>
+              <ModerationHistory targetType="USER" targetId={userId} />
             </Grid>
           </Grid>
         )}
