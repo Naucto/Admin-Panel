@@ -1,0 +1,10 @@
+.git
+.idea
+.github
+.adminjs
+.env
+README.md
+
+# `COPY . ./` runs after `npm ci`, so the host tree must not clobber it.
+node_modules
+dist
