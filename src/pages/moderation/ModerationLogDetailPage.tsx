@@ -13,6 +13,7 @@ import { adminModerationLogApi } from "@api/admin";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
+import { EntityLink } from "@components/EntityLink";
 import { formatDate } from "@utils/format";
 
 export function ModerationLogDetailPage(): JSX.Element {
@@ -47,7 +48,14 @@ export function ModerationLogDetailPage(): JSX.Element {
                       <Typography>Action:</Typography>
                       <Chip label={data.action} size="small" />
                     </Stack>
-                    <Typography>Target: {data.targetLabel}</Typography>
+                    <Typography>
+                      Target:{" "}
+                      <EntityLink
+                        type={data.targetType}
+                        id={data.targetId}
+                        label={data.targetLabel}
+                      />
+                    </Typography>
                     <Typography>Actor: {data.actorLabel ?? "system"}</Typography>
                     <Typography>Reason: {data.reason ?? "—"}</Typography>
                     <Typography>Report: {data.reportId ? `#${data.reportId}` : "—"}</Typography>

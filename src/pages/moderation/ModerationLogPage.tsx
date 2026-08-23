@@ -22,6 +22,7 @@ import type { ModerationActionType, ModerationTargetType } from "@api/types";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
+import { EntityLink } from "@components/EntityLink";
 import { formatDate } from "@utils/format";
 
 const ACTION_TYPES: ModerationActionType[] = [
@@ -160,7 +161,13 @@ export function ModerationLogPage(): JSX.Element {
                       <TableCell>
                         <Chip label={entry.action} size="small" />
                       </TableCell>
-                      <TableCell>{entry.targetLabel}</TableCell>
+                      <TableCell>
+                        <EntityLink
+                          type={entry.targetType}
+                          id={entry.targetId}
+                          label={entry.targetLabel}
+                        />
+                      </TableCell>
                       <TableCell>{entry.actorLabel ?? "system"}</TableCell>
                       <TableCell sx={{ maxWidth: 320, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {entry.reason ?? "—"}

@@ -19,6 +19,7 @@ import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
 import { ReasonDialog } from "@components/ReasonDialog";
 import { ModerationHistory } from "@components/ModerationHistory";
+import { EntityLink } from "@components/EntityLink";
 import { formatDate } from "@utils/format";
 
 export function CommentDetailPage(): JSX.Element {
@@ -126,9 +127,20 @@ export function CommentDetailPage(): JSX.Element {
                   <Stack spacing={1}>
                     <Typography>
                       Author:{" "}
-                      {data.authorUsername ? `@${data.authorUsername}` : `#${data.authorId}`}
+                      <EntityLink
+                        type="USER"
+                        id={data.authorId}
+                        label={data.authorUsername ? `@${data.authorUsername}` : null}
+                      />
                     </Typography>
-                    <Typography>Project: {data.projectName ?? `#${data.projectId}`}</Typography>
+                    <Typography>
+                      Project:{" "}
+                      <EntityLink
+                        type="PROJECT"
+                        id={data.projectId}
+                        label={data.projectName}
+                      />
+                    </Typography>
                     <Typography>Created: {formatDate(data.createdAt)}</Typography>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Typography>Status:</Typography>

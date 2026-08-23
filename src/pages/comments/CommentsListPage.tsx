@@ -28,6 +28,7 @@ import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
+import { EntityLink } from "@components/EntityLink";
 import { ReasonDialog } from "@components/ReasonDialog";
 import { formatDate } from "@utils/format";
 
@@ -139,11 +140,23 @@ export function CommentsListPage(): JSX.Element {
                   {data.data.map((comment) => (
                     <TableRow key={comment.id} hover>
                       <TableCell>{comment.id}</TableCell>
-                      <TableCell>{comment.projectName ?? `#${comment.projectId}`}</TableCell>
                       <TableCell>
-                        {comment.authorUsername
-                          ? `@${comment.authorUsername}`
-                          : `#${comment.authorId}`}
+                        <EntityLink
+                          type="PROJECT"
+                          id={comment.projectId}
+                          label={comment.projectName}
+                        />
+                      </TableCell>
+                      <TableCell>
+                        <EntityLink
+                          type="USER"
+                          id={comment.authorId}
+                          label={
+                            comment.authorUsername
+                              ? `@${comment.authorUsername}`
+                              : null
+                          }
+                        />
                       </TableCell>
                       <TableCell sx={{ maxWidth: 360, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
                         {comment.content}

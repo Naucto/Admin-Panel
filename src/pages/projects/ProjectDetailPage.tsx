@@ -24,6 +24,7 @@ import { resolvePublication } from "@utils/projectLinks";
 import { PlayProjectButton } from "@components/PlayProjectButton";
 import { ProjectStatusChip } from "@components/ProjectStatusChip";
 import { ModerationHistory } from "@components/ModerationHistory";
+import { EntityLink } from "@components/EntityLink";
 
 type DialogState = "hide" | "restore" | "unpublish" | null;
 
@@ -92,7 +93,14 @@ export function ProjectDetailPage(): JSX.Element {
     <>
       <PageHeader
         title={data ? data.publishedName || data.name : "Project"}
-        subtitle={data ? `#${data.id} · by user ${data.userId}` : undefined}
+        subtitle={
+          data ? (
+            <>
+              #{data.id} · by{" "}
+              <EntityLink type="USER" id={data.userId} />
+            </>
+          ) : undefined
+        }
         actions={
           <Button variant="text" onClick={() => navigate("/projects")}>
             Back to list

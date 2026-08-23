@@ -22,6 +22,7 @@ import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
+import { EntityLink } from "@components/EntityLink";
 import { formatDate } from "@utils/format";
 
 export function ReportDetailPage(): JSX.Element {
@@ -90,7 +91,13 @@ export function ReportDetailPage(): JSX.Element {
                   <Stack spacing={2}>
                     <Stack direction="row" spacing={1} alignItems="center">
                       <Chip label={data.targetType} variant="outlined" />
-                      <Typography>{data.targetLabel}</Typography>
+                      <Typography>
+                        <EntityLink
+                          type={data.targetType}
+                          id={data.targetId}
+                          label={data.targetLabel}
+                        />
+                      </Typography>
                     </Stack>
                     <Typography variant="overline">Reason</Typography>
                     <Typography variant="body1">{data.reason}</Typography>
@@ -184,7 +191,10 @@ export function ReportDetailPage(): JSX.Element {
                               <Chip label={action.action} size="small" />
                             </TableCell>
                             <TableCell>
-                              {action.targetType} #{action.targetId}
+                              <EntityLink
+                                type={action.targetType}
+                                id={action.targetId}
+                              />
                             </TableCell>
                             <TableCell>{action.actorId ? `#${action.actorId}` : "—"}</TableCell>
                             <TableCell>{action.reason ?? "—"}</TableCell>
