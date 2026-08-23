@@ -50,12 +50,12 @@ export function CommentsListPage(): JSX.Element {
     [JSON.stringify(filter)]
   );
 
-  const handleConfirm = async (reason: string, reportId?: number): Promise<void> => {
+  const handleConfirm = async (reason: string): Promise<void> => {
     if (!dialog) return;
     try {
-      if (dialog.type === "hide") await adminCommentApi.hide(dialog.comment.id, reason, reportId);
+      if (dialog.type === "hide") await adminCommentApi.hide(dialog.comment.projectId, dialog.comment.id, reason);
       if (dialog.type === "restore")
-        await adminCommentApi.restore(dialog.comment.id, reason, reportId);
+        await adminCommentApi.restore(dialog.comment.projectId, dialog.comment.id, reason);
       enqueueSnackbar(`Comment ${dialog.type}d`, { variant: "success" });
       await reload();
     } catch (err) {

@@ -12,7 +12,7 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { adminProjectApi } from "@api/admin";
+import { adminProjectApi, auditApi } from "@api/admin";
 import type { AdminProject } from "@api/types";
 import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
@@ -41,6 +41,14 @@ export function ProjectDetailPage(): JSX.Element {
     [projectId]
   );
 
+  // The reason/when/who are no longer columns on the project; they are the
+  // latest entry in its audit log.
+  const { data: history } = useAsync(
+    () => auditApi.historyOf("PROJECT", projectId, { page: 1, limit: 1 }),
+    [projectId]
+  );
+  const moderation = history?.data[0] ?? null;
+
   useEffect(() => {
     if (data) {
       setDraft({
@@ -61,10 +69,7 @@ export function ProjectDetailPage(): JSX.Element {
         name: draft.name,
         shortDesc: draft.shortDesc,
         longDesc: draft.longDesc,
-        publishedName: draft.publishedName,
-        publishedShortDesc: draft.publishedShortDesc,
-        publishedLongDesc: draft.publishedLongDesc,
-        reason: draft.reason
+        moderationReason: draft.reason
       });
       enqueueSnackbar("Project updated", { variant: "success" });
       setEditing(false);
@@ -76,12 +81,12 @@ export function ProjectDetailPage(): JSX.Element {
     }
   };
 
-  const handleConfirm = async (reason: string, reportId?: number): Promise<void> => {
+  const handleConfirm = async (reason: string): Promise<void> => {
     if (!dialog) return;
     try {
-      if (dialog === "hide") await adminProjectApi.hide(projectId, reason, reportId);
-      if (dialog === "restore") await adminProjectApi.restore(projectId, reason, reportId);
-      if (dialog === "unpublish") await adminProjectApi.unpublish(projectId, reason, reportId);
+      if (dialog === "hide") await adminProjectApi.hide(projectId, reason);
+      if (dialog === "restore") await adminProjectApi.restore(projectId, reason);
+      if (dialog === "unpublish") await adminProjectApi.unpublish(projectId);
       enqueueSnackbar("Done", { variant: "success" });
       await reload();
     } catch (err) {
@@ -234,14 +239,18 @@ export function ProjectDetailPage(): JSX.Element {
                     <Typography>Created: {formatDate(data.createdAt)}</Typography>
                     <Typography>Updated: {formatDate(data.updatedAt)}</Typography>
                     <Typography>Published: {formatDate(data.publishedAt)}</Typography>
-                    {data.hiddenReason && (
+                    {moderation && (
                       <>
                         <Divider sx={{ my: 1 }} />
-                        <Typography variant="overline">Hidden reason</Typography>
-                        <Typography variant="body2">{data.hiddenReason}</Typography>
+                        <Typography variant="overline">
+                          Last moderation action
+                        </Typography>
+                        <Typography variant="body2">
+                          {moderation.reason || "No reason recorded"}
+                        </Typography>
                         <Typography variant="caption" color="text.secondary">
-                          {formatDate(data.hiddenAt)}
-                          {data.hiddenById ? ` by user #${data.hiddenById}` : ""}
+                          {moderation.action} · {formatDate(moderation.createdAt)}
+                          {moderation.actorLabel ? ` by ${moderation.actorLabel}` : ""}
                         </Typography>
                       </>
                     )}

@@ -45,7 +45,10 @@ export function CommentDetailPage(): JSX.Element {
     if (!data || content === data.content) return;
     setSaving(true);
     try {
-      await adminCommentApi.update(commentId, content, reason || undefined);
+      await adminCommentApi.update(data.projectId, commentId, {
+        content,
+        moderationReason: reason || undefined
+      });
       enqueueSnackbar("Comment updated", { variant: "success" });
       setReason("");
       await reload();
@@ -56,11 +59,13 @@ export function CommentDetailPage(): JSX.Element {
     }
   };
 
-  const handleConfirm = async (dialogReason: string, reportId?: number): Promise<void> => {
-    if (!dialog) return;
+  const handleConfirm = async (dialogReason: string): Promise<void> => {
+    if (!dialog || !data) return;
     try {
-      if (dialog === "hide") await adminCommentApi.hide(commentId, dialogReason, reportId);
-      if (dialog === "restore") await adminCommentApi.restore(commentId, dialogReason, reportId);
+      if (dialog === "hide")
+        await adminCommentApi.hide(data.projectId, commentId, dialogReason);
+      if (dialog === "restore")
+        await adminCommentApi.restore(data.projectId, commentId, dialogReason);
       enqueueSnackbar("Done", { variant: "success" });
       await reload();
     } catch (err) {

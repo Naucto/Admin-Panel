@@ -96,9 +96,6 @@ export type AdminProject = {
   publishedAt: string | null;
   userId: number;
   hidden: boolean;
-  hiddenReason: string | null;
-  hiddenAt: string | null;
-  hiddenById: number | null;
   viewCount: number;
   likes: number;
 };
@@ -111,9 +108,6 @@ export type AdminComment = {
   content: string;
   deleted: boolean;
   hidden: boolean;
-  hiddenReason: string | null;
-  hiddenAt: string | null;
-  hiddenById: number | null;
   createdAt: string;
   authorUsername?: string;
   projectName?: string;

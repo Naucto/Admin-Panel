@@ -17,6 +17,7 @@ import type {
   ModerationTargetType,
   MonetizationType,
   PaginatedList,
+  PaginatedMeta,
   PaginationParams,
   ProjectStatus,
   ReportStatus,
@@ -67,12 +68,18 @@ export type AdminUserFilter = PaginationParams & {
 };
 
 export const adminUserApi = {
+  // /users serves the staff view: it returns roles and refuses the moderation
+  // filters to non-staff, so there is no /admin mirror of it.
   list: (filter: AdminUserFilter) =>
     apiClient
-      .get<PaginatedList<AdminUser>>("/admin/users", { params: buildParams(filter) })
-      .then((r) => r.data),
+      .get<{ data: AdminUser[]; meta: PaginatedMeta }>("/users", {
+        params: buildParams(filter)
+      })
+      .then((r) => ({ data: r.data.data, meta: r.data.meta })),
   get: (id: number) =>
-    apiClient.get<AdminUserDetail>(`/admin/users/${id}`).then((r) => r.data),
+    apiClient
+      .get<{ data: AdminUserDetail }>(`/users/${id}`)
+      .then((r) => r.data.data),
   create: (data: {
     email: string;
     username: string;
@@ -90,10 +97,8 @@ export const adminUserApi = {
       reason?: string;
     }
   ) => apiClient.patch<AdminUser>(`/admin/users/${id}`, data).then((r) => r.data),
-  remove: (id: number, reason?: string) =>
-    apiClient
-      .delete<{ success: true }>(`/admin/users/${id}`, { data: { reason } })
-      .then((r) => r.data),
+  remove: (id: number) =>
+    apiClient.delete<{ success: true }>(`/users/${id}`).then((r) => r.data),
   suspend: (id: number, reason?: string, reportId?: number) =>
     apiClient
       .post<AdminUser>(`/admin/users/${id}/suspend`, { reason, reportId })
@@ -133,48 +138,62 @@ export type AdminProjectFilter = PaginationParams & {
 };
 
 export const adminProjectApi = {
+  // These go through the ordinary project routes, not an /admin mirror of them:
+  // the backend lets a moderator act on anyone's project and records it in the
+  // audit log, so a second set of endpoints would only be duplication.
   list: (filter: AdminProjectFilter) =>
     apiClient
-      .get<PaginatedList<AdminProject>>("/admin/projects", {
-        params: buildParams(filter)
+      .get<{
+        projects: AdminProject[];
+        total: number;
+        page: number;
+        limit: number;
+      }>("/projects", {
+        // scope=all drops the ownership clause; moderators only.
+        params: buildParams({ ...filter, scope: "all" })
       })
-      .then((r) => r.data),
+      .then((r) => ({
+        data: r.data.projects,
+        meta: {
+          page: r.data.page,
+          limit: r.data.limit,
+          total: r.data.total,
+          totalPages: Math.max(1, Math.ceil(r.data.total / r.data.limit))
+        }
+      })),
   get: (id: number) =>
-    apiClient.get<AdminProject>(`/admin/projects/${id}`).then((r) => r.data),
+    apiClient.get<AdminProject>(`/projects/${id}`).then((r) => r.data),
   update: (
     id: number,
     data: {
       name?: string;
       shortDesc?: string;
       longDesc?: string | null;
-      publishedName?: string | null;
-      publishedShortDesc?: string | null;
-      publishedLongDesc?: string | null;
       tags?: string[];
-      publishedTags?: string[];
       iconUrl?: string | null;
       monetization?: MonetizationType;
       price?: number | null;
-      hiddenReason?: string | null;
-      reason?: string;
+      hidden?: boolean;
+      moderationReason?: string;
     }
-  ) =>
-    apiClient.patch<AdminProject>(`/admin/projects/${id}`, data).then((r) => r.data),
-  hide: (id: number, reason?: string, reportId?: number) =>
+  ) => apiClient.put<AdminProject>(`/projects/${id}`, data).then((r) => r.data),
+  hide: (id: number, reason?: string) =>
     apiClient
-      .post<AdminProject>(`/admin/projects/${id}/hide`, { reason, reportId })
+      .put<AdminProject>(`/projects/${id}`, {
+        hidden: true,
+        moderationReason: reason
+      })
       .then((r) => r.data),
-  restore: (id: number, reason?: string, reportId?: number) =>
+  restore: (id: number, reason?: string) =>
     apiClient
-      .post<AdminProject>(`/admin/projects/${id}/restore`, { reason, reportId })
+      .put<AdminProject>(`/projects/${id}`, {
+        hidden: false,
+        moderationReason: reason
+      })
       .then((r) => r.data),
-  unpublish: (id: number, reason?: string, reportId?: number) =>
-    apiClient
-      .post<AdminProject>(`/admin/projects/${id}/unpublish`, { reason, reportId })
-      .then((r) => r.data)
+  unpublish: (id: number) =>
+    apiClient.post<void>(`/projects/${id}/unpublish`).then((r) => r.data)
 };
-
-// ─── Comments ────────────────────────────────────────────────────────────
 
 export type AdminCommentFilter = PaginationParams & {
   projectId?: number;
@@ -186,25 +205,40 @@ export type AdminCommentFilter = PaginationParams & {
 export const adminCommentApi = {
   list: (filter: AdminCommentFilter) =>
     apiClient
-      .get<PaginatedList<AdminComment>>("/admin/comments", {
+      .get<PaginatedList<AdminComment>>("/comments", {
         params: buildParams(filter)
       })
       .then((r) => r.data),
   get: (id: number) =>
-    apiClient.get<AdminComment>(`/admin/comments/${id}`).then((r) => r.data),
-  update: (id: number, content: string, reason?: string) =>
+    apiClient.get<AdminComment>(`/comments/${id}`).then((r) => r.data),
+  update: (
+    projectId: number,
+    id: number,
+    patch: { content?: string; hidden?: boolean; moderationReason?: string }
+  ) =>
     apiClient
-      .patch<AdminComment>(`/admin/comments/${id}`, { content, reason })
+      .put<AdminComment>(`/projects/${projectId}/comments/${id}`, patch)
       .then((r) => r.data),
-  hide: (id: number, reason?: string, reportId?: number) =>
+  hide: (projectId: number, id: number, reason?: string) =>
     apiClient
-      .post<AdminComment>(`/admin/comments/${id}/hide`, { reason, reportId })
+      .put<AdminComment>(`/projects/${projectId}/comments/${id}`, {
+        hidden: true,
+        moderationReason: reason
+      })
       .then((r) => r.data),
-  restore: (id: number, reason?: string, reportId?: number) =>
+  restore: (projectId: number, id: number, reason?: string) =>
     apiClient
-      .post<AdminComment>(`/admin/comments/${id}/restore`, { reason, reportId })
+      .put<AdminComment>(`/projects/${projectId}/comments/${id}`, {
+        hidden: false,
+        moderationReason: reason
+      })
+      .then((r) => r.data),
+  remove: (projectId: number, id: number) =>
+    apiClient
+      .delete<void>(`/projects/${projectId}/comments/${id}`)
       .then((r) => r.data)
 };
+
 
 // ─── Reports ─────────────────────────────────────────────────────────────
 
@@ -279,5 +313,20 @@ export const adminRoleApi = {
   remove: (id: number, reason?: string) =>
     apiClient
       .delete<{ success: true }>(`/admin/roles/${id}`, { data: { reason } })
+      .then((r) => r.data)
+};
+
+// ─── Audit log ───────────────────────────────────────────────────────────
+
+export type ModeratableType = "USER" | "PROJECT" | "COMMENT";
+
+export const auditApi = {
+  /** History for any moderatable thing: a project, a comment, a user. */
+  historyOf: (targetType: ModeratableType, targetId: number, params: PaginationParams = {}) =>
+    apiClient
+      .get<PaginatedList<ModerationLogEntry>>(
+        `/moderation-log/${targetType}/${targetId}`,
+        { params: buildParams(params) }
+      )
       .then((r) => r.data)
 };

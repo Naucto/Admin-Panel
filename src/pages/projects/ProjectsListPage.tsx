@@ -54,12 +54,12 @@ export function ProjectsListPage(): JSX.Element {
     [JSON.stringify(filter)]
   );
 
-  const handleConfirm = async (reason: string, reportId?: number): Promise<void> => {
+  const handleConfirm = async (reason: string): Promise<void> => {
     if (!dialog) return;
     try {
-      if (dialog.type === "hide") await adminProjectApi.hide(dialog.project.id, reason, reportId);
-      if (dialog.type === "restore") await adminProjectApi.restore(dialog.project.id, reason, reportId);
-      if (dialog.type === "unpublish") await adminProjectApi.unpublish(dialog.project.id, reason, reportId);
+      if (dialog.type === "hide") await adminProjectApi.hide(dialog.project.id, reason);
+      if (dialog.type === "restore") await adminProjectApi.restore(dialog.project.id, reason);
+      if (dialog.type === "unpublish") await adminProjectApi.unpublish(dialog.project.id);
       enqueueSnackbar(`Project ${dialog.type}d`, { variant: "success" });
       await reload();
     } catch (err) {

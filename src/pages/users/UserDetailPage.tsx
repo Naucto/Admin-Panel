@@ -67,7 +67,7 @@ export function UserDetailPage(): JSX.Element {
           await adminUserApi.revokeRole(userId, dialog.role, reason);
           break;
         case "delete":
-          await adminUserApi.remove(userId, reason);
+          await adminUserApi.remove(userId);
           enqueueSnackbar("User deleted", { variant: "success" });
           navigate("/users");
           return;
