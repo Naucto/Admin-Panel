@@ -20,7 +20,7 @@ session secret. The Backend owns all of that and is the only security boundary.
 
 - Node 20+ and npm
 - A reachable Naucto Backend with the `/admin/*` endpoints
-- A user account in the Backend with the `Admin` or `Moderator` role
+- A user account with staff permissions, through `Admin`, `Moderator`, or a custom role
 
 ## Environment
 
@@ -44,11 +44,11 @@ new tab on the public site:
   exactly what players see.
 - Anything else (draft, archived, or hidden by moderation) opens
   `/project/:id/preview` — a staff-only route that loads the project's latest
-  save through the role-guarded `/projects/:id/preview*` API. It records no
+  save through the permission-guarded `/projects/:id/preview*` API. It records no
   views, no play history and no likes, so reviewing a game never inflates its
   stats.
 
-The preview route re-checks `Admin`/`Moderator` on the Backend, so it is not
+The preview route checks `MODERATE_CONTENT` on the Backend, so it is not
 reachable by a logged-in player who guesses the URL. It uses the staff member's
 ordinary site session (a bearer token), not the admin cookie.
 
@@ -84,8 +84,9 @@ cd ../Backend && npm run generate:swagger
 cd ../Admin-Panel && npm run api:generate
 ```
 
-The generated client lands in `src/api/` and can be wired up alongside (or in
-place of) the hand-written one.
+The generated client lands in `src/api/generated/`. The hand-written transport
+in `src/api/client.ts` handles cookie authentication and CSRF; permission types
+and values come from the generated contract.
 
 ## Architecture
 
@@ -97,26 +98,35 @@ Browser (admin.naucto.com)
   '-- XHR + cookies ------> Backend /admin/* --> Prisma --> Postgres
 ```
 
-- **Auth**: `POST /admin/auth/login` validates an ordinary user account, checks
-  it holds `Admin` or `Moderator`, and sets three cookies on the Backend's
+- **Auth**: `POST /auth/login?scope=admin` validates an ordinary user account, checks
+  it has staff permissions, and sets three cookies on the Backend's
   origin: `naucto_admin_access` (HttpOnly), `naucto_admin_refresh` (HttpOnly,
-  scoped to `/admin/auth`), and `naucto_admin_csrf` (readable, double-submit).
+  scoped to `/auth`), and `naucto_admin_csrf` (readable, double-submit).
 - **Token scope**: admin cookies and regular API bearer tokens are signed with
   the same secret, so each token carries a `scope` claim (`"admin"` or
-  `"user"`). The Backend's two passport strategies check it, which is what stops
-  an API token from being pasted into the admin cookie -- or the reverse.
+  `"user"`). A shared passport strategy validates both transports. Admin routes
+  require an admin-scoped session, and cookie authentication rejects user-scoped
+  tokens. Ordinary resource routes accept either transport and check permissions.
 - **CSRF**: The axios client reads `naucto_admin_csrf` and echoes it back in
   the `X-CSRF-Token` header on every non-GET request. The Backend rejects writes
   with a missing or mismatched token, and rejects any write from an origin other
   than `ADMIN_PANEL_URL`. `login` and `refresh` are exempt from the
   double-submit check (they run before a CSRF cookie exists) but not from the
   origin check.
-- **401 handling**: On 401, the axios interceptor calls `/admin/auth/refresh`
+- **401 handling**: On 401, the axios interceptor calls `/auth/refresh?scope=admin`
   once (single-flight) and retries the original request. Persistent 401 sends
-  the user back to `/login`. Refresh also re-checks staff roles, so a demoted
-  moderator loses the panel at the next rotation rather than at token expiry.
+  the user back to `/login`. Permissions are loaded on each protected request,
+  so revoked permissions take effect immediately. Refresh also re-checks staff access.
 - **All mutations** go through Backend services that write an audit row in
   `ModerationAction` — every staff action is traceable to a named person.
+
+### Updating existing installations
+
+Apply the Backend's `role_permissions` migration with `npx prisma migrate deploy`
+and deploy the Backend and panel together: panel authentication now uses the shared
+`/auth` routes. Existing Admin and Moderator roles keep their built-in permissions.
+Custom roles start with no permissions and can be edited on the Roles page.
+Staff with an existing session may need to sign in again.
 
 ### Why not a separate admin server?
 

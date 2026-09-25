@@ -8,7 +8,7 @@ import {
   type PropsWithChildren
 } from "react";
 import { adminAuthApi } from "@api/admin";
-import type { AdminMe } from "@api/types";
+import type { AdminMe, Permission } from "@api/types";
 
 type AdminAuthContextValue = {
   user: AdminMe | null;
@@ -23,6 +23,12 @@ const AdminAuthContext = createContext<AdminAuthContextValue | null>(null);
 export function AdminAuthProvider({ children }: PropsWithChildren): JSX.Element {
   const [user, setUser] = useState<AdminMe | null>(null);
   const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const onRefresh = (event: Event): void => setUser((event as CustomEvent<AdminMe>).detail);
+    window.addEventListener("naucto:session-refreshed", onRefresh);
+    return () => window.removeEventListener("naucto:session-refreshed", onRefresh);
+  }, []);
 
   const refreshMe = useCallback(async () => {
     try {
@@ -83,12 +89,12 @@ export function useAdminAuth(): AdminAuthContextValue {
   return ctx;
 }
 
-export function useIsAdmin(): boolean {
+export function usePermissions(): (permission: Permission) => boolean {
   const { user } = useAdminAuth();
-  return user?.roles.includes("Admin") ?? false;
+  return (permission) => user?.permissions.includes(permission) ?? false;
 }
 
 export function useIsStaff(): boolean {
   const { user } = useAdminAuth();
-  return user?.roles.some((role) => role === "Admin" || role === "Moderator") ?? false;
+  return Boolean(user?.permissions.length);
 }

@@ -1,3 +1,4 @@
+import { PAGE_PERMISSIONS } from "@auth/page-permissions";
 import {
   Box,
   Divider,
@@ -23,7 +24,7 @@ import {
   Security as SecurityIcon
 } from "@mui/icons-material";
 import { NavLink } from "react-router-dom";
-import { useIsAdmin } from "@auth/AdminAuthProvider";
+import { usePermissions } from "@auth/AdminAuthProvider";
 
 export const SIDEBAR_WIDTH = 240;
 
@@ -31,14 +32,13 @@ type NavItem = {
   to: string;
   label: string;
   icon: JSX.Element;
-  adminOnly?: boolean;
 };
 
 const PRIMARY_NAV: NavItem[] = [
-  { to: "/", label: "Dashboard", icon: <BarChartIcon />, adminOnly: true },
+  { to: "/", label: "Dashboard", icon: <BarChartIcon /> },
   { to: "/live", label: "Live Activity", icon: <PlayIcon /> },
   { to: "/social", label: "Social Overview", icon: <HeartIcon /> },
-  { to: "/access", label: "Access Management", icon: <SettingsIcon />, adminOnly: true }
+  { to: "/access", label: "Access Management", icon: <SettingsIcon /> }
 ];
 
 const MODERATION_NAV: NavItem[] = [
@@ -47,16 +47,16 @@ const MODERATION_NAV: NavItem[] = [
   { to: "/comments", label: "Comments", icon: <CommentIcon /> },
   { to: "/reports", label: "Reports", icon: <FlagIcon /> },
   { to: "/moderation-log", label: "Moderation Log", icon: <TimelineIcon /> },
-  { to: "/roles", label: "Roles", icon: <SecurityIcon />, adminOnly: true }
+  { to: "/roles", label: "Roles", icon: <SecurityIcon /> }
 ];
 
 
 export function Sidebar(): JSX.Element {
-  const isAdmin = useIsAdmin();
+  const can = usePermissions();
 
   const renderItems = (items: NavItem[]): JSX.Element[] =>
     items
-      .filter((item) => !item.adminOnly || isAdmin)
+      .filter((item) => item.to === "/" ? can("VIEW_INSIGHTS") : PAGE_PERMISSIONS[item.to.slice(1)]?.some(can))
       .map((item) => (
         <ListItem key={item.to} disablePadding>
           <ListItemButton component={NavLink} to={item.to} end={item.to === "/"}>

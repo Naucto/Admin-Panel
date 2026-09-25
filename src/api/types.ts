@@ -1,8 +1,5 @@
-/** Roles that grant access to this panel. Mirrors the backend's STAFF_ROLES. */
-export const STAFF_ROLES = ["Admin", "Moderator"] as const;
-
-export type StaffRole = (typeof STAFF_ROLES)[number];
-
+export type { Permission } from "./generated/types.gen";
+import type { Permission } from "./generated/types.gen";
 export type AccountStatus = "ACTIVE" | "SUSPENDED" | "BANNED";
 export type ProjectStatus = "IN_PROGRESS" | "COMPLETED" | "ARCHIVED";
 export type MonetizationType = "NONE" | "ADS" | "PAID";
@@ -41,6 +38,7 @@ export type AdminMe = {
   nickname: string | null;
   accountStatus: AccountStatus;
   roles: string[];
+  permissions: Permission[];
 };
 
 export type PaginatedMeta = {
@@ -147,6 +145,7 @@ export type AdminRole = {
   name: string;
   userCount: number;
   canonical: boolean;
+  permissions: Permission[];
 };
 
 export type ModerationLogEntry = {

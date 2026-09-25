@@ -1,3 +1,4 @@
+import { PAGE_PERMISSIONS } from "@auth/page-permissions";
 import { Route, Routes } from "react-router-dom";
 import { AdminShell } from "@layout/AdminShell";
 import { ProtectedRoute } from "@auth/ProtectedRoute";
@@ -27,27 +28,49 @@ export function App(): JSX.Element {
 
       <Route element={<ProtectedRoute />}>
         <Route element={<AdminShell />}>
-          {/* Not inside `requireAdmin`: HomeRoute decides per role, so a
-              moderator lands on their queue instead of "Access denied". */}
           <Route index element={<HomeRoute />} />
-
-          <Route element={<ProtectedRoute requireAdmin />}>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["access"]} />}>
             <Route path="access" element={<AccessManagementPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["roles"]} />}>
             <Route path="roles" element={<RolesPage />} />
           </Route>
-
-          <Route path="live" element={<LiveActivityPage />} />
-          <Route path="social" element={<SocialOverviewPage />} />
-          <Route path="users" element={<UsersListPage />} />
-          <Route path="users/:id" element={<UserDetailPage />} />
-          <Route path="projects" element={<ProjectsListPage />} />
-          <Route path="projects/:id" element={<ProjectDetailPage />} />
-          <Route path="comments" element={<CommentsListPage />} />
-          <Route path="comments/:id" element={<CommentDetailPage />} />
-          <Route path="reports" element={<ReportsListPage />} />
-          <Route path="reports/:id" element={<ReportDetailPage />} />
-          <Route path="moderation-log" element={<ModerationLogPage />} />
-          <Route path="moderation-log/:id" element={<ModerationLogDetailPage />} />
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["live"]} />}>
+            <Route path="live" element={<LiveActivityPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["social"]} />}>
+            <Route path="social" element={<SocialOverviewPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["users"]} />}>
+            <Route path="users" element={<UsersListPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["users"]} />}>
+            <Route path="users/:id" element={<UserDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["projects"]} />}>
+            <Route path="projects" element={<ProjectsListPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["projects"]} />}>
+            <Route path="projects/:id" element={<ProjectDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["comments"]} />}>
+            <Route path="comments" element={<CommentsListPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["comments"]} />}>
+            <Route path="comments/:id" element={<CommentDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["reports"]} />}>
+            <Route path="reports" element={<ReportsListPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["reports"]} />}>
+            <Route path="reports/:id" element={<ReportDetailPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["moderation-log"]} />}>
+            <Route path="moderation-log" element={<ModerationLogPage />} />
+          </Route>
+          <Route element={<ProtectedRoute permissions={PAGE_PERMISSIONS["moderation-log"]} />}>
+            <Route path="moderation-log/:id" element={<ModerationLogDetailPage />} />
+          </Route>
         </Route>
       </Route>
     </Routes>

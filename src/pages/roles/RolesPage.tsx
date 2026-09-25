@@ -1,6 +1,10 @@
+import { PERMISSION_LABELS } from "@auth/permission-labels";
+import { Permission as PermissionValues } from "@api/generated/types.gen";
+import { useAdminAuth } from "@auth/AdminAuthProvider";
 import { useState, useEffect, type FormEvent } from "react";
 import {
   Button,
+  Autocomplete,
   Card,
   CardContent,
   CardHeader,
@@ -26,7 +30,7 @@ import {
 } from "@mui/icons-material";
 import { useSnackbar } from "notistack";
 import { adminRoleApi } from "@api/admin";
-import type { AdminRole } from "@api/types";
+import type { AdminRole, Permission } from "@api/types";
 import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
 import { AsyncBoundary } from "@components/AsyncBoundary";
@@ -39,6 +43,9 @@ type DialogState =
   | null;
 
 export function RolesPage(): JSX.Element {
+  const { refreshMe } = useAdminAuth();
+  const [permissions, setPermissions] = useState<Permission[]>([]);
+  const [editPermissions, setEditPermissions] = useState<Permission[]>([]);
   const { enqueueSnackbar } = useSnackbar();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [newName, setNewName] = useState("");
@@ -53,6 +60,7 @@ export function RolesPage(): JSX.Element {
   useEffect(() => {
     if (dialog?.type === "rename") {
       setRenameValue(dialog.role.name);
+      setEditPermissions(dialog.role.permissions);
       setRenameReason("");
     }
   }, [dialog]);
@@ -62,11 +70,13 @@ export function RolesPage(): JSX.Element {
     if (!newName.trim()) return;
     setCreating(true);
     try {
-      await adminRoleApi.create(newName.trim(), createReason || undefined);
+      await adminRoleApi.create(newName.trim(), createReason || undefined, permissions);
       enqueueSnackbar(`Role "${newName}" created`, { variant: "success" });
       setNewName("");
+      setPermissions([]);
       setCreateReason("");
       await reload();
+      await refreshMe();
     } catch (err) {
       enqueueSnackbar(extractErrorMessage(err), { variant: "error" });
     } finally {
@@ -79,10 +89,11 @@ export function RolesPage(): JSX.Element {
     if (dialog?.type !== "rename" || !renameValue.trim()) return;
     setRenaming(true);
     try {
-      await adminRoleApi.rename(dialog.role.id, renameValue.trim(), renameReason || undefined);
-      enqueueSnackbar("Role renamed", { variant: "success" });
+      await adminRoleApi.rename(dialog.role.id, renameValue.trim(), renameReason || undefined, editPermissions);
+      enqueueSnackbar("Role updated", { variant: "success" });
       setDialog(null);
       await reload();
+      await refreshMe();
     } catch (err) {
       enqueueSnackbar(extractErrorMessage(err), { variant: "error" });
     } finally {
@@ -96,6 +107,7 @@ export function RolesPage(): JSX.Element {
       await adminRoleApi.remove(dialog.role.id, reason || undefined);
       enqueueSnackbar("Role deleted", { variant: "success" });
       await reload();
+      await refreshMe();
     } catch (err) {
       enqueueSnackbar(extractErrorMessage(err), { variant: "error" });
     }
@@ -130,6 +142,9 @@ export function RolesPage(): JSX.Element {
                 Create
               </Button>
             </Stack>
+            <Autocomplete multiple getOptionLabel={(permission) => PERMISSION_LABELS[permission]} options={Object.values(PermissionValues)} value={permissions}
+              onChange={(_event, value) => setPermissions(value)} sx={{ mt: 2 }}
+              renderInput={(params) => <TextField {...params} label="Permissions" />} />
           </form>
         </CardContent>
       </Card>
@@ -146,13 +161,14 @@ export function RolesPage(): JSX.Element {
                     <TableCell>Name</TableCell>
                     <TableCell>Users</TableCell>
                     <TableCell>Type</TableCell>
+                    <TableCell>Permissions</TableCell>
                     <TableCell align="right">Actions</TableCell>
                   </TableRow>
                 </TableHead>
                 <TableBody>
                   {data.length === 0 && (
                     <TableRow>
-                      <TableCell colSpan={5}>
+                      <TableCell colSpan={6}>
                         <Typography color="text.secondary">No roles defined</Typography>
                       </TableCell>
                     </TableRow>
@@ -169,8 +185,9 @@ export function RolesPage(): JSX.Element {
                           <Chip label="Custom" size="small" variant="outlined" />
                         )}
                       </TableCell>
+                      <TableCell>{role.permissions.map((permission) => PERMISSION_LABELS[permission]).join(", ") || "None"}</TableCell>
                       <TableCell align="right">
-                        <Tooltip title={role.canonical ? "Canonical roles cannot be renamed" : "Rename"}>
+                        <Tooltip title={role.canonical ? "Canonical roles cannot be edited" : "Edit"}>
                           <span>
                             <IconButton
                               disabled={role.canonical}
@@ -216,9 +233,12 @@ export function RolesPage(): JSX.Element {
         maxWidth="sm"
       >
         <form onSubmit={handleRenameSubmit}>
-          <DialogTitle>Rename role</DialogTitle>
+          <DialogTitle>Edit role</DialogTitle>
           <DialogContent>
             <Stack spacing={2} sx={{ pt: 1 }}>
+              <Autocomplete multiple getOptionLabel={(permission) => PERMISSION_LABELS[permission]} options={Object.values(PermissionValues)} value={editPermissions}
+                onChange={(_event, value) => setEditPermissions(value)}
+                renderInput={(params) => <TextField {...params} label="Permissions" />} />
               <TextField
                 label="New name"
                 value={renameValue}
@@ -240,7 +260,7 @@ export function RolesPage(): JSX.Element {
               Cancel
             </Button>
             <Button type="submit" variant="contained" disabled={renaming}>
-              Rename
+              Save
             </Button>
           </DialogActions>
         </form>

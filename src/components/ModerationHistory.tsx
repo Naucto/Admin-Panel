@@ -1,3 +1,4 @@
+import { usePermissions } from "@auth/AdminAuthProvider";
 import {
   Card,
   CardContent,
@@ -30,11 +31,15 @@ export function ModerationHistory({
   targetType,
   targetId,
   limit = 10
-}: ModerationHistoryProps): JSX.Element {
+}: ModerationHistoryProps): JSX.Element | null {
+  const can = usePermissions();
+  const allowed = can("VIEW_AUDIT");
   const { data, loading, error } = useAsync(
-    () => auditApi.historyOf(targetType, targetId, { page: 1, limit }),
-    [targetType, targetId, limit]
+    () => allowed ? auditApi.historyOf(targetType, targetId, { page: 1, limit }) : Promise.resolve(null),
+    [targetType, targetId, limit, allowed]
   );
+
+  if (!allowed) return null;
 
   return (
     <Card sx={{ mt: 2 }}>

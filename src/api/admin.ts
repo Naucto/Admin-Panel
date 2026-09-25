@@ -23,7 +23,7 @@ import type {
   ReportStatus,
   ReportTargetType,
   SocialOverviewData,
-  StaffRole
+  Permission
 } from "./types";
 
 function buildParams(input: Record<string, unknown>): Record<string, string> {
@@ -39,10 +39,10 @@ function buildParams(input: Record<string, unknown>): Record<string, string> {
 
 export const adminAuthApi = {
   login: (email: string, password: string) =>
-    apiClient.post<AdminMe>("/admin/auth/login", { email, password }).then((r) => r.data),
-  refresh: () => apiClient.post<AdminMe>("/admin/auth/refresh").then((r) => r.data),
-  logout: () => apiClient.post<{ success: true }>("/admin/auth/logout").then((r) => r.data),
-  me: () => apiClient.get<AdminMe>("/admin/auth/me").then((r) => r.data)
+    apiClient.post<AdminMe>("/auth/login?scope=admin", { email, password }).then((r) => r.data),
+  refresh: () => apiClient.post<AdminMe>("/auth/refresh?scope=admin").then((r) => r.data),
+  logout: () => apiClient.post<{ success: true }>("/auth/logout?scope=admin").then((r) => r.data),
+  me: () => apiClient.get<AdminMe>("/auth/me").then((r) => r.data)
 };
 
 // ─── Insights ────────────────────────────────────────────────────────────
@@ -132,13 +132,13 @@ export const adminUserApi = {
     apiClient
       .post<AdminUser>(`/admin/users/${id}/restore`, { reason, reportId })
       .then((r) => r.data),
-  grantRole: (id: number, role: StaffRole, reason?: string) =>
+  grantRole: (id: number, role: string, reason?: string) =>
     apiClient
-      .post<AdminUser>(`/admin/users/${id}/roles/${role}`, { reason })
+      .post<AdminUser>(`/admin/users/${id}/roles/${encodeURIComponent(role)}`, { reason })
       .then((r) => r.data),
-  revokeRole: (id: number, role: StaffRole, reason?: string) =>
+  revokeRole: (id: number, role: string, reason?: string) =>
     apiClient
-      .delete<AdminUser>(`/admin/users/${id}/roles/${role}`, { data: { reason } })
+      .delete<AdminUser>(`/admin/users/${id}/roles/${encodeURIComponent(role)}`, { data: { reason } })
       .then((r) => r.data),
   resetPassword: (id: number, newPassword: string, reason?: string) =>
     apiClient
@@ -325,11 +325,11 @@ export const adminModerationLogApi = {
 
 export const adminRoleApi = {
   list: () => apiClient.get<AdminRole[]>("/admin/roles").then((r) => r.data),
-  create: (name: string, reason?: string) =>
-    apiClient.post<AdminRole>("/admin/roles", { name, reason }).then((r) => r.data),
-  rename: (id: number, name: string, reason?: string) =>
+  create: (name: string, reason?: string, permissions: Permission[] = []) =>
+    apiClient.post<AdminRole>("/admin/roles", { name, reason, permissions }).then((r) => r.data),
+  rename: (id: number, name: string, reason?: string, permissions?: Permission[]) =>
     apiClient
-      .patch<AdminRole>(`/admin/roles/${id}`, { name, reason })
+      .patch<AdminRole>(`/admin/roles/${id}`, { name, reason, permissions })
       .then((r) => r.data),
   remove: (id: number, reason?: string) =>
     apiClient

@@ -42,16 +42,18 @@ function createApiClient(): AxiosInstance {
       const original = error.config as RetryableConfig | undefined;
       const status = error.response?.status;
 
-      const isAuthEndpoint = original?.url?.includes("/admin/auth/");
+      const isAuthEndpoint = original?.url?.includes("/auth/") && !original.url.includes("/auth/me");
       if (status === 401 && original && !original._retry && !isAuthEndpoint) {
         original._retry = true;
         try {
           if (!refreshPromise) {
             refreshPromise = axios
-              .post(`${baseURL}/admin/auth/refresh`, null, {
+              .post(`${baseURL}/auth/refresh?scope=admin`, null, {
                 withCredentials: true
               })
-              .then(() => undefined)
+              .then((response) => {
+                window.dispatchEvent(new CustomEvent("naucto:session-refreshed", { detail: response.data }));
+              })
               .finally(() => {
                 refreshPromise = null;
               });

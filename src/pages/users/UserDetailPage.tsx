@@ -14,11 +14,10 @@ import {
 } from "@mui/material";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSnackbar } from "notistack";
-import { adminUserApi } from "@api/admin";
-import { STAFF_ROLES, type StaffRole } from "@api/types";
+import { adminRoleApi, adminUserApi } from "@api/admin";
 import { extractErrorMessage } from "@api/client";
 import { useAsync } from "@hooks/useAsync";
-import { useAdminAuth, useIsAdmin } from "@auth/AdminAuthProvider";
+import { useAdminAuth, usePermissions } from "@auth/AdminAuthProvider";
 import { AsyncBoundary } from "@components/AsyncBoundary";
 import { PageHeader } from "@components/PageHeader";
 import { ReasonDialog } from "@components/ReasonDialog";
@@ -29,8 +28,8 @@ type DialogState =
   | { type: "suspend" }
   | { type: "ban" }
   | { type: "restore" }
-  | { type: "grant"; role: StaffRole }
-  | { type: "revoke"; role: StaffRole }
+  | { type: "grant"; role: string }
+  | { type: "revoke"; role: string }
   | { type: "delete" }
   | null;
 
@@ -39,7 +38,9 @@ export function UserDetailPage(): JSX.Element {
   const userId = Number(id);
   const navigate = useNavigate();
   const { user: currentUser } = useAdminAuth();
-  const isAdmin = useIsAdmin();
+  const can = usePermissions();
+  const canManageRoles = can("MANAGE_ROLES");
+  const { data: roles } = useAsync(() => canManageRoles ? adminRoleApi.list() : Promise.resolve([]), [canManageRoles]);
   const { enqueueSnackbar } = useSnackbar();
   const [dialog, setDialog] = useState<DialogState>(null);
   const [newPassword, setNewPassword] = useState("");
@@ -157,7 +158,7 @@ export function UserDetailPage(): JSX.Element {
                 </CardContent>
               </Card>
 
-              {isAdmin && (
+              {can("MANAGE_USERS") && (
                 <Card sx={{ mt: 2 }}>
                   <CardHeader title="Reset password" />
                   <CardContent>
@@ -207,7 +208,7 @@ export function UserDetailPage(): JSX.Element {
                 <CardHeader title="Moderation actions" />
                 <CardContent>
                   <Stack spacing={1}>
-                    {data.accountStatus === "ACTIVE" && (
+                    {can("MODERATE_USERS") && data.accountStatus === "ACTIVE" && (
                       <>
                         <Button
                           variant="outlined"
@@ -225,7 +226,7 @@ export function UserDetailPage(): JSX.Element {
                         </Button>
                       </>
                     )}
-                    {data.accountStatus !== "ACTIVE" && (
+                    {can("MODERATE_USERS") && data.accountStatus !== "ACTIVE" && (
                       <Button
                         variant="outlined"
                         color="success"
@@ -234,10 +235,10 @@ export function UserDetailPage(): JSX.Element {
                         Restore to ACTIVE
                       </Button>
                     )}
-                    {isAdmin && (
+                    {canManageRoles && (
                       <>
                         <Divider>Staff roles</Divider>
-                        {STAFF_ROLES.map((role) => {
+                        {(roles ?? []).map(({ name: role }) => {
                           const hasRole = data.roles.includes(role);
                           // An admin cannot drop their own Admin role: it would
                           // lock them out of every admin-only page.
@@ -266,6 +267,10 @@ export function UserDetailPage(): JSX.Element {
                             </Button>
                           );
                         })}
+                      </>
+                    )}
+                    {can("MANAGE_USERS") && (
+                      <>
                         <Divider />
                         <Button
                           variant="contained"
