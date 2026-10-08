@@ -1,0 +1,150 @@
+<div class="grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+  <ad-panel
+    heading="Admins"
+    hint="Naucto accounts that can open this console"
+    [state]="adminsState()"
+    [error]="panelError(admins)"
+    emptyIcon="shield"
+    emptyTitle="No admin"
+    [minHeight]="160"
+    (retry)="admins.reload()"
+  >
+    @if (withoutTwoFactor() > 0) {
+      <span actions class="ad-chip ad-chip-warn">{{ withoutTwoFactor() }} without 2FA</span>
+    }
+    @if (admins.value(); as list) {
+      <div class="-mx-1 overflow-x-auto">
+        <table class="ad-table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th>Two-factor</th>
+              <th>Member since</th>
+              <th class="text-right">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (admin of list; track admin.id) {
+              <tr>
+                <td>
+                  <div class="flex items-center gap-1">
+                    <span
+                      class="flex size-[30px] shrink-0 items-center justify-center rounded-xs bg-raised font-mono text-ui text-gold-ink"
+                    >
+                      {{ (admin.nickname || admin.username).charAt(0).toUpperCase() }}
+                    </span>
+                    <div class="min-w-0">
+                      <p class="truncate text-ink">
+                        {{ admin.nickname || admin.username }}
+                        @if (isMe(admin)) {
+                          <span class="ad-chip ad-chip-gold ml-0.5">You</span>
+                        }
+                      </p>
+                      <p class="truncate text-meta text-ink-3">
+                        &#64;{{ admin.username }} · {{ admin.email }}
+                      </p>
+                    </div>
+                  </div>
+                </td>
+                <td>
+                  @if (admin.twoFactorEnabled) {
+                    <span class="ad-chip ad-chip-ok"><ad-icon name="lock" [size]="12" /> On</span>
+                  } @else {
+                    <span class="ad-chip ad-chip-warn">Off</span>
+                  }
+                </td>
+                <td class="whitespace-nowrap text-ink-3">{{ since(admin.createdAt) }}</td>
+                <td>
+                  <div class="flex justify-end gap-0.5">
+                    @if (!isMe(admin)) {
+                      @if (admin.twoFactorEnabled) {
+                        <button
+                          type="button"
+                          class="ad-button ad-button-ghost ad-button-sm"
+                          [disabled]="busy() === admin.id"
+                          (click)="resetTwoFactor(admin)"
+                        >
+                          Reset 2FA
+                        </button>
+                      }
+                      <button
+                        type="button"
+                        class="ad-button ad-button-danger ad-button-sm"
+                        [disabled]="busy() === admin.id"
+                        (click)="revoke(admin)"
+                      >
+                        Remove
+                      </button>
+                    } @else {
+                      <span class="text-meta text-ink-4">Your own role cannot be changed here</span>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+    }
+  </ad-panel>
+
+  <ad-panel
+    heading="Add an admin"
+    hint="Find an existing Naucto account and give it the admin role"
+  >
+    <label class="relative block">
+      <span class="sr-only">Search accounts</span>
+      <ad-icon
+        name="search"
+        [size]="24"
+        class="pointer-events-none absolute top-[6px] left-1 text-ink-4"
+      />
+      <input
+        class="ad-input ad-input-icon"
+        type="search"
+        placeholder="Handle, display name or email"
+        autocomplete="off"
+        [value]="term()"
+        (input)="typeTerm($any($event.target).value)"
+      />
+    </label>
+
+    <div class="mt-1.5">
+      @if (term().trim().length < 2) {
+        <p class="py-1 text-meta text-ink-3">Type at least two characters.</p>
+      } @else if (results.isLoading()) {
+        <div class="ad-skeleton h-[120px] rounded-sm"></div>
+      } @else if (results.error()) {
+        <p class="py-1 text-body text-hot-ink">{{ panelError(results) }}</p>
+      } @else if (results.value(); as accounts) {
+        @if (accounts.length === 0) {
+          <p class="py-1 text-meta text-ink-3">No Naucto account matches “{{ term() }}”.</p>
+        }
+        <ul class="flex flex-col gap-0.5">
+          @for (account of accounts; track account.id) {
+            <li class="flex items-center gap-1 rounded-sm border border-line-soft px-1 py-0.75">
+              <div class="min-w-0 flex-1">
+                <p class="truncate text-ink">{{ account.nickname || account.username }}</p>
+                <p class="truncate text-meta text-ink-3">
+                  &#64;{{ account.username }} · {{ account.email }}
+                </p>
+              </div>
+              @if (account.role === 'Admin') {
+                <span class="ad-chip ad-chip-gold">Admin</span>
+              } @else {
+                <button
+                  type="button"
+                  class="ad-button ad-button-sm"
+                  [disabled]="busy() === account.id"
+                  (click)="promote(account)"
+                >
+                  <ad-icon name="plus" [size]="12" /> Make admin
+                </button>
+              }
+            </li>
+          }
+        </ul>
+      }
+    </div>
+  </ad-panel>
+</div>

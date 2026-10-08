@@ -1,0 +1,44 @@
+server {
+    listen 80;
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    gzip_static on;
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json image/svg+xml font/ttf;
+
+    # nginx inherits add_header only into a block that declares none, so every block that adds its
+    # own includes these again.
+    include /etc/nginx/snippets/security-headers.conf;
+
+    location = /healthz {
+        access_log off;
+        return 200 'ok';
+    }
+
+    # The Naucto API, on this origin: the session cookie stays first-party and no CORS is involved.
+    location /api/ {
+        proxy_pass ${NAUCTO_API_URL}/;
+        proxy_set_header Host $proxy_host;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_http_version 1.1;
+    }
+
+    location = /index.html {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "no-cache" always;
+    }
+
+    # Only content-hashed build output may be immutable.
+    location ~* "-[A-Za-z0-9_-]{8,}\.(?:js|css)$" {
+        include /etc/nginx/snippets/security-headers.conf;
+        add_header Cache-Control "public, max-age=31536000, immutable" always;
+        try_files $uri =404;
+    }
+
+    location / {
+        try_files $uri $uri/ /index.html;
+    }
+}

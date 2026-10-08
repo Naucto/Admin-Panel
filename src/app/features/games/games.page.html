@@ -1,0 +1,176 @@
+<ad-panel
+  heading="Plays, players and play time"
+  hint="Plays and play time count everyone; players only counts browsers that accepted analytics"
+  [state]="playState()"
+  [error]="panelError(play)"
+  emptyIcon="gamepad"
+  emptyTitle="No game played yet"
+  (retry)="play.reload()"
+>
+  <div class="h-[300px]" [adChart]="playOption()"></div>
+</ad-panel>
+
+<ad-panel
+  class="mt-2"
+  heading="Top games"
+  [hint]="'Published games ' + periodName() + '. Pick one to see its own trend.'"
+  [state]="gamesState()"
+  [error]="panelError(games)"
+  emptyIcon="trophy"
+  [emptyTitle]="'No game played ' + periodName() + ' yet'"
+  [minHeight]="160"
+  (retry)="games.reload()"
+>
+  <ad-segmented
+    actions
+    label="Rank by"
+    [options]="sorts"
+    [value]="sort()"
+    (valueChange)="setSort($event)"
+  />
+  @if (games.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="ad-table">
+        <thead>
+          <tr>
+            <th class="w-[48px]">#</th>
+            <th>Game</th>
+            <th class="num">
+              <button
+                type="button"
+                class="ad-sort"
+                [attr.aria-pressed]="sort() === 'plays'"
+                (click)="setSort('plays')"
+              >
+                Plays
+              </button>
+            </th>
+            <th class="num">
+              <button
+                type="button"
+                class="ad-sort"
+                [attr.aria-pressed]="sort() === 'playtime_ms'"
+                (click)="setSort('playtime_ms')"
+              >
+                Play time
+              </button>
+            </th>
+            <th class="num">
+              <button
+                type="button"
+                class="ad-sort"
+                [attr.aria-pressed]="sort() === 'players'"
+                (click)="setSort('players')"
+              >
+                Players
+              </button>
+            </th>
+            <th class="num">
+              <button
+                type="button"
+                class="ad-sort"
+                [attr.aria-pressed]="sort() === 'mp_sessions'"
+                (click)="setSort('mp_sessions')"
+              >
+                Multiplayer
+              </button>
+            </th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (game of value.items; track game.releaseId; let index = $index) {
+            <tr
+              class="cursor-pointer"
+              [class.bg-raised]="selected()?.releaseId === game.releaseId"
+              (click)="toggle(game)"
+            >
+              <td class="font-mono text-ink-3">{{ rank(index) }}</td>
+              <td>
+                @if (game.name) {
+                  <span class="text-ink">{{ game.name }}</span>
+                } @else {
+                  <span class="text-ink-3">Deleted game</span>
+                }
+                <span class="ml-0.5 font-mono text-micro text-ink-4">#{{ game.releaseId }}</span>
+              </td>
+              <td class="num">{{ formatCount(game.plays) }}</td>
+              <td class="num">{{ formatMetric('playtime_ms', game.playtimeMs) }}</td>
+              <td class="num">{{ formatCount(game.players) }}</td>
+              <td class="num">{{ formatCount(game.mpSessions) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pages() > 1) {
+      <div class="mt-1 flex items-center justify-end gap-1">
+        <button
+          type="button"
+          class="ad-button ad-button-ghost ad-button-sm"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          <ad-icon name="chevron-left" [size]="12" /> Previous
+        </button>
+        <span class="font-mono text-label text-ink-3">{{ page() }} / {{ pages() }}</span>
+        <button
+          type="button"
+          class="ad-button ad-button-ghost ad-button-sm"
+          [disabled]="page() === pages()"
+          (click)="page.set(page() + 1)"
+        >
+          Next <ad-icon name="chevron-right" [size]="12" />
+        </button>
+      </div>
+    }
+  }
+</ad-panel>
+
+@if (selected(); as game) {
+  <ad-panel
+    class="mt-2"
+    [heading]="(game.name ?? 'Deleted game') + ' over time'"
+    hint="Plays and play time of this game alone"
+    [state]="gameTrendState()"
+    [error]="panelError(gameTrend)"
+    emptyIcon="gamepad"
+    emptyTitle="Nothing counted for this game in the range"
+    (retry)="gameTrend.reload()"
+  >
+    <button
+      actions
+      type="button"
+      class="ad-button ad-button-ghost ad-button-sm"
+      (click)="selected.set(null)"
+    >
+      <ad-icon name="close" [size]="12" /> Close
+    </button>
+    <div class="h-[260px]" [adChart]="gameTrendOption()"></div>
+  </ad-panel>
+}
+
+<div class="mt-2 grid gap-2 xl:grid-cols-2">
+  <ad-panel
+    heading="Multiplayer rooms"
+    hint="Rooms opened, rooms someone connected to, and rooms that had two players or more"
+    [state]="roomsState()"
+    [error]="panelError(multiplayer)"
+    emptyIcon="users"
+    emptyTitle="No multiplayer room yet"
+    emptyHint="Rooms the editor opens to test a game are left out."
+    (retry)="multiplayer.reload()"
+  >
+    <div class="h-[260px]" [adChart]="rooms()"></div>
+  </ad-panel>
+  <ad-panel
+    heading="Time played together"
+    hint="Player-minutes add every seat up; multiplayer minutes count the clock once"
+    [state]="minutesState()"
+    [error]="panelError(multiplayer)"
+    emptyIcon="clock"
+    emptyTitle="No multiplayer time yet"
+    (retry)="multiplayer.reload()"
+  >
+    <div class="h-[260px]" [adChart]="minutes()"></div>
+  </ad-panel>
+</div>

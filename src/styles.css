@@ -1,0 +1,339 @@
+@import 'tailwindcss';
+@import './styles/naucto-tokens.css';
+
+/*
+ * The admin layer over Naucto's tokens. Naucto sets everything in its LCD face; a console read for
+ * hours sets running text and tables in the system face and keeps the LCD faces for what should
+ * feel like the machine: headings, labels and every figure.
+ */
+@theme {
+  --font-read: system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+}
+
+@layer base {
+  html {
+    font-family: var(--font-read);
+    font-size: 14px;
+  }
+  :root {
+    --nc-tracking: normal;
+  }
+  h1,
+  h2,
+  h3 {
+    margin: 0;
+    font-weight: 400;
+  }
+  p {
+    margin: 0;
+  }
+}
+
+@layer components {
+  .ad-card {
+    background: var(--nc-panel);
+    border: 1px solid var(--nc-line);
+    border-radius: var(--radius-md);
+    box-shadow:
+      0 1px 0 rgb(255 255 255 / 0.02) inset,
+      0 8px 24px -16px rgb(0 0 0 / 0.6);
+  }
+
+  /* Figures as an LCD readout: the mono face, tabular, lit in the theme's ink. */
+  .ad-readout {
+    font-family: var(--font-mono);
+    font-size: 28px;
+    line-height: 1;
+    color: var(--nc-ink);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .ad-lcd {
+    background: var(--nc-lcd);
+    color: var(--nc-lcd-ink);
+    font-family: var(--font-mono);
+    border-radius: var(--radius-sm);
+    background-image: repeating-linear-gradient(
+      0deg,
+      var(--nc-lcd-veil) 0 1px,
+      transparent 1px 3px
+    );
+    text-shadow: 0 0 6px color-mix(in srgb, var(--nc-lcd-ink) 45%, transparent);
+  }
+
+  .ad-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    height: 32px;
+    padding: 0 14px;
+    border: 1px solid var(--nc-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--nc-raised);
+    color: var(--nc-ink);
+    font-family: var(--font-ui);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ad-button:hover:not(:disabled) {
+    border-color: var(--nc-ink-3);
+  }
+  .ad-button:disabled {
+    opacity: 0.45;
+  }
+  .ad-button-primary {
+    background: var(--nc-gold);
+    border-color: var(--nc-gold);
+    color: #0b0a09;
+  }
+  .ad-button-primary:hover:not(:disabled) {
+    border-color: var(--nc-ink);
+  }
+  .ad-button-danger {
+    background: transparent;
+    border-color: var(--nc-hot);
+    color: var(--nc-hot-ink);
+  }
+  .ad-button-danger:hover:not(:disabled) {
+    background: color-mix(in srgb, var(--nc-hot) 12%, transparent);
+    border-color: var(--nc-hot);
+  }
+  .ad-button-ghost {
+    background: transparent;
+    border-color: transparent;
+    color: var(--nc-ink-2);
+  }
+  .ad-button-ghost:hover:not(:disabled) {
+    color: var(--nc-ink);
+    border-color: var(--nc-line);
+  }
+  .ad-button-sm {
+    height: 26px;
+    padding: 0 10px;
+  }
+
+  .ad-input {
+    height: 36px;
+    width: 100%;
+    padding: 0 12px;
+    border: 1px solid var(--nc-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--nc-inset);
+    color: var(--nc-ink);
+    font-size: var(--text-ui);
+  }
+  .ad-input::placeholder {
+    color: var(--nc-ink-4);
+  }
+  .ad-input:focus {
+    outline: none;
+    border-color: var(--nc-gold);
+  }
+  .ad-input-icon {
+    padding-left: 38px;
+  }
+  .ad-code-input {
+    font-family: var(--font-mono);
+    font-size: 24px;
+    letter-spacing: 0.4em;
+    text-align: center;
+    height: 52px;
+  }
+
+  .ad-select {
+    height: 28px;
+    padding: 0 8px;
+    border: 1px solid var(--nc-line-strong);
+    border-radius: var(--radius-sm);
+    background: var(--nc-inset);
+    color: var(--nc-ink);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    text-transform: uppercase;
+  }
+
+  .ad-segmented {
+    display: inline-flex;
+    padding: 2px;
+    gap: 2px;
+    border: 1px solid var(--nc-line);
+    border-radius: var(--radius-sm);
+    background: var(--nc-inset);
+  }
+  .ad-segmented button {
+    height: 24px;
+    padding: 0 10px;
+    border-radius: var(--radius-xs);
+    color: var(--nc-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    white-space: nowrap;
+  }
+  .ad-segmented button:hover {
+    color: var(--nc-ink);
+  }
+  .ad-segmented button[aria-checked='true'] {
+    background: var(--nc-raised);
+    color: var(--nc-gold-ink);
+    box-shadow: inset 0 0 0 1px var(--nc-line-strong);
+  }
+
+  .ad-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    height: 18px;
+    padding: 0 6px;
+    border: 1px solid currentColor;
+    border-radius: var(--radius-xs);
+    font-family: var(--font-mono);
+    font-size: var(--text-micro);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ad-chip-ok {
+    color: var(--nc-jade-ink);
+  }
+  .ad-chip-warn {
+    color: var(--nc-orange-ink);
+  }
+  .ad-chip-gold {
+    color: var(--nc-gold-ink);
+  }
+  .ad-chip-quiet {
+    color: var(--nc-ink-3);
+  }
+
+  .ad-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--text-ui);
+  }
+  .ad-table th {
+    padding: 8px 10px;
+    border-bottom: 1px solid var(--nc-line);
+    color: var(--nc-ink-3);
+    font-family: var(--font-mono);
+    font-size: var(--text-label);
+    font-weight: 400;
+    letter-spacing: var(--tracking-label);
+    text-align: left;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+  .ad-table td {
+    padding: 9px 10px;
+    border-bottom: 1px solid var(--nc-line-faint);
+    color: var(--nc-ink-body);
+  }
+  .ad-table tbody tr:hover td {
+    background: color-mix(in srgb, var(--nc-raised) 60%, transparent);
+  }
+  .ad-table .num {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+    text-align: right;
+    color: var(--nc-ink);
+  }
+  .ad-table th.num {
+    text-align: right;
+  }
+  .ad-sort {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: inherit;
+    text-transform: inherit;
+    letter-spacing: inherit;
+  }
+  .ad-sort[aria-pressed='true'] {
+    color: var(--nc-gold-ink);
+  }
+
+  .ad-skeleton {
+    background: linear-gradient(
+      90deg,
+      var(--nc-inset) 0%,
+      color-mix(in srgb, var(--nc-raised) 70%, var(--nc-inset)) 50%,
+      var(--nc-inset) 100%
+    );
+    background-size: 200% 100%;
+    animation: ad-shimmer 1.4s ease-in-out infinite;
+  }
+  @keyframes ad-shimmer {
+    from {
+      background-position: 100% 0;
+    }
+    to {
+      background-position: -100% 0;
+    }
+  }
+
+  .ad-dialog {
+    width: min(440px, calc(100vw - 32px));
+    padding: 0;
+    border: 1px solid var(--nc-line-strong);
+    border-radius: var(--radius-md);
+    background: var(--nc-panel);
+    color: var(--nc-ink);
+  }
+  .ad-dialog::backdrop {
+    background: rgb(0 0 0 / 0.6);
+    backdrop-filter: blur(2px);
+  }
+
+  .ad-toast {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    border: 1px solid var(--nc-line-strong);
+    border-left: 3px solid var(--nc-sky);
+    border-radius: var(--radius-sm);
+    background: var(--nc-raised);
+    color: var(--nc-ink);
+    box-shadow: 0 12px 32px -12px rgb(0 0 0 / 0.7);
+  }
+  .ad-toast[data-tone='success'] {
+    border-left-color: var(--nc-jade);
+  }
+  .ad-toast[data-tone='error'] {
+    border-left-color: var(--nc-hot);
+  }
+
+  .ad-nav-link {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: var(--radius-sm);
+    color: var(--nc-ink-3);
+    font-family: var(--font-ui);
+    font-size: var(--text-meta);
+    letter-spacing: var(--tracking-button);
+    text-transform: uppercase;
+  }
+  .ad-nav-link:hover {
+    color: var(--nc-ink);
+    background: var(--nc-raised);
+  }
+  .ad-metric-link {
+    height: 30px;
+    font-family: var(--font-read);
+    font-size: var(--text-ui);
+    letter-spacing: normal;
+    text-transform: none;
+  }
+  .ad-nav-link.active {
+    color: var(--nc-gold-ink);
+    background: var(--nc-raised);
+    box-shadow: inset 2px 0 0 var(--nc-gold);
+  }
+}
