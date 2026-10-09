@@ -1,0 +1,50 @@
+@if (totals().length > 0) {
+  <div class="mb-2 grid grid-cols-2 gap-1.5 md:grid-cols-5">
+    @for (item of totals(); track item.metric) {
+      <div class="ad-card px-2 py-1.5">
+        <p class="label">{{ item.label }}</p>
+        <p class="ad-readout mt-1">{{ item.value }}</p>
+        <p class="mt-0.5 text-meta text-ink-4">over the range</p>
+      </div>
+    }
+  </div>
+}
+
+<div class="grid gap-2 xl:grid-cols-2">
+  <ad-panel
+    heading="Sign-ups and active accounts"
+    hint="New accounts, and accounts seen in a browser that accepted analytics"
+    [state]="accountsState()"
+    [error]="panelError(series)"
+    emptyIcon="user"
+    emptyTitle="No sign-up yet"
+    (retry)="series.reload()"
+  >
+    <div class="h-[260px]" [adChart]="accounts()"></div>
+  </ad-panel>
+
+  <ad-panel
+    heading="Building"
+    hint="Time spent in the editor, and the accounts that spent it"
+    [state]="buildingState()"
+    [error]="panelError(series)"
+    emptyIcon="edit"
+    emptyTitle="Nobody built anything yet"
+    (retry)="series.reload()"
+  >
+    <div class="h-[260px]" [adChart]="building()"></div>
+  </ad-panel>
+</div>
+
+<ad-panel
+  class="mt-2"
+  heading="Projects and releases"
+  hint="Projects started, games published for the first time, updated and taken down"
+  [state]="releasesState()"
+  [error]="panelError(series)"
+  emptyIcon="upload"
+  emptyTitle="No project or release yet"
+  (retry)="series.reload()"
+>
+  <div class="h-[280px]" [adChart]="releases()"></div>
+</ad-panel>

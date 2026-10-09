@@ -1,0 +1,155 @@
+<div class="flex min-h-dvh">
+  <!-- Sidebar -->
+  <nav
+    class="fixed inset-y-0 left-0 z-40 flex w-[228px] flex-col border-r border-line bg-panel transition-transform lg:translate-x-0"
+    [class.-translate-x-full]="!navOpen()"
+    aria-label="Sections"
+  >
+    <a routerLink="/overview" class="flex items-center gap-1.25 px-2 pt-2 pb-2.5">
+      <ad-logo [size]="32" />
+      <span>
+        <span class="block font-ui text-ui text-ink">Naucto</span>
+        <span class="block font-mono text-label tracking-label text-gold-ink uppercase">Admin</span>
+      </span>
+    </a>
+
+    <p class="label px-2.25 pb-0.75">Stats</p>
+    <div class="flex flex-col gap-0.25 px-1">
+      @for (item of statsNav; track item.path) {
+        <a
+          class="ad-nav-link"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          (click)="navOpen.set(false)"
+        >
+          <ad-icon [name]="item.icon" [size]="24" />
+          {{ item.label }}
+        </a>
+      }
+    </div>
+
+    <p class="label mt-2 px-2.25 pb-0.75">Administration</p>
+    <div class="flex flex-col gap-0.25 px-1">
+      @for (item of adminNav; track item.path) {
+        <a
+          class="ad-nav-link"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          (click)="navOpen.set(false)"
+        >
+          <ad-icon [name]="item.icon" [size]="24" />
+          {{ item.label }}
+        </a>
+      }
+    </div>
+
+    <div class="mt-auto border-t border-line px-2 py-1.5">
+      <p class="label">All times UTC</p>
+      <p class="mt-0.25 text-micro text-ink-4">Days final at 01:05 UTC</p>
+    </div>
+  </nav>
+  @if (navOpen()) {
+    <button
+      type="button"
+      class="fixed inset-0 z-30 bg-black/50 lg:hidden"
+      aria-label="Close menu"
+      (click)="navOpen.set(false)"
+    ></button>
+  }
+
+  <!-- Main -->
+  <div class="flex min-w-0 flex-1 flex-col lg:pl-[228px]">
+    <header
+      class="sticky top-0 z-20 flex flex-wrap items-center gap-1.5 border-b border-line bg-page/90 px-2 py-1.25 backdrop-blur"
+    >
+      <button
+        type="button"
+        class="ad-button ad-button-ghost ad-button-sm lg:hidden"
+        aria-label="Menu"
+        (click)="navOpen.set(true)"
+      >
+        <ad-icon name="menu" [size]="24" />
+      </button>
+      <h1 class="font-ui text-title text-ink">{{ heading() }}</h1>
+
+      <div class="ml-auto flex flex-wrap items-center gap-1">
+        @if (stats()) {
+          <ad-segmented
+            label="Range"
+            [options]="presets"
+            [value]="filters.preset()"
+            (valueChange)="setPreset($event)"
+          />
+          <ad-segmented
+            label="Grain"
+            [options]="grains"
+            [value]="filters.grain()"
+            (valueChange)="setGrain($event)"
+          />
+        }
+        <button
+          type="button"
+          class="ad-button ad-button-ghost ad-button-sm"
+          [attr.aria-label]="theme.theme() === 'dark' ? 'Light theme' : 'Dark theme'"
+          (click)="theme.toggle()"
+        >
+          <ad-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="24" />
+        </button>
+
+        <div class="relative">
+          <button
+            type="button"
+            class="flex items-center gap-1 rounded-sm border border-line bg-raised py-0.25 pr-1 pl-0.25 hover:border-ink-3"
+            [attr.aria-expanded]="menuOpen()"
+            aria-haspopup="menu"
+            (click)="menuOpen.set(!menuOpen())"
+          >
+            <span
+              class="flex size-[26px] items-center justify-center rounded-xs bg-gold font-mono text-ui text-on-accent"
+            >
+              {{ initial() }}
+            </span>
+            <span class="hidden text-body text-ink sm:inline"
+              >&#64;{{ auth.account()?.username }}</span
+            >
+            <ad-icon name="chevron-down" [size]="12" class="text-ink-3" />
+          </button>
+          @if (menuOpen()) {
+            <div class="ad-card absolute right-0 z-50 mt-0.5 w-[240px] p-0.5" role="menu">
+              <div class="border-b border-line px-1.25 py-1">
+                <p class="text-body text-ink">{{ auth.account()?.email }}</p>
+                <p class="mt-0.25 flex items-center gap-0.5">
+                  <span class="ad-chip ad-chip-gold">Admin</span>
+                </p>
+              </div>
+              <a
+                routerLink="/account"
+                role="menuitem"
+                class="ad-nav-link mt-0.5"
+                (click)="menuOpen.set(false)"
+              >
+                <ad-icon name="gear" [size]="24" /> Account settings
+              </a>
+              <button type="button" role="menuitem" class="ad-nav-link w-full" (click)="signOut()">
+                <ad-icon name="logout" [size]="24" /> Sign out
+              </button>
+            </div>
+          }
+        </div>
+      </div>
+    </header>
+
+    <main class="mx-auto w-full max-w-[1440px] flex-1 p-2 lg:p-2.5">
+      <router-outlet />
+    </main>
+  </div>
+</div>
+
+@if (menuOpen()) {
+  <button
+    type="button"
+    class="fixed inset-0 z-10 cursor-default"
+    aria-label="Close menu"
+    (click)="menuOpen.set(false)"
+  ></button>
+}

@@ -1,0 +1,45 @@
+@if (heading() || hint()) {
+  <header class="flex items-start justify-between gap-2 px-2.5 pt-2">
+    <div class="min-w-0">
+      <h2 class="font-ui text-ui text-ink">{{ heading() }}</h2>
+      @if (hint()) {
+        <p class="mt-0.25 text-meta text-ink-3">{{ hint() }}</p>
+      }
+    </div>
+    <div class="flex shrink-0 flex-wrap items-center justify-end gap-1">
+      <ng-content select="[actions]" />
+    </div>
+  </header>
+}
+<div class="flex min-w-0 flex-1 flex-col px-2.5 pt-1.5 pb-2.5">
+  @switch (state()) {
+    @case ('loading') {
+      <div class="ad-skeleton flex-1 rounded-md" [style.min-height.px]="minHeight()"></div>
+    }
+    @case ('error') {
+      <div
+        class="flex flex-1 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line px-2 text-center"
+        [style.min-height.px]="minHeight()"
+      >
+        <ad-icon name="warning-box" class="text-hot-ink" />
+        <p class="text-body text-ink-body">{{ error() || 'This could not be loaded.' }}</p>
+        <button type="button" class="ad-button ad-button-ghost" (click)="retry.emit()">
+          Try again
+        </button>
+      </div>
+    }
+    @case ('empty') {
+      <div
+        class="flex flex-1 flex-col items-center justify-center gap-1 rounded-md border border-dashed border-line px-3 text-center"
+        [style.min-height.px]="minHeight()"
+      >
+        <ad-icon [name]="emptyIcon()" class="text-ink-4" />
+        <p class="label">{{ emptyTitle() }}</p>
+        <p class="max-w-[46ch] text-meta text-ink-3">{{ emptyHint() }}</p>
+      </div>
+    }
+    @default {
+      <ng-content />
+    }
+  }
+</div>

@@ -1,0 +1,105 @@
+<div class="grid gap-2 xl:grid-cols-2">
+  <ad-panel
+    heading="New and returning visitors"
+    hint="Consenting browsers, each counted once per period"
+    [state]="visitorsState()"
+    [error]="panelError(series)"
+    emptyIcon="users"
+    (retry)="series.reload()"
+  >
+    @if (visitorTotals(); as totals) {
+      <div actions class="flex gap-2 text-right">
+        <div>
+          <p class="label">New</p>
+          <p class="font-mono text-ui text-gold-ink">{{ totals.fresh }}</p>
+        </div>
+        <div>
+          <p class="label">Returning</p>
+          <p class="font-mono text-ui text-sky-ink">
+            {{ totals.returning }}
+            @if (totals.share !== null) {
+              <span class="text-ink-3">· {{ totals.share }}%</span>
+            }
+          </p>
+        </div>
+      </div>
+    }
+    <div class="h-[260px]" [adChart]="visitors()"></div>
+  </ad-panel>
+
+  <ad-panel
+    heading="Sessions and bounce rate"
+    hint="A bounce is a session with one page and no game played"
+    [state]="sessionsState()"
+    [error]="panelError(series)"
+    (retry)="series.reload()"
+  >
+    <div class="h-[260px]" [adChart]="sessions()"></div>
+  </ad-panel>
+
+  <ad-panel
+    heading="Visit length"
+    hint="The median session against the average, which a few long visits pull up"
+    [state]="lengthState()"
+    [error]="panelError(series)"
+    emptyIcon="clock"
+    (retry)="series.reload()"
+  >
+    <div class="h-[260px]" [adChart]="length()"></div>
+  </ad-panel>
+
+  <ad-panel
+    heading="Where sessions come from"
+    [hint]="breakdownHint()"
+    [state]="breakdownState()"
+    [error]="panelError(breakdown)"
+    emptyIcon="map"
+    [emptyTitle]="'No session ' + periodName() + ' yet'"
+    (retry)="breakdown.reload()"
+  >
+    <select
+      actions
+      class="ad-select"
+      aria-label="Split sessions by"
+      [value]="dimension()"
+      (change)="dimension.set($any($event.target).value)"
+    >
+      @for (option of dimensions; track option.value) {
+        <option [value]="option.value">{{ option.label }}</option>
+      }
+    </select>
+    @if (breakdown.value(); as value) {
+      <ad-breakdown-view class="h-[260px]" [breakdown]="value" [preferDonut]="preferDonut()" />
+    }
+  </ad-panel>
+</div>
+
+<div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+  <ad-panel
+    heading="Retention"
+    hint="Share of each day's newcomers back exactly 1, 7 and 30 days later"
+    [state]="retentionState()"
+    [error]="panelError(retention)"
+    emptyIcon="repeat"
+    emptyTitle="No cohort in this range yet"
+    emptyHint="A cohort is the people first seen on a day. Its day 1, 7 and 30 fill in once those days are final."
+    (retry)="retention.reload()"
+  >
+    <ad-segmented actions label="Who" [options]="retentionKinds" [(value)]="retentionKind" />
+    <div [style.height.px]="retentionHeight()" [adChart]="retentionOption()"></div>
+    <p class="mt-1 text-meta text-ink-4">··· marks a return day that is not final yet.</p>
+  </ad-panel>
+
+  <ad-panel
+    heading="Most visited pages"
+    [hint]="'Page views ' + periodName() + ', by page'"
+    [state]="pagesState()"
+    [error]="panelError(pages)"
+    emptyIcon="file"
+    (retry)="pages.reload()"
+  >
+    @if (pages.value(); as value) {
+      <ad-breakdown-view class="h-[300px]" [breakdown]="value" colour="#ffd100" />
+    }
+  </ad-panel>
+</div>

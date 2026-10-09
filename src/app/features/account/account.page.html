@@ -1,0 +1,41 @@
+@if (account(); as me) {
+  <div class="mx-auto flex max-w-[880px] flex-col gap-2">
+    <section class="ad-card flex flex-wrap items-center gap-2 px-2.5 py-2">
+      <span
+        class="flex size-[56px] items-center justify-center rounded-md bg-gold font-mono text-[28px] text-on-accent"
+      >
+        {{ (me.nickname || me.username).charAt(0).toUpperCase() }}
+      </span>
+      <div class="min-w-0 flex-1">
+        <h2 class="font-ui text-display text-ink">{{ me.nickname || me.username }}</h2>
+        <p class="mt-0.25 text-body text-ink-3">&#64;{{ me.username }} · {{ me.email }}</p>
+      </div>
+      <span class="ad-chip ad-chip-gold">Admin</span>
+    </section>
+
+    <ad-panel heading="Preferences">
+      <div class="flex flex-wrap items-center justify-between gap-1">
+        <div>
+          <p class="text-body text-ink">Appearance</p>
+          <p class="text-meta text-ink-3">Remembered in this browser</p>
+        </div>
+        <button type="button" class="ad-button" (click)="theme.toggle()">
+          <ad-icon [name]="theme.theme() === 'dark' ? 'sun' : 'moon'" [size]="12" />
+          {{ theme.theme() === 'dark' ? 'Use light' : 'Use dark' }}
+        </button>
+      </div>
+    </ad-panel>
+
+    <ad-panel heading="Session">
+      <div class="flex flex-wrap items-center justify-between gap-1">
+        <p class="max-w-[60ch] text-body text-ink-body">
+          A session lasts eight hours, then the console asks you to sign in again. Signing out ends
+          it in this browser now.
+        </p>
+        <button type="button" class="ad-button ad-button-danger" (click)="signOut()">
+          <ad-icon name="logout" [size]="12" /> Sign out
+        </button>
+      </div>
+    </ad-panel>
+  </div>
+}
