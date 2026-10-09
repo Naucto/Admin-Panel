@@ -12,7 +12,7 @@ import { AccountsApi } from '../../core/accounts.api';
 import { errorMessage } from '../../core/api-error';
 import { AuthStore } from '../../core/auth.store';
 import { longDay, utcDay } from '../../core/dates';
-import type { AccountSummary, AdminAccount } from '../../core/types';
+import type { AccountSummary } from '../../core/types';
 import { FeedbackService } from '../../ui/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
@@ -38,9 +38,6 @@ export default class AdminsPage {
   protected readonly admins = resource({ loader: () => this.api.admins() });
   protected readonly adminsState = computed(() =>
     panelState(this.admins, (list) => list.length === 0),
-  );
-  protected readonly withoutTwoFactor = computed(
-    () => this.admins.value()?.filter((admin) => !admin.twoFactorEnabled).length ?? 0,
   );
 
   protected readonly term = signal('');
@@ -77,7 +74,7 @@ export default class AdminsPage {
   protected async promote(account: AccountSummary): Promise<void> {
     const confirmed = await this.feedback.confirm({
       title: `Make @${account.username} an admin?`,
-      message: `${account.email} will be able to sign in to this console, read every figure and add or remove admins.\n\nThey should turn on two-factor sign-in from their account settings.`,
+      message: `${account.email} will be able to sign in to this console, read every figure and add or remove admins.`,
       confirmLabel: 'Make admin',
     });
     if (confirmed) {
@@ -90,7 +87,7 @@ export default class AdminsPage {
     }
   }
 
-  protected async revoke(admin: AdminAccount): Promise<void> {
+  protected async revoke(admin: AccountSummary): Promise<void> {
     const confirmed = await this.feedback.confirm({
       title: `Remove @${admin.username} from the admins?`,
       message: `${admin.email} keeps their Naucto account but loses access to this console at once.`,
@@ -101,22 +98,6 @@ export default class AdminsPage {
       await this.act(admin.id, async () => {
         await this.api.setRole(admin.id, 'User');
         this.feedback.toast(`@${admin.username} is no longer an admin.`);
-      });
-    }
-  }
-
-  protected async resetTwoFactor(admin: AdminAccount): Promise<void> {
-    const confirmed = await this.feedback.confirm({
-      title: `Turn off two-factor sign-in for @${admin.username}?`,
-      message:
-        'For an admin who lost their authenticator. They sign in with their password alone until they set it up again.',
-      confirmLabel: 'Turn it off',
-      danger: true,
-    });
-    if (confirmed) {
-      await this.act(admin.id, async () => {
-        await this.api.resetTwoFactor(admin.id);
-        this.feedback.toast(`Two-factor sign-in is off for @${admin.username}.`);
       });
     }
   }

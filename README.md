@@ -14,8 +14,8 @@ and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design to
 | Creators | Sign-ups, active accounts, time spent building, projects and releases                                                                                                                                        |
 | Live     | Who is online this minute and doing what, the last hour, games being played, presence over 24 hours or 7 days                                                                                                |
 | Explorer | Any metric of the registry, with its definition, at any grain, against the period before, split by its dimensions, period by period                                                                          |
-| Admins   | The admins, adding one from the existing Naucto accounts, removing one, resetting a lost authenticator                                                                                                       |
-| Account  | Two-factor sign-in on or off, appearance, sign out                                                                                                                                                           |
+| Admins   | The admins, adding one from the existing Naucto accounts, removing one                                                                                                                                       |
+| Account  | Appearance, sign out                                                                                                                                                                                         |
 
 Every view says what it holds when there is little or nothing yet: three periods or fewer draw as
 labelled bars of those periods only, a figure with nothing before it says so, and an empty panel
@@ -23,15 +23,9 @@ explains when its data will appear rather than drawing a flat line.
 
 ## Signing in
 
-Only a Naucto account holding the `Admin` role gets in. The password step answers either with a
-session or, when the account has two-factor sign-in on, with a five-minute challenge for the code
-from an authenticator app. An admin without it is asked to set it up after signing in, and
-reminded on every page until they do.
-
-The access token lives in memory. An httpOnly, `SameSite=Strict` cookie renews it for eight hours,
-so a reload keeps the session and closing it for good means signing in again. An admin with
-two-factor sign-in on cannot reach the admin API with a token from the main site's sign-in: only
-one issued after the code step works.
+Only a Naucto account holding the `Admin` role gets in, with its email and password. The access
+token lives in memory. An httpOnly, `SameSite=Strict` cookie renews it for eight hours, so a
+reload keeps the session and closing it for good means signing in again.
 
 ## Run it
 

@@ -39,12 +39,6 @@
         >
           <ad-icon [name]="item.icon" [size]="24" />
           {{ item.label }}
-          @if (item.path === '/account' && auth.needsTwoFactor()) {
-            <span
-              class="ml-auto size-[6px] rounded-full bg-orange"
-              title="Two-factor sign-in is off"
-            ></span>
-          }
         </a>
       }
     </div>
@@ -126,11 +120,6 @@
                 <p class="text-body text-ink">{{ auth.account()?.email }}</p>
                 <p class="mt-0.25 flex items-center gap-0.5">
                   <span class="ad-chip ad-chip-gold">Admin</span>
-                  @if (auth.account()?.twoFactorEnabled) {
-                    <span class="ad-chip ad-chip-ok">2FA on</span>
-                  } @else {
-                    <span class="ad-chip ad-chip-warn">2FA off</span>
-                  }
                 </p>
               </div>
               <a
@@ -149,21 +138,6 @@
         </div>
       </div>
     </header>
-
-    @if (auth.needsTwoFactor()) {
-      <div
-        class="flex flex-wrap items-center gap-1.5 border-b border-orange/40 bg-orange/10 px-2 py-1"
-      >
-        <ad-icon name="shield" [size]="24" class="text-orange-ink" />
-        <p class="flex-1 text-body text-ink-body">
-          This admin account signs in with a password only. Turn on two-factor sign-in to keep the
-          console safe if the password leaks.
-        </p>
-        <a routerLink="/account" [queryParams]="{ setup: 1 }" class="ad-button ad-button-sm">
-          Set it up
-        </a>
-      </div>
-    }
 
     <main class="mx-auto w-full max-w-[1440px] flex-1 p-2 lg:p-2.5">
       <router-outlet />

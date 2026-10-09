@@ -163,25 +163,8 @@ export interface AccountSummary {
   createdAt: string;
 }
 
-export interface AdminAccount extends AccountSummary {
-  twoFactorEnabled: boolean;
-  twoFactorEnabledAt: string | null;
-}
-
-export interface AdminMe extends AdminAccount {
-  sessionVerified: boolean;
-}
-
 export interface AdminSession {
-  status: 'authenticated' | 'two_factor_required';
-  accessToken?: string;
-  expiresIn?: number;
-  challengeToken?: string;
-  account?: AdminAccount;
-}
-
-export interface TwoFactorSetup {
-  secret: string;
-  otpauthUri: string;
-  setupToken: string;
+  accessToken: string;
+  expiresIn: number;
+  account: AccountSummary;
 }

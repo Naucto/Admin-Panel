@@ -135,13 +135,6 @@
   .ad-input-icon {
     padding-left: 38px;
   }
-  .ad-code-input {
-    font-family: var(--font-mono);
-    font-size: 24px;
-    letter-spacing: 0.4em;
-    text-align: center;
-    height: 52px;
-  }
 
   .ad-select {
     height: 28px;

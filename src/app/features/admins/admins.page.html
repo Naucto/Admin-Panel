@@ -9,16 +9,12 @@
     [minHeight]="160"
     (retry)="admins.reload()"
   >
-    @if (withoutTwoFactor() > 0) {
-      <span actions class="ad-chip ad-chip-warn">{{ withoutTwoFactor() }} without 2FA</span>
-    }
     @if (admins.value(); as list) {
       <div class="-mx-1 overflow-x-auto">
         <table class="ad-table">
           <thead>
             <tr>
               <th>Account</th>
-              <th>Two-factor</th>
               <th>Member since</th>
               <th class="text-right">Actions</th>
             </tr>
@@ -46,27 +42,10 @@
                     </div>
                   </div>
                 </td>
-                <td>
-                  @if (admin.twoFactorEnabled) {
-                    <span class="ad-chip ad-chip-ok"><ad-icon name="lock" [size]="12" /> On</span>
-                  } @else {
-                    <span class="ad-chip ad-chip-warn">Off</span>
-                  }
-                </td>
                 <td class="whitespace-nowrap text-ink-3">{{ since(admin.createdAt) }}</td>
                 <td>
                   <div class="flex justify-end gap-0.5">
                     @if (!isMe(admin)) {
-                      @if (admin.twoFactorEnabled) {
-                        <button
-                          type="button"
-                          class="ad-button ad-button-ghost ad-button-sm"
-                          [disabled]="busy() === admin.id"
-                          (click)="resetTwoFactor(admin)"
-                        >
-                          Reset 2FA
-                        </button>
-                      }
                       <button
                         type="button"
                         class="ad-button ad-button-danger ad-button-sm"
