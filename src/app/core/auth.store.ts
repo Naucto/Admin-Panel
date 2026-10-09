@@ -53,10 +53,13 @@ export class AuthStore {
     this.adopt(await post<AdminSession>('/admin/auth/login', { email, password }));
   }
 
-  /** A new access token from the session cookie; false when the session is over. */
+  /** A new access token from the session cookie; false when there is no session, or it is over. */
   renew(): Promise<boolean> {
-    this.renewing ??= post<AdminSession>('/admin/auth/refresh')
+    this.renewing ??= post<AdminSession | undefined>('/admin/auth/refresh')
       .then((session) => {
+        if (!session) {
+          return false;
+        }
         this.adopt(session);
         return true;
       })
