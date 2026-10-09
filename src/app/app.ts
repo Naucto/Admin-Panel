@@ -7,7 +7,7 @@ import { FeedbackComponent } from './ui/feedback.component';
 @Component({
   selector: 'app-root',
   imports: [RouterOutlet, FeedbackComponent],
-  template: '<router-outlet /><ad-feedback />',
+  template: '<router-outlet /><nc-feedback />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {

@@ -1,5 +1,5 @@
 <div class="grid gap-2 xl:grid-cols-2">
-  <ad-panel
+  <nc-panel
     heading="New and returning visitors"
     hint="Consenting browsers, each counted once per period"
     [state]="visitorsState()"
@@ -24,20 +24,20 @@
         </div>
       </div>
     }
-    <div class="h-[260px]" [adChart]="visitors()"></div>
-  </ad-panel>
+    <div class="h-[260px]" [ncChart]="visitors()"></div>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="Sessions and bounce rate"
     hint="A bounce is a session with one page and no game played"
     [state]="sessionsState()"
     [error]="panelError(series)"
     (retry)="series.reload()"
   >
-    <div class="h-[260px]" [adChart]="sessions()"></div>
-  </ad-panel>
+    <div class="h-[260px]" [ncChart]="sessions()"></div>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="Visit length"
     hint="The median session against the average, which a few long visits pull up"
     [state]="lengthState()"
@@ -45,10 +45,10 @@
     emptyIcon="clock"
     (retry)="series.reload()"
   >
-    <div class="h-[260px]" [adChart]="length()"></div>
-  </ad-panel>
+    <div class="h-[260px]" [ncChart]="length()"></div>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="Where sessions come from"
     [hint]="breakdownHint()"
     [state]="breakdownState()"
@@ -59,7 +59,7 @@
   >
     <select
       actions
-      class="ad-select"
+      class="nc-select"
       aria-label="Split sessions by"
       [value]="dimension()"
       (change)="dimension.set($any($event.target).value)"
@@ -69,13 +69,13 @@
       }
     </select>
     @if (breakdown.value(); as value) {
-      <ad-breakdown-view class="h-[260px]" [breakdown]="value" [preferDonut]="preferDonut()" />
+      <nc-breakdown-view class="h-[260px]" [breakdown]="value" [preferDonut]="preferDonut()" />
     }
-  </ad-panel>
+  </nc-panel>
 </div>
 
 <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-  <ad-panel
+  <nc-panel
     heading="Retention"
     hint="Share of each day's newcomers back exactly 1, 7 and 30 days later"
     [state]="retentionState()"
@@ -85,12 +85,12 @@
     emptyHint="A cohort is the people first seen on a day. Its day 1, 7 and 30 fill in once those days are final."
     (retry)="retention.reload()"
   >
-    <ad-segmented actions label="Who" [options]="retentionKinds" [(value)]="retentionKind" />
-    <div [style.height.px]="retentionHeight()" [adChart]="retentionOption()"></div>
+    <nc-segmented actions label="Who" [options]="retentionKinds" [(value)]="retentionKind" />
+    <div [style.height.px]="retentionHeight()" [ncChart]="retentionOption()"></div>
     <p class="mt-1 text-meta text-ink-4">··· marks a return day that is not final yet.</p>
-  </ad-panel>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="Most visited pages"
     [hint]="'Page views ' + periodName() + ', by page'"
     [state]="pagesState()"
@@ -99,7 +99,7 @@
     (retry)="pages.reload()"
   >
     @if (pages.value(); as value) {
-      <ad-breakdown-view class="h-[300px]" [breakdown]="value" colour="#ffd100" />
+      <nc-breakdown-view class="h-[300px]" [breakdown]="value" colour="#ffd100" />
     }
-  </ad-panel>
+  </nc-panel>
 </div>

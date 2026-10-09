@@ -48,7 +48,7 @@ type Dimension = (typeof DIMENSIONS)[number];
 const SHARE_DIMENSIONS: readonly Dimension[] = ['device', 'browser', 'os', 'screen'];
 
 @Component({
-  selector: 'ad-audience-page',
+  selector: 'nc-audience-page',
   imports: [BreakdownViewComponent, ChartDirective, PanelComponent, SegmentedComponent],
   templateUrl: './audience.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

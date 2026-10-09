@@ -45,7 +45,7 @@ const PERIOD_NAMES: Record<Grain, { current: string; previous: string }> = {
 };
 
 @Component({
-  selector: 'ad-overview-page',
+  selector: 'nc-overview-page',
   imports: [
     RouterLink,
     ChartDirective,

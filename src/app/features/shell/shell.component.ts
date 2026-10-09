@@ -34,7 +34,7 @@ const ADMIN_NAV: NavItem[] = [
 ];
 
 @Component({
-  selector: 'ad-shell',
+  selector: 'nc-shell',
   imports: [
     RouterOutlet,
     RouterLink,

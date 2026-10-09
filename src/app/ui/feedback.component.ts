@@ -12,12 +12,12 @@ import { IconComponent } from './icon.component';
 
 /** The confirmation dialog and the toast stack, mounted once at the root. */
 @Component({
-  selector: 'ad-feedback',
+  selector: 'nc-feedback',
   imports: [IconComponent],
   template: `
     <dialog
       #dialog
-      class="ad-dialog"
+      class="nc-dialog"
       (cancel)="$event.preventDefault(); feedback.answer(false)"
       (click)="$event.target === dialog && feedback.answer(false)"
     >
@@ -30,16 +30,16 @@ import { IconComponent } from './icon.component';
           <div class="mt-2.5 flex justify-end gap-1">
             <button
               type="button"
-              class="ad-button ad-button-ghost"
+              class="nc-button nc-button-ghost"
               (click)="feedback.answer(false)"
             >
               Cancel
             </button>
             <button
               type="button"
-              class="ad-button"
-              [class.ad-button-danger]="request.danger"
-              [class.ad-button-primary]="!request.danger"
+              class="nc-button"
+              [class.nc-button-danger]="request.danger"
+              [class.nc-button-primary]="!request.danger"
               (click)="feedback.answer(true)"
             >
               {{ request.confirmLabel }}
@@ -50,8 +50,8 @@ import { IconComponent } from './icon.component';
     </dialog>
     <div class="fixed right-2 bottom-2 z-50 flex w-[340px] max-w-[calc(100vw-32px)] flex-col gap-1">
       @for (toast of feedback.toasts(); track toast.id) {
-        <div class="ad-toast" [attr.data-tone]="toast.tone" role="status">
-          <ad-icon
+        <div class="nc-toast" [attr.data-tone]="toast.tone" role="status">
+          <nc-icon
             [name]="
               toast.tone === 'error'
                 ? 'warning-box'
@@ -68,7 +68,7 @@ import { IconComponent } from './icon.component';
             aria-label="Dismiss"
             (click)="feedback.dismiss(toast.id)"
           >
-            <ad-icon name="close" [size]="12" />
+            <nc-icon name="close" [size]="12" />
           </button>
         </div>
       }

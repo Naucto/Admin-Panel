@@ -11,10 +11,10 @@ export type PanelState = 'loading' | 'error' | 'empty' | 'ready';
  * yet, which early on is the common case rather than the exception.
  */
 @Component({
-  selector: 'ad-panel',
+  selector: 'nc-panel',
   imports: [IconComponent],
   templateUrl: './panel.component.html',
-  host: { class: 'ad-card flex min-w-0 flex-col' },
+  host: { class: 'nc-card flex min-w-0 flex-col' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class PanelComponent {

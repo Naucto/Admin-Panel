@@ -7,7 +7,7 @@ import { LogoComponent } from '../../ui/logo.component';
 
 /** Signing in with a Naucto admin account. */
 @Component({
-  selector: 'ad-login-page',
+  selector: 'nc-login-page',
   imports: [LogoComponent],
   templateUrl: './login.page.html',
   host: { class: 'block min-h-dvh' },

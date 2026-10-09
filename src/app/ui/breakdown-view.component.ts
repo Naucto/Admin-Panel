@@ -16,17 +16,17 @@ const KEY_LABELS: Record<string, string> = { '(none)': 'Unknown', '(other)': 'Ot
  * whole make a donut, and anything longer becomes ranked bars, which compare without a legend.
  */
 @Component({
-  selector: 'ad-breakdown-view',
+  selector: 'nc-breakdown-view',
   imports: [ChartDirective],
   template: `
     @if (items().length === 1) {
       <div class="flex h-full flex-col items-center justify-center gap-0.5 text-center">
-        <p class="ad-readout">{{ single() }}</p>
+        <p class="nc-readout">{{ single() }}</p>
         <p class="text-body text-ink-body">all from {{ items()[0]?.label }}</p>
         <p class="text-meta text-ink-3">A second value shows up here as soon as one is counted.</p>
       </div>
     } @else {
-      <div class="h-full" [adChart]="option()"></div>
+      <div class="h-full" [ncChart]="option()"></div>
     }
     @if (breakdown().truncated) {
       <p class="mt-0.5 text-meta text-ink-4">The rarest values are folded into (other).</p>

@@ -4,7 +4,7 @@ import { ICON_PATHS, type IconName } from './icon-paths';
 
 /** A pixelarticons glyph, crisp at 12, 24 or 48 px like Naucto's own. */
 @Component({
-  selector: 'ad-icon',
+  selector: 'nc-icon',
   template: `<svg
     [attr.width]="size()"
     [attr.height]="size()"

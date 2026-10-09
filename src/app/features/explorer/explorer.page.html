@@ -1,5 +1,5 @@
 <div class="grid gap-2 xl:grid-cols-[280px_minmax(0,1fr)]">
-  <aside class="ad-card self-start p-1">
+  <aside class="nc-card self-start p-1">
     <p class="label px-1 pt-0.5 pb-1">Metrics</p>
     @if (registry.error()) {
       <p class="px-1 pb-1 text-body text-ink-3">{{ panelError(registry) }}</p>
@@ -11,7 +11,7 @@
       @for (item of group.items; track item.name) {
         <button
           type="button"
-          class="ad-nav-link ad-metric-link w-full"
+          class="nc-nav-link nc-metric-link w-full"
           [class.active]="item.name === metric()"
           (click)="selectMetric(item.name)"
         >
@@ -20,22 +20,22 @@
       }
     } @empty {
       @if (!registry.error()) {
-        <div class="ad-skeleton m-1 h-[300px] rounded-sm"></div>
+        <div class="nc-skeleton m-1 h-[300px] rounded-sm"></div>
       }
     }
   </aside>
 
   <div class="flex min-w-0 flex-col gap-2">
     @if (info(); as metricInfo) {
-      <div class="ad-card px-2.5 py-2">
+      <div class="nc-card px-2.5 py-2">
         <div class="flex flex-wrap items-start justify-between gap-1">
           <div>
             <p class="label">{{ metricInfo.name }} · v{{ metricInfo.version }}</p>
             <h2 class="mt-0.5 font-ui text-display text-ink">{{ metricLabel(metricInfo.name) }}</h2>
           </div>
           <div class="flex flex-wrap gap-0.5">
-            <span class="ad-chip ad-chip-gold">{{ metricInfo.kind }}</span>
-            <span class="ad-chip ad-chip-quiet"
+            <span class="nc-chip nc-chip-gold">{{ metricInfo.kind }}</span>
+            <span class="nc-chip nc-chip-quiet"
               >final · {{ metricInfo.finalization.toLowerCase() }}</span
             >
           </div>
@@ -49,9 +49,9 @@
 
     @if (summary(); as stats) {
       <div class="grid grid-cols-2 gap-1.5 md:grid-cols-4">
-        <div class="ad-card px-2 py-1.5">
+        <div class="nc-card px-2 py-1.5">
           <p class="label">{{ stats.total !== null ? 'Total' : 'Average' }}</p>
-          <p class="ad-readout mt-1">{{ stats.total ?? stats.average }}</p>
+          <p class="nc-readout mt-1">{{ stats.total ?? stats.average }}</p>
           @if (stats.change !== null) {
             <p
               class="mt-0.5 text-meta"
@@ -63,23 +63,23 @@
             </p>
           }
         </div>
-        <div class="ad-card px-2 py-1.5">
+        <div class="nc-card px-2 py-1.5">
           <p class="label">Average per period</p>
-          <p class="ad-readout mt-1">{{ stats.average }}</p>
+          <p class="nc-readout mt-1">{{ stats.average }}</p>
         </div>
-        <div class="ad-card px-2 py-1.5">
+        <div class="nc-card px-2 py-1.5">
           <p class="label">Peak</p>
-          <p class="ad-readout mt-1">{{ stats.peak }}</p>
+          <p class="nc-readout mt-1">{{ stats.peak }}</p>
           <p class="mt-0.5 text-meta text-ink-3">{{ stats.peakAt }}</p>
         </div>
-        <div class="ad-card px-2 py-1.5">
+        <div class="nc-card px-2 py-1.5">
           <p class="label">Periods with data</p>
-          <p class="ad-readout mt-1">{{ stats.periods }}</p>
+          <p class="nc-readout mt-1">{{ stats.periods }}</p>
         </div>
       </div>
     }
 
-    <ad-panel
+    <nc-panel
       heading="Over time"
       [state]="seriesState()"
       [error]="panelError(series)"
@@ -95,13 +95,13 @@
           />
           Period before
         </label>
-        <ad-segmented label="Chart" [options]="kinds" [(value)]="chartKind" />
+        <nc-segmented label="Chart" [options]="kinds" [(value)]="chartKind" />
       </div>
-      <div class="h-[320px]" [adChart]="option()"></div>
-    </ad-panel>
+      <div class="h-[320px]" [ncChart]="option()"></div>
+    </nc-panel>
 
     @if (dimensions().length > 0) {
-      <ad-panel
+      <nc-panel
         heading="Split"
         [hint]="
           'This ' + (filters.periodGrain() === 'WEEK' ? 'week' : 'month') + ', by one dimension'
@@ -111,7 +111,7 @@
         emptyIcon="chart-bar"
         (retry)="breakdown.reload()"
       >
-        <ad-segmented
+        <nc-segmented
           actions
           label="Dimension"
           [options]="dimensions()"
@@ -123,15 +123,15 @@
             Pick a dimension to split {{ metricLabel(metric()) }} by.
           </p>
         } @else if (breakdown.value(); as value) {
-          <ad-breakdown-view class="h-[300px]" [breakdown]="value" />
+          <nc-breakdown-view class="h-[300px]" [breakdown]="value" />
         }
-      </ad-panel>
+      </nc-panel>
     }
 
     @if (rows().length > 0) {
-      <ad-panel heading="Every period" hint="Newest first">
+      <nc-panel heading="Every period" hint="Newest first">
         <div class="max-h-[360px] overflow-y-auto">
-          <table class="ad-table">
+          <table class="nc-table">
             <thead>
               <tr>
                 <th>Period</th>
@@ -146,10 +146,10 @@
                   <td class="num">{{ row.value }}</td>
                   <td>
                     <span
-                      class="ad-chip"
-                      [class.ad-chip-ok]="row.status === 'final'"
-                      [class.ad-chip-gold]="row.status === 'provisional'"
-                      [class.ad-chip-quiet]="row.status === 'unavailable'"
+                      class="nc-chip"
+                      [class.nc-chip-ok]="row.status === 'final'"
+                      [class.nc-chip-gold]="row.status === 'provisional'"
+                      [class.nc-chip-quiet]="row.status === 'unavailable'"
                     >
                       {{ row.status === 'provisional' ? 'counting' : row.status }}
                     </span>
@@ -159,7 +159,7 @@
             </tbody>
           </table>
         </div>
-      </ad-panel>
+      </nc-panel>
     }
   </div>
 </div>

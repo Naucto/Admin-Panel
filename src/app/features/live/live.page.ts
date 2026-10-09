@@ -40,7 +40,7 @@ function thin(samples: PresenceSample[], every: number): PresenceSample[] {
 }
 
 @Component({
-  selector: 'ad-live-page',
+  selector: 'nc-live-page',
   imports: [ChartDirective, PanelComponent, SegmentedComponent],
   templateUrl: './live.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

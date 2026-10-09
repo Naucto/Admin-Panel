@@ -1,5 +1,5 @@
 <div class="grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
-  <ad-panel
+  <nc-panel
     heading="Admins"
     hint="Naucto accounts that can open this console"
     [state]="adminsState()"
@@ -11,7 +11,7 @@
   >
     @if (admins.value(); as list) {
       <div class="-mx-1 overflow-x-auto">
-        <table class="ad-table">
+        <table class="nc-table">
           <thead>
             <tr>
               <th>Account</th>
@@ -33,7 +33,7 @@
                       <p class="truncate text-ink">
                         {{ admin.nickname || admin.username }}
                         @if (isMe(admin)) {
-                          <span class="ad-chip ad-chip-gold ml-0.5">You</span>
+                          <span class="nc-chip nc-chip-gold ml-0.5">You</span>
                         }
                       </p>
                       <p class="truncate text-meta text-ink-3">
@@ -48,7 +48,7 @@
                     @if (!isMe(admin)) {
                       <button
                         type="button"
-                        class="ad-button ad-button-danger ad-button-sm"
+                        class="nc-button nc-button-danger nc-button-sm"
                         [disabled]="busy() === admin.id"
                         (click)="revoke(admin)"
                       >
@@ -65,21 +65,21 @@
         </table>
       </div>
     }
-  </ad-panel>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="Add an admin"
     hint="Find an existing Naucto account and give it the admin role"
   >
     <label class="relative block">
       <span class="sr-only">Search accounts</span>
-      <ad-icon
+      <nc-icon
         name="search"
         [size]="24"
         class="pointer-events-none absolute top-[6px] left-1 text-ink-4"
       />
       <input
-        class="ad-input ad-input-icon"
+        class="nc-input nc-input-icon"
         type="search"
         placeholder="Handle, display name or email"
         autocomplete="off"
@@ -92,7 +92,7 @@
       @if (term().trim().length < 2) {
         <p class="py-1 text-meta text-ink-3">Type at least two characters.</p>
       } @else if (results.isLoading()) {
-        <div class="ad-skeleton h-[120px] rounded-sm"></div>
+        <div class="nc-skeleton h-[120px] rounded-sm"></div>
       } @else if (results.error()) {
         <p class="py-1 text-body text-hot-ink">{{ panelError(results) }}</p>
       } @else if (results.value(); as accounts) {
@@ -109,15 +109,15 @@
                 </p>
               </div>
               @if (account.role === 'Admin') {
-                <span class="ad-chip ad-chip-gold">Admin</span>
+                <span class="nc-chip nc-chip-gold">Admin</span>
               } @else {
                 <button
                   type="button"
-                  class="ad-button ad-button-sm"
+                  class="nc-button nc-button-sm"
                   [disabled]="busy() === account.id"
                   (click)="promote(account)"
                 >
-                  <ad-icon name="plus" [size]="12" /> Make admin
+                  <nc-icon name="plus" [size]="12" /> Make admin
                 </button>
               }
             </li>
@@ -125,5 +125,5 @@
         </ul>
       }
     </div>
-  </ad-panel>
+  </nc-panel>
 </div>

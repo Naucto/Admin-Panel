@@ -25,7 +25,7 @@ const SEARCH_DELAY_MS = 250;
  * by finding the account and promoting it, and removed by taking the role back.
  */
 @Component({
-  selector: 'ad-admins-page',
+  selector: 'nc-admins-page',
   imports: [IconComponent, PanelComponent],
   templateUrl: './admins.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

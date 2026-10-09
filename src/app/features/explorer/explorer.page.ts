@@ -54,7 +54,7 @@ function alignTo(previous: Series, current: Series): Series {
 }
 
 @Component({
-  selector: 'ad-explorer-page',
+  selector: 'nc-explorer-page',
   imports: [BreakdownViewComponent, ChartDirective, PanelComponent, SegmentedComponent],
   templateUrl: './explorer.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

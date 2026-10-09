@@ -33,7 +33,7 @@ const MULTIPLAYER_METRICS = [
 const PAGE_SIZE = 10;
 
 @Component({
-  selector: 'ad-games-page',
+  selector: 'nc-games-page',
   imports: [ChartDirective, IconComponent, PanelComponent, SegmentedComponent],
   templateUrl: './games.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

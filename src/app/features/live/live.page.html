@@ -1,5 +1,5 @@
 <div class="grid gap-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
-  <div class="ad-lcd p-2">
+  <div class="nc-lcd p-2">
     <div class="flex items-center justify-between">
       <p class="text-label tracking-[0.2em] opacity-70">NAUCTO // ONLINE THIS MINUTE</p>
       <p class="flex items-center gap-0.5 text-label">
@@ -24,7 +24,7 @@
     }
   </div>
 
-  <ad-panel
+  <nc-panel
     heading="What browsers are doing"
     hint="Each browser once, in its busiest tab"
     [minHeight]="120"
@@ -49,13 +49,13 @@
         }
       </div>
     } @else {
-      <div class="ad-skeleton h-[60px] rounded-sm"></div>
+      <div class="nc-skeleton h-[60px] rounded-sm"></div>
     }
-  </ad-panel>
+  </nc-panel>
 </div>
 
 <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-  <ad-panel
+  <nc-panel
     heading="The last hour"
     hint="Refreshes every 30 seconds"
     [state]="hourState()"
@@ -65,15 +65,15 @@
     emptyHint="The sampler records one point a minute, 90 seconds after the minute ends."
     (retry)="live.reload()"
   >
-    <div class="h-[280px]" [adChart]="hour()"></div>
-  </ad-panel>
+    <div class="h-[280px]" [ncChart]="hour()"></div>
+  </nc-panel>
 
-  <ad-panel heading="Games being played" hint="In the last minute" [minHeight]="120">
+  <nc-panel heading="Games being played" hint="In the last minute" [minHeight]="120">
     @if (live.value(); as value) {
       @if (value.gamesNow.length === 0) {
         <p class="py-2 text-center text-body text-ink-3">No game is running right now.</p>
       } @else {
-        <table class="ad-table">
+        <table class="nc-table">
           <thead>
             <tr>
               <th>Game</th>
@@ -93,12 +93,12 @@
         </table>
       }
     } @else {
-      <div class="ad-skeleton h-[100px] rounded-sm"></div>
+      <div class="nc-skeleton h-[100px] rounded-sm"></div>
     }
-  </ad-panel>
+  </nc-panel>
 </div>
 
-<ad-panel
+<nc-panel
   class="mt-2"
   heading="Presence history"
   [hint]="window() === '7d' ? 'The busiest minute of every quarter hour' : 'One point a minute'"
@@ -109,6 +109,6 @@
   emptyHint="Presence samples are kept 90 days, starting from the first minute the sampler ran."
   (retry)="history.reload()"
 >
-  <ad-segmented actions label="Window" [options]="windows" [(value)]="window" />
-  <div class="h-[300px]" [adChart]="historyOption()"></div>
-</ad-panel>
+  <nc-segmented actions label="Window" [options]="windows" [(value)]="window" />
+  <div class="h-[300px]" [ncChart]="historyOption()"></div>
+</nc-panel>

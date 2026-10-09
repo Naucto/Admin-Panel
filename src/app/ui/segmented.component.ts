@@ -7,8 +7,8 @@ export interface SegmentOption<T extends string> {
 
 /** A row of mutually exclusive choices, as Naucto's own segmented control. */
 @Component({
-  selector: 'ad-segmented',
-  template: `<div class="ad-segmented" role="radiogroup" [attr.aria-label]="label()">
+  selector: 'nc-segmented',
+  template: `<div class="nc-segmented" role="radiogroup" [attr.aria-label]="label()">
     @for (option of options(); track option.value) {
       <button
         type="button"

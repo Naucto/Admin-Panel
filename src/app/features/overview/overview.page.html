@@ -1,18 +1,18 @@
 <section class="mb-2 flex flex-wrap items-center justify-between gap-1">
   <p class="label">Headline · {{ comparedTo() }}</p>
-  <ad-segmented label="Headline period" [options]="tileGrains" [(value)]="tileGrain" />
+  <nc-segmented label="Headline period" [options]="tileGrains" [(value)]="tileGrain" />
 </section>
 
 @switch (tilesState()) {
   @case ('loading') {
     <div class="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-5">
       @for (slot of [1, 2, 3, 4, 5]; track slot) {
-        <div class="ad-card ad-skeleton h-[118px]"></div>
+        <div class="nc-card nc-skeleton h-[118px]"></div>
       }
     </div>
   }
   @case ('error') {
-    <ad-panel
+    <nc-panel
       state="error"
       [error]="panelError(overview)"
       [minHeight]="100"
@@ -22,7 +22,7 @@
   @default {
     <div class="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-5">
       @for (tile of tiles(); track tile.metric; let index = $index) {
-        <ad-stat-tile
+        <nc-stat-tile
           [label]="tileLabel(tile.metric)"
           [value]="tile.current.value"
           [display]="tileDisplay(tile)"
@@ -37,21 +37,21 @@
 }
 
 <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-  <ad-panel
+  <nc-panel
     heading="Traffic"
     hint="Consenting visitors, their sessions and the pages they opened"
     [state]="trafficState()"
     [error]="panelError(series)"
     (retry)="series.reload()"
   >
-    <div class="h-[300px]" [adChart]="traffic()"></div>
-  </ad-panel>
+    <div class="h-[300px]" [ncChart]="traffic()"></div>
+  </nc-panel>
 
-  <ad-panel heading="Online now" hint="Browsers and anonymous tabs seen this minute">
-    <a actions routerLink="/live" class="ad-button ad-button-ghost ad-button-sm">
-      Live <ad-icon name="arrow-right" [size]="12" />
+  <nc-panel heading="Online now" hint="Browsers and anonymous tabs seen this minute">
+    <a actions routerLink="/live" class="nc-button nc-button-ghost nc-button-sm">
+      Live <nc-icon name="arrow-right" [size]="12" />
     </a>
-    <div class="ad-lcd flex items-end justify-between px-2 py-1.5">
+    <div class="nc-lcd flex items-end justify-between px-2 py-1.5">
       <div>
         <p class="text-label tracking-[0.2em] opacity-70">ONLINE</p>
         <p class="text-[44px] leading-none">{{ onlineNow() ?? '--' }}</p>
@@ -61,18 +61,18 @@
       </span>
     </div>
     @if ((live.value()?.samples?.length ?? 0) > 1) {
-      <div class="mt-1.5 h-[72px]" [adChart]="liveSpark()"></div>
+      <div class="mt-1.5 h-[72px]" [ncChart]="liveSpark()"></div>
       <p class="mt-0.5 text-meta text-ink-3">The last hour, a point a minute.</p>
     } @else {
       <p class="mt-1.5 text-meta text-ink-3">
         The minute sampler has not recorded an hour yet. The line fills in as it runs.
       </p>
     }
-  </ad-panel>
+  </nc-panel>
 </div>
 
 <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,2fr)_minmax(0,1fr)]">
-  <ad-panel
+  <nc-panel
     heading="Play"
     hint="Games started, and how long they ran in a visible tab"
     [state]="playState()"
@@ -81,10 +81,10 @@
     emptyTitle="No game played yet"
     (retry)="series.reload()"
   >
-    <div class="h-[280px]" [adChart]="play()"></div>
-  </ad-panel>
+    <div class="h-[280px]" [ncChart]="play()"></div>
+  </nc-panel>
 
-  <ad-panel
+  <nc-panel
     heading="From visit to publish"
     hint="Browsers first seen in the range, step by step"
     [state]="funnelState()"
@@ -94,11 +94,11 @@
     emptyHint="The funnel follows consenting browsers first seen in the range, over at most 90 days."
     (retry)="funnel.reload()"
   >
-    <div class="h-[240px]" [adChart]="funnelOption()"></div>
-  </ad-panel>
+    <div class="h-[240px]" [ncChart]="funnelOption()"></div>
+  </nc-panel>
 </div>
 
-<ad-panel
+<nc-panel
   class="mt-2"
   heading="Data pipeline"
   hint="How far the numbers are settled"
@@ -130,6 +130,6 @@
   } @else if (health.error()) {
     <p class="text-body text-ink-3">{{ panelError(health) }}</p>
   } @else {
-    <div class="ad-skeleton h-[40px] rounded-sm"></div>
+    <div class="nc-skeleton h-[40px] rounded-sm"></div>
   }
-</ad-panel>
+</nc-panel>

@@ -32,7 +32,7 @@ const TOTALS = [
 ];
 
 @Component({
-  selector: 'ad-creators-page',
+  selector: 'nc-creators-page',
   imports: [ChartDirective, PanelComponent],
   templateUrl: './creators.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -7,7 +7,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 
 @Component({
-  selector: 'ad-account-page',
+  selector: 'nc-account-page',
   imports: [IconComponent, PanelComponent],
   templateUrl: './account.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

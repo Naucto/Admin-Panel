@@ -37,7 +37,7 @@
       },
       "root": "",
       "sourceRoot": "src",
-      "prefix": "app",
+      "prefix": "nc",
       "architect": {
         "build": {
           "builder": "@angular/build:application",

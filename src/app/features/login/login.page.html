@@ -3,7 +3,7 @@
     class="relative hidden overflow-hidden border-r border-line bg-inset lg:flex lg:flex-col lg:justify-between lg:p-4"
   >
     <div class="flex items-center gap-1.5">
-      <ad-logo [size]="40" />
+      <nc-logo [size]="40" />
       <div>
         <p class="font-ui text-title text-ink">Naucto</p>
         <p class="label">Admin console</p>
@@ -17,7 +17,7 @@
   <main class="flex items-center justify-center p-2">
     <div class="w-full max-w-[380px]">
       <div class="mb-3 flex items-center gap-1.5 lg:hidden">
-        <ad-logo [size]="32" />
+        <nc-logo [size]="32" />
         <p class="font-ui text-title text-ink">Naucto admin</p>
       </div>
 
@@ -36,12 +36,12 @@
       >
         <label class="flex flex-col gap-0.5">
           <span class="label">Email</span>
-          <input class="ad-input" type="email" name="email" autocomplete="username" required />
+          <input class="nc-input" type="email" name="email" autocomplete="username" required />
         </label>
         <label class="flex flex-col gap-0.5">
           <span class="label">Password</span>
           <input
-            class="ad-input"
+            class="nc-input"
             type="password"
             name="password"
             autocomplete="current-password"
@@ -51,7 +51,7 @@
         @if (error(); as message) {
           <p class="text-body text-hot-ink" role="alert">{{ message }}</p>
         }
-        <button type="submit" class="ad-button ad-button-primary mt-1 h-[38px]" [disabled]="busy()">
+        <button type="submit" class="nc-button nc-button-primary mt-1 h-[38px]" [disabled]="busy()">
           {{ busy() ? 'Checking…' : 'Sign in' }}
         </button>
       </form>

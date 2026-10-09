@@ -31,6 +31,11 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   changes, change it in the same branch.
 - No inline scripts and no third-party origins: the production CSP refuses both. That is also why
   critical CSS inlining is off in `angular.json`.
+- Component selectors, directives and global classes take the `nc` prefix (`nc-panel`,
+  `ncChart`, `.nc-button`). Never name anything `ad-…`, `ads`, `banner` or `sponsor`: ad blockers
+  (Opera's built-in one, uBlock, AdBlock) hide elements by such names through EasyList's generic
+  rules (`##.ad-button`, `##.ad-panel`), and the console would lose its sign-in button and panels
+  for everyone running one.
 - Commits: `[ADMIN] [TYPE] Capitalized message`, TYPE among ADD/REMOVE/UPDATE/REFACTO/CLEAN/FIX,
   with the Jira key in the body (`Refs NCTO-276`). Branch = Jira key.
 

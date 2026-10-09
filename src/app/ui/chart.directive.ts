@@ -19,9 +19,9 @@ import { ThemeService } from '../core/theme.service';
 export type ChartSpec = EChartsCoreOption | ((ink: ChartInk) => EChartsCoreOption);
 
 /** Draws an ECharts option into its host, resizing with it and redrawing with the theme. */
-@Directive({ selector: '[adChart]', host: { class: 'block' } })
+@Directive({ selector: '[ncChart]', host: { class: 'block' } })
 export class ChartDirective {
-  readonly spec = input.required<ChartSpec | null>({ alias: 'adChart' });
+  readonly spec = input.required<ChartSpec | null>({ alias: 'ncChart' });
 
   constructor() {
     const host = inject<ElementRef<HTMLElement>>(ElementRef).nativeElement;

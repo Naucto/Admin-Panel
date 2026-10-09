@@ -8,16 +8,16 @@ import { ChartDirective } from './chart.directive';
  * with no period before it to compare to says so instead of showing a change from nothing.
  */
 @Component({
-  selector: 'ad-stat-tile',
+  selector: 'nc-stat-tile',
   imports: [ChartDirective],
   template: `
     <div class="flex items-start justify-between gap-1">
       <span class="label">{{ label() }}</span>
       @if (provisional()) {
-        <span class="ad-chip ad-chip-quiet" title="Still being counted">LIVE</span>
+        <span class="nc-chip nc-chip-quiet" title="Still being counted">LIVE</span>
       }
     </div>
-    <strong class="ad-readout mt-1 block" [class.text-ink-4]="value() === null">{{
+    <strong class="nc-readout mt-1 block" [class.text-ink-4]="value() === null">{{
       display()
     }}</strong>
     <div class="mt-0.75 flex min-h-[18px] items-center gap-1 text-meta">
@@ -35,10 +35,10 @@ import { ChartDirective } from './chart.directive';
       }
     </div>
     @if (trend().length > 1) {
-      <div class="pointer-events-none mt-1 h-[28px]" [adChart]="spark()"></div>
+      <div class="pointer-events-none mt-1 h-[28px]" [ncChart]="spark()"></div>
     }
   `,
-  host: { class: 'ad-card block px-2 py-1.75' },
+  host: { class: 'nc-card block px-2 py-1.75' },
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class StatTileComponent {
