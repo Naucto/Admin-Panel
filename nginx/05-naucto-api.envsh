@@ -1,0 +1,5 @@
+#!/bin/sh
+# nginx sends each request to NAUCTO_API_URL followed by its own path, so a trailing slash here
+# would send every call to the API's root.
+NAUCTO_API_URL="${NAUCTO_API_URL%/}"
+export NAUCTO_API_URL

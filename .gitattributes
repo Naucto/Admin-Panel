@@ -1,0 +1,3 @@
+# Scripts run inside the Linux nginx image, where a CRLF line ending breaks them.
+*.envsh text eol=lf
+*.sh text eol=lf

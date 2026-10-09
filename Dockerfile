@@ -11,6 +11,9 @@ RUN npx ng build --configuration production \
 
 FROM nginx:1.27-alpine AS runtime
 ENV NAUCTO_API_URL=http://backend:3000
+# Has the image's entrypoint export the container's DNS servers, which the template's resolver uses.
+ENV NGINX_ENTRYPOINT_LOCAL_RESOLVERS=1
+COPY --chmod=755 nginx/05-naucto-api.envsh /docker-entrypoint.d/05-naucto-api.envsh
 COPY nginx/default.conf.template /etc/nginx/templates/default.conf.template
 COPY nginx/security-headers.conf /etc/nginx/snippets/security-headers.conf
 COPY --from=build --chown=nginx:nginx /app/dist/naucto-admin/browser /usr/share/nginx/html

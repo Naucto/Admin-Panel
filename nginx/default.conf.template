@@ -17,9 +17,16 @@ server {
         return 200 'ok';
     }
 
+    # The backend's address is looked up per request, not once at start: it changes whenever the
+    # backend is redeployed, and an address resolved at start keeps pointing at the old container.
+    resolver ${NGINX_LOCAL_RESOLVERS} valid=10s ipv6=off;
+
     # The Naucto API, on this origin: the session cookie stays first-party and no CORS is involved.
     location /api/ {
-        proxy_pass ${NAUCTO_API_URL}/;
+        set $naucto_api ${NAUCTO_API_URL};
+        rewrite ^/api/(.*)$ /$1 break;
+        proxy_pass $naucto_api;
+        proxy_ssl_server_name on;
         proxy_set_header Host $proxy_host;
         proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         proxy_set_header X-Forwarded-Proto $scheme;
