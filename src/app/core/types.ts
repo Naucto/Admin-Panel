@@ -146,12 +146,23 @@ export interface Games {
   limit: number;
 }
 
+export interface GeoIpStatus {
+  source: 'file' | 'download' | 'off';
+  edition: string | null;
+  loadedAt: string | null;
+  error: string | null;
+  /** Since the backend started. */
+  lookups: { found: number; unknown: number; privateAddress: number; noDatabase: number };
+}
+
 export interface Health {
   ingest: { accepted: number; rejected: number; throttled: number; writeErrors: number };
   finalization: { finalization: string; lastFinalDay?: string | null }[];
   projectionBacklog: number;
   oldestProjectionWork: string | null;
   oldestRawDay: string | null;
+  /** Absent from a backend older than country lookup diagnostics. */
+  geoIp?: GeoIpStatus;
 }
 
 export interface AccountSummary {

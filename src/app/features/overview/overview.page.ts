@@ -195,6 +195,36 @@ export default class OverviewPage {
     };
   });
 
+  /** Where country lookups stand, and what keeps them from working when they do not. */
+  protected readonly countries = computed(() => {
+    const geo = this.health.value()?.geoIp;
+    if (!geo) {
+      return null;
+    }
+    const { found, unknown, privateAddress, noDatabase } = geo.lookups;
+    const total = found + unknown + privateAddress + noDatabase;
+    const percent = (part: number): string => `${String(Math.round((part / total) * 100))}%`;
+    const loaded = geo.source === 'file' ? geo.loadedAt !== null : geo.edition !== null;
+    let problem: string | null = null;
+    if (geo.error) {
+      problem = `Country lookups fail: ${geo.error}.`;
+    } else if (geo.source === 'off') {
+      problem =
+        'Country lookups are off: the backend has GEOIP_DOWNLOAD=false and no GEOIP_DB_PATH.';
+    } else if (total > 0 && privateAddress >= found && privateAddress > 0) {
+      problem =
+        `${percent(privateAddress)} of the visits counted since the backend started came from a ` +
+        'private address: the proxy in front of the backend does not pass the visitor’s address ' +
+        'on in X-Forwarded-For.';
+    }
+    const located = total > 0 ? `${percent(found)} located` : 'no visit yet';
+    return {
+      value: !loaded ? 'none' : geo.source === 'file' ? 'file' : 'DB-IP',
+      detail: geo.edition ? `${geo.edition} · ${located}` : located,
+      problem,
+    };
+  });
+
   protected readonly panelError = panelError;
   protected readonly formatCount = formatCount;
 }

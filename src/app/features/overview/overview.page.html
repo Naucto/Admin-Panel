@@ -105,7 +105,7 @@
   [minHeight]="80"
 >
   @if (health.value(); as value) {
-    <div class="grid grid-cols-2 gap-1.5 md:grid-cols-4 xl:grid-cols-8">
+    <div class="grid grid-cols-2 gap-1.5 md:grid-cols-4 xl:grid-cols-9">
       @for (row of healthRows(); track row.label) {
         <div>
           <p class="label">Final · {{ row.label }}</p>
@@ -120,6 +120,15 @@
         <p class="label">Refused</p>
         <p class="mt-0.25 font-mono text-ui text-ink">{{ ingest()?.errorRate }}</p>
       </div>
+      @if (countries(); as geo) {
+        <div>
+          <p class="label">Countries</p>
+          <p class="mt-0.25 font-mono text-ui" [class.text-orange-ink]="geo.problem">
+            {{ geo.value }}
+          </p>
+          <p class="text-micro text-ink-4">{{ geo.detail }}</p>
+        </div>
+      }
       <div>
         <p class="label">History queue</p>
         <p class="mt-0.25 font-mono text-ui" [class.text-orange-ink]="value.projectionBacklog > 0">
@@ -127,6 +136,12 @@
         </p>
       </div>
     </div>
+    @if (countries()?.problem; as problem) {
+      <p class="mt-1.5 flex items-start gap-0.75 text-body text-orange-ink">
+        <nc-icon name="warning-box" [size]="12" class="mt-0.25" />
+        {{ problem }}
+      </p>
+    }
   } @else if (health.error()) {
     <p class="text-body text-ink-3">{{ panelError(health) }}</p>
   } @else {
