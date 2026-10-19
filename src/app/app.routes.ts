@@ -63,6 +63,16 @@ export const routes: Routes = [
         ...page('Feedback', true),
       },
       {
+        path: 'bugs',
+        loadComponent: () => import('./features/bugs/bugs.page'),
+        ...page('Bug reports'),
+      },
+      {
+        path: 'bugs/:id',
+        loadComponent: () => import('./features/bugs/bug-detail.page'),
+        ...page('Bug report'),
+      },
+      {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
         ...page('Admins'),

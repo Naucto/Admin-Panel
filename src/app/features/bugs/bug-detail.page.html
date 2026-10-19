@@ -1,0 +1,183 @@
+<a routerLink="/bugs" class="nc-button nc-button-ghost nc-button-sm mb-1.5">
+  <nc-icon name="arrow-left" [size]="12" /> Bug reports
+</a>
+
+@switch (bugState()) {
+  @case ('loading') {
+    <div class="nc-card nc-skeleton h-[88px]"></div>
+    <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div class="nc-card nc-skeleton h-[360px]"></div>
+      <div class="nc-card nc-skeleton h-[360px]"></div>
+    </div>
+  }
+  @case ('error') {
+    <nc-panel state="error" [error]="panelError(bug)" [minHeight]="160" (retry)="bug.reload()" />
+  }
+  @default {
+    @if (bug.value(); as bug) {
+      <header class="nc-card px-2.5 py-2">
+        <p class="flex flex-wrap items-center gap-1">
+          <span class="font-mono text-meta text-ink-3">#{{ bug.id }}</span>
+          <span class="nc-chip nc-chip-quiet">{{ categoryLabels[bug.category] }}</span>
+          <span [class]="bugStatusChip(bug.status)">{{ statusLabels[bug.status] }}</span>
+        </p>
+        <h2 class="mt-0.75 font-ui text-title break-words text-ink">{{ bug.title }}</h2>
+        <p class="mt-0.5 text-meta text-ink-3">
+          Sent {{ dayTime(bug.createdAt) }} UTC · Updated {{ dayTime(bug.updatedAt) }} UTC
+        </p>
+      </header>
+
+      <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div class="flex min-w-0 flex-col gap-2">
+          <nc-panel heading="Description">
+            <p
+              class="text-body break-words whitespace-pre-wrap text-ink-body"
+              [textContent]="bug.description"
+            ></p>
+          </nc-panel>
+
+          <nc-panel
+            heading="Screenshot"
+            [hint]="
+              bug.screenshot ? bug.screenshot.mime + ' · ' + formatBytes(bug.screenshot.bytes) : ''
+            "
+          >
+            @if (!bug.screenshot) {
+              <p class="text-meta text-ink-4">No screenshot</p>
+            } @else if (screenshot.error()) {
+              <p class="text-body text-hot-ink">{{ panelError(screenshot) }}</p>
+            } @else if (screenshot.value(); as url) {
+              <button
+                type="button"
+                class="block w-full cursor-zoom-in overflow-hidden rounded-sm border border-line bg-inset"
+                aria-label="Open the screenshot at full size"
+                (click)="viewer.showModal()"
+              >
+                <img class="mx-auto block max-h-[420px] max-w-full" [src]="url" alt="Screenshot" />
+              </button>
+              <dialog
+                #viewer
+                class="nc-dialog w-auto max-w-[calc(100vw-32px)]"
+                aria-label="Screenshot at full size"
+                (click)="viewer.close()"
+              >
+                <img
+                  class="block max-h-[calc(100dvh-64px)] max-w-full cursor-zoom-out"
+                  [src]="url"
+                  alt="Screenshot at full size"
+                />
+              </dialog>
+            } @else {
+              <div class="nc-skeleton h-[240px] rounded-sm"></div>
+            }
+          </nc-panel>
+
+          @if (consoleText() || bug.context.engineError || bug.context.appError) {
+            <nc-panel heading="Errors and console" hint="As the browser captured them">
+              <div class="flex flex-col gap-1.5">
+                @if (bug.context.engineError; as engineError) {
+                  <div>
+                    <p class="label">Engine error</p>
+                    <pre
+                      class="mt-0.5 overflow-x-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-hot-ink"
+                      [textContent]="engineError"
+                    ></pre>
+                  </div>
+                }
+                @if (bug.context.appError; as appError) {
+                  <div>
+                    <p class="label">App error</p>
+                    <pre
+                      class="mt-0.5 overflow-x-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-hot-ink"
+                      [textContent]="appError"
+                    ></pre>
+                  </div>
+                }
+                @if (consoleText()) {
+                  <div>
+                    <p class="label">Console</p>
+                    <pre
+                      class="mt-0.5 max-h-[360px] overflow-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-ink-body"
+                      [textContent]="consoleText()"
+                    ></pre>
+                  </div>
+                }
+              </div>
+            </nc-panel>
+          }
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-2">
+          <nc-panel heading="Sent by">
+            <nc-account-cell size="full" [account]="bug.account" />
+          </nc-panel>
+
+          <nc-panel heading="Context" hint="What the browser attached to the report">
+            <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-1.5 gap-y-0.5 text-meta">
+              @for (row of contextRows(); track row.label) {
+                <dt class="text-ink-3">{{ row.label }}</dt>
+                <dd class="font-mono break-all text-ink">{{ row.value }}</dd>
+              }
+            </dl>
+          </nc-panel>
+
+          @if (bug.rating; as rating) {
+            <nc-panel heading="Rating" hint="The rating this report was opened from">
+              <p class="flex items-center gap-1">
+                <span [class]="scoreChip(rating.score)">{{ rating.score }} / 10</span>
+                <span class="font-mono text-micro text-ink-4">#{{ rating.id }}</span>
+              </p>
+              <p class="mt-1 label">Liked</p>
+              <p
+                class="mt-0.25 text-body whitespace-pre-wrap text-ink-body"
+                [textContent]="rating.liked || '--'"
+              ></p>
+              <p class="mt-1 label">Would improve</p>
+              <p
+                class="mt-0.25 text-body whitespace-pre-wrap text-ink-body"
+                [textContent]="rating.improve || '--'"
+              ></p>
+            </nc-panel>
+          }
+
+          <nc-panel heading="Triage" hint="Only admins see the note">
+            <label class="block">
+              <span class="label">Status</span>
+              <select
+                class="nc-select mt-0.5 block w-full"
+                [value]="status()"
+                (change)="setStatus($any($event.target).value)"
+              >
+                @for (option of statuses; track option.value) {
+                  <option [value]="option.value">{{ option.label }}</option>
+                }
+              </select>
+            </label>
+            <label class="mt-1.5 block">
+              <span class="label">Admin note</span>
+              <textarea
+                class="nc-input mt-0.5 block h-auto min-h-[112px] py-1"
+                [maxLength]="noteMax"
+                [value]="note()"
+                (input)="note.set($any($event.target).value)"
+              ></textarea>
+            </label>
+            <div class="mt-1 flex items-center justify-between gap-1">
+              <span class="font-mono text-micro text-ink-4"
+                >{{ note().length }} / {{ noteMax }}</span
+              >
+              <button
+                type="button"
+                class="nc-button nc-button-primary"
+                [disabled]="saving() || !changed()"
+                (click)="save()"
+              >
+                <nc-icon name="save" [size]="12" /> Save
+              </button>
+            </div>
+          </nc-panel>
+        </div>
+      </div>
+    }
+  }
+}

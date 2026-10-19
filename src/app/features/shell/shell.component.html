@@ -39,6 +39,11 @@
         >
           <nc-icon [name]="item.icon" [size]="24" />
           {{ item.label }}
+          @if (badges()[item.path]; as count) {
+            <span class="nc-chip nc-chip-warn ml-auto" [attr.aria-label]="count + ' new'">{{
+              count
+            }}</span>
+          }
         </a>
       }
     </div>
