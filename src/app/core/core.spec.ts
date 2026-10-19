@@ -1,5 +1,21 @@
-import { addDays, daysBetween, grainFor, periodLabel } from './dates';
+import { addDays, dayTime, daysBetween, grainFor, periodLabel, shortAgo } from './dates';
 import { formatDuration, formatMetric } from './metric-catalog';
+import {
+  BUG_CATEGORY_LABELS,
+  BUG_STATUS_LABELS,
+  BUG_VIEW_LABELS,
+  bugContextRows,
+  bugStatusChip,
+  compactPairs,
+  crashStatusChip,
+  formatAverage,
+  formatBytes,
+  formatShare,
+  optionsOf,
+  runtimeLine,
+  scoreChip,
+  scoreInk,
+} from './support-format';
 
 describe('dates', () => {
   it('counts both ends of a range', () => {
@@ -11,6 +27,22 @@ describe('dates', () => {
     expect(grainFor(30)).toBe('DAY');
     expect(grainFor(90)).toBe('WEEK');
     expect(grainFor(365)).toBe('MONTH');
+  });
+
+  it('reads an age in the largest short unit', () => {
+    const now = Date.parse('2026-10-19T12:00:00Z');
+
+    expect(shortAgo('2026-10-19T11:59:30Z', now)).toBe('just now');
+    expect(shortAgo('2026-10-19T11:15:00Z', now)).toBe('45 min ago');
+    expect(shortAgo('2026-10-19T09:00:00Z', now)).toBe('3 h ago');
+    expect(shortAgo('2026-10-16T12:00:00Z', now)).toBe('3 d ago');
+    expect(shortAgo('2026-07-19T12:00:00Z', now)).toBe('3 mo ago');
+    expect(shortAgo('2024-10-19T12:00:00Z', now)).toBe('2 y ago');
+    expect(shortAgo('2026-10-19T12:05:00Z', now)).toBe('just now');
+  });
+
+  it('reads a moment as its UTC day and time', () => {
+    expect(dayTime('2026-10-05T07:04:00Z')).toBe('5 Oct 2026, 07:04');
   });
 
   it('labels a period by its grain', () => {
@@ -34,5 +66,89 @@ describe('formatting', () => {
     expect(formatMetric('bounce_rate', 42.25)).toBe('42.3%');
     expect(formatMetric('visitors', 12_345, true)).toBe('12.3K');
     expect(formatMetric('visitors', null)).toBe('--');
+  });
+});
+
+describe('support formatting', () => {
+  it('marks scores of 4 or less as low and 8 or more as high', () => {
+    expect(scoreChip(1)).toBe('nc-chip nc-chip-warn');
+    expect(scoreChip(4)).toBe('nc-chip nc-chip-warn');
+    expect(scoreChip(5)).toBe('nc-chip');
+    expect(scoreChip(7)).toBe('nc-chip');
+    expect(scoreChip(8)).toBe('nc-chip nc-chip-gold');
+    expect(scoreChip(10)).toBe('nc-chip nc-chip-gold');
+    expect(scoreInk(3)).toBe('text-orange-ink');
+    expect(scoreInk(9)).toBe('text-gold-ink');
+  });
+
+  it('chips a bug as waiting, being worked on, fixed or set aside', () => {
+    expect(bugStatusChip('NEW')).toBe('nc-chip nc-chip-warn');
+    expect(bugStatusChip('TRIAGED')).toBe('nc-chip nc-chip-gold');
+    expect(bugStatusChip('IN_PROGRESS')).toBe('nc-chip nc-chip-gold');
+    expect(bugStatusChip('RESOLVED')).toBe('nc-chip nc-chip-ok');
+    expect(bugStatusChip('WONT_FIX')).toBe('nc-chip nc-chip-quiet');
+    expect(bugStatusChip('DUPLICATE')).toBe('nc-chip nc-chip-quiet');
+  });
+
+  it('chips a crash group by its status', () => {
+    expect(crashStatusChip('OPEN')).toBe('nc-chip nc-chip-warn');
+    expect(crashStatusChip('RESOLVED')).toBe('nc-chip nc-chip-ok');
+    expect(crashStatusChip('IGNORED')).toBe('nc-chip nc-chip-quiet');
+  });
+
+  it('labels every view, category and status, in the order the filters show them', () => {
+    expect(optionsOf(BUG_VIEW_LABELS).map((option) => option.label)).toEqual([
+      'New',
+      'Open',
+      'Closed',
+      'All',
+    ]);
+    expect(optionsOf(BUG_CATEGORY_LABELS).map((option) => option.value)).toEqual([
+      'GAMEPLAY',
+      'EDITOR',
+      'GRAPHICS',
+      'SOUND',
+      'NETPLAY',
+      'ACCOUNT',
+      'PERFORMANCE',
+      'OTHER',
+    ]);
+    expect(BUG_CATEGORY_LABELS.NETPLAY).toBe('Multiplayer');
+    expect(BUG_STATUS_LABELS.WONT_FIX).toBe("Won't fix");
+  });
+
+  it('reads averages out of 10, shares as percents and sizes in bytes', () => {
+    expect(formatAverage(7.36)).toBe('7.4 / 10');
+    expect(formatAverage(null)).toBe('--');
+    expect(formatShare(0.125)).toBe('13%');
+    expect(formatShare(null)).toBe('--');
+    expect(formatBytes(512)).toBe('512 B');
+    expect(formatBytes(150_000)).toBe('146 KB');
+    expect(formatBytes(3 * 1024 * 1024)).toBe('3.0 MB');
+  });
+
+  it('writes an extra as key=value pairs and leaves empty values out', () => {
+    expect(compactPairs({ kind: 'webgl-context-lost', phase: 'draw', audio: null, code: 3 })).toBe(
+      'kind=webgl-context-lost phase=draw code=3',
+    );
+    expect(compactPairs(null)).toBe('');
+    expect(runtimeLine({ browser: 'Firefox', os: null, device: 'desktop' })).toBe(
+      'Firefox · desktop',
+    );
+  });
+
+  it('lists the context a report carried and skips what it did not', () => {
+    const rows = bugContextRows({
+      route: '/play/42',
+      release: { id: 42, name: 'Cave' },
+      context: { viewport: '1920x1080', browser: 'Chrome', language: '' },
+    });
+
+    expect(rows).toEqual([
+      { label: 'Page', value: '/play/42' },
+      { label: 'Game', value: 'Cave #42' },
+      { label: 'Viewport', value: '1920x1080' },
+      { label: 'Browser', value: 'Chrome' },
+    ]);
   });
 });

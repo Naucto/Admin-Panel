@@ -179,3 +179,182 @@ export interface AdminSession {
   expiresIn: number;
   account: AccountSummary;
 }
+
+export type FeedbackContext = 'PLAYER' | 'CREATOR';
+export type FeedbackSource = 'PROMPT' | 'MANUAL';
+export type RatingReason =
+  'BUGS' | 'PERFORMANCE' | 'HARD_TO_USE' | 'MISSING_FEATURE' | 'CONTENT' | 'OTHER';
+
+export interface FeedbackAccount {
+  id: number;
+  username: string;
+  nickname: string | null;
+  email: string;
+  role: RoleName;
+  createdAt: string;
+  /** The public profile on the web app, or null once the account is deleted. */
+  profileUrl: string | null;
+  deleted: boolean;
+}
+
+export interface FeedbackRelease {
+  id: number;
+  name: string;
+}
+
+export interface Rating {
+  id: number;
+  score: number;
+  reasons: RatingReason[];
+  liked: string | null;
+  improve: string | null;
+  context: FeedbackContext;
+  source: FeedbackSource;
+  appRelease: string | null;
+  createdAt: string;
+  account: FeedbackAccount;
+  /** The game played just before a prompt. */
+  release: FeedbackRelease | null;
+  bugReportIds: number[];
+}
+
+export interface RatingList {
+  items: Rating[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface RatingQuery {
+  context?: FeedbackContext;
+  maxScore?: number;
+  withComments?: boolean;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RatingAverage {
+  count: number;
+  average: number | null;
+}
+
+export interface RatingBucket extends RatingAverage {
+  /** First day of the period. */
+  start: string;
+}
+
+export interface RatingSummary extends RatingAverage {
+  /** Share of scores of 4 or less, from 0 to 1. */
+  lowShare: number | null;
+  /** How many ratings gave each score, 1 to 10. */
+  distribution: number[];
+  player: RatingAverage;
+  creator: RatingAverage;
+  series: RatingBucket[];
+}
+
+export type BugCategory =
+  'GAMEPLAY' | 'EDITOR' | 'GRAPHICS' | 'SOUND' | 'NETPLAY' | 'ACCOUNT' | 'PERFORMANCE' | 'OTHER';
+export type BugStatus = 'NEW' | 'TRIAGED' | 'IN_PROGRESS' | 'RESOLVED' | 'WONT_FIX' | 'DUPLICATE';
+/** OPEN is anything not closed. CLOSED is resolved, declined or duplicate. */
+export type BugView = 'NEW' | 'OPEN' | 'CLOSED' | 'ALL';
+
+export interface BugSummary {
+  id: number;
+  title: string;
+  category: BugCategory;
+  status: BugStatus;
+  createdAt: string;
+  updatedAt: string;
+  account: FeedbackAccount;
+  release: FeedbackRelease | null;
+  hasScreenshot: boolean;
+}
+
+export interface BugList {
+  items: BugSummary[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+/** What the browser attached. Stored as sent, so every field may be missing. */
+export interface BugContext {
+  viewport?: string;
+  appRelease?: string;
+  language?: string;
+  engineError?: string;
+  appError?: string;
+  console?: string[];
+  device?: string | null;
+  browser?: string | null;
+  os?: string | null;
+}
+
+export interface BugDetail extends BugSummary {
+  description: string;
+  route: string;
+  projectId: number | null;
+  context: BugContext;
+  adminNote: string | null;
+  rating: { id: number; score: number; liked: string | null; improve: string | null } | null;
+  screenshot: { mime: string; bytes: number } | null;
+}
+
+export interface BugUpdate {
+  status: BugStatus;
+  adminNote?: string | null;
+}
+
+export type CrashSource = 'WEB' | 'ENGINE' | 'BACKEND';
+export type CrashStatus = 'OPEN' | 'RESOLVED' | 'IGNORED';
+export type CrashSort = 'lastSeen' | 'count';
+
+export interface CrashGroup {
+  id: number;
+  fingerprint: string;
+  source: CrashSource;
+  name: string;
+  message: string;
+  count: number;
+  firstSeen: string;
+  lastSeen: string;
+  lastRelease: string | null;
+  status: CrashStatus;
+  /** When a resolved group was last reported again. */
+  regressedAt: string | null;
+}
+
+export interface CrashList {
+  items: CrashGroup[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CrashQuery {
+  source?: CrashSource;
+  status?: CrashStatus;
+  sort?: CrashSort;
+  page?: number;
+  limit?: number;
+}
+
+export interface CrashEvent {
+  id: number;
+  createdAt: string;
+  route: string;
+  appRelease: string | null;
+  device: string | null;
+  browser: string | null;
+  os: string | null;
+  extra: Record<string, unknown> | null;
+}
+
+export interface CrashDetail extends CrashGroup {
+  lastStack: string;
+  /** The latest occurrences, newest first. */
+  events: CrashEvent[];
+}

@@ -16,6 +16,10 @@ export class ApiService {
     return this.request<T>('GET', path, { query });
   }
 
+  getBlob(path: string, query: Query = {}): Promise<Blob> {
+    return this.request('GET', path, { query, read: (response) => response.blob() });
+  }
+
   post<T>(path: string, body?: unknown): Promise<T> {
     return this.request<T>('POST', path, { body });
   }
@@ -27,7 +31,7 @@ export class ApiService {
   private async request<T>(
     method: string,
     path: string,
-    options: { query?: Query; body?: unknown },
+    options: { query?: Query; body?: unknown; read?: (response: Response) => Promise<T> },
     retried = false,
   ): Promise<T> {
     const params = new URLSearchParams();
@@ -61,6 +65,9 @@ export class ApiService {
     }
     if (!response.ok) {
       throw await ApiError.from(response);
+    }
+    if (options.read) {
+      return options.read(response);
     }
     return response.status === 204 ? (undefined as T) : ((await response.json()) as T);
   }

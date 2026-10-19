@@ -67,3 +67,36 @@ export function timeAgo(iso: string, now = Date.now()): string {
   }
   return 'just now';
 }
+
+const SHORT_AGO: [string, number][] = [
+  ['y', 31_536_000],
+  ['mo', 2_592_000],
+  ['d', 86_400],
+  ['h', 3_600],
+  ['min', 60],
+];
+
+/** An age short enough for a table cell, as `3 h ago`. */
+export function shortAgo(iso: string, now = Date.now()): string {
+  const seconds = Math.max(0, Math.round((now - Date.parse(iso)) / 1000));
+  for (const [unit, size] of SHORT_AGO) {
+    if (seconds >= size) {
+      return `${Math.floor(seconds / size)} ${unit} ago`;
+    }
+  }
+  return 'just now';
+}
+
+const DAY_TIME = new Intl.DateTimeFormat('en-GB', {
+  day: 'numeric',
+  month: 'short',
+  year: 'numeric',
+  hour: '2-digit',
+  minute: '2-digit',
+  hourCycle: 'h23',
+  timeZone: 'UTC',
+});
+
+export function dayTime(iso: string): string {
+  return DAY_TIME.format(Date.parse(iso));
+}
