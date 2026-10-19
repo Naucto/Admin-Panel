@@ -7,7 +7,7 @@ is and how to run it; this file is how the code is laid out and what to keep in 
 
 | Path               | Purpose                                                                                                                                                                          |
 | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/core`     | Session (`auth.store.ts`), API access (`api.service.ts`, `analytics.api.ts`, `accounts.api.ts`), the response types (`types.ts`), shared filters, dates, metric labels and units |
+| `src/app/core`     | Session (`auth.store.ts`), API access (`api.service.ts` and a `*.api.ts` per backend area), the response types (`types.ts`), shared filters, dates, metric labels and units      |
 | `src/app/charts`   | ECharts setup, the theme read from the tokens, and pure option builders (`options.ts`)                                                                                           |
 | `src/app/ui`       | The console's small kit: panel, stat tile, segmented control, chart directive, breakdown view, icons, confirmations and toasts                                                   |
 | `src/app/features` | One folder per page, each lazily loaded                                                                                                                                          |
@@ -31,6 +31,8 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   changes, change it in the same branch.
 - No inline scripts and no third-party origins: the production CSP refuses both. That is also why
   critical CSS inlining is off in `angular.json`.
+- `img-src` allows `blob:` besides `'self'`: bug screenshots need the bearer, so they are fetched
+  and shown through object URLs.
 - Component selectors, directives and global classes take the `nc` prefix (`nc-panel`,
   `ncChart`, `.nc-button`). Never name anything `ad-…`, `ads`, `banner` or `sponsor`: ad blockers
   (Opera's built-in one, uBlock, AdBlock) hide elements by such names through EasyList's generic
@@ -38,6 +40,23 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   for everyone running one.
 - Commits: `[ADMIN] [TYPE] Capitalized message`, TYPE among ADD/REMOVE/UPDATE/REFACTO/CLEAN/FIX,
   with the Jira key in the body (`Refs NCTO-276`). Branch = Jira key.
+
+## Support
+
+The Support group of the sidebar reads what people send from Naucto itself.
+
+- Feedback (`features/ratings`) charts the platform ratings and lists them with their comments. It
+  is a stats page: the top bar's range and grain apply.
+- Bug reports (`features/bugs`) lists the reports and opens each on its own route, `bugs/:id`. The
+  `id` reaches the page as an input through `withComponentInputBinding`. `core/bug-count.store.ts`
+  keeps the sidebar's count of new reports, read at boot, every minute and after a triage save.
+- Crashes (`features/crashes`) lists crash groups by fingerprint and resolves, ignores or reopens
+  them.
+- The API class is `UserFeedbackApi` (`core/user-feedback.api.ts`), named apart from
+  `ui/feedback.service.ts`, which is the console's own toasts and confirmations.
+- A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and shown
+  through an object URL that the page revokes when it leaves the report. That is the reason for
+  `blob:` in the CSP's `img-src`.
 
 ## Before finishing
 

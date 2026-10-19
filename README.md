@@ -1,8 +1,8 @@
 # Naucto Admin
 
 The console Naucto's admins sign in to: platform statistics from the usage analytics (NCTO-276),
-and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design tokens, and
-[Apache ECharts](https://echarts.apache.org) for the charts.
+what people rate and report (NCTO-309), and who holds the admin role. Angular 22, Tailwind 4 over
+Naucto's own design tokens, and [Apache ECharts](https://echarts.apache.org) for the charts.
 
 ## What it does
 
@@ -32,7 +32,8 @@ reload keeps the session and closing it for good means signing in again.
 
 ## Run it
 
-It needs the Naucto backend (`NCTO-276-website-kpi` or later) and an admin account.
+It needs the Naucto backend (`NCTO-276-website-kpi` or later,
+`NCTO-309-website-bug-report-and-feedback` or later for the Support pages) and an admin account.
 
 ```sh
 npm install
