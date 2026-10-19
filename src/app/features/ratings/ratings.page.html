@@ -1,0 +1,289 @@
+@switch (summaryState()) {
+  @case ('loading') {
+    <div class="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-5">
+      @for (slot of [1, 2, 3, 4, 5]; track slot) {
+        <div class="nc-card nc-skeleton h-[96px]"></div>
+      }
+    </div>
+  }
+  @case ('error') {
+    <nc-panel
+      state="error"
+      [error]="panelError(summary)"
+      [minHeight]="100"
+      (retry)="summary.reload()"
+    />
+  }
+  @default {
+    @if (summary.value(); as value) {
+      <div class="grid grid-cols-2 gap-1.5 md:grid-cols-3 xl:grid-cols-5">
+        <nc-stat-tile
+          label="Average"
+          [value]="value.average"
+          [display]="formatAverage(value.average)"
+          note="Scores from 1 to 10"
+        />
+        <nc-stat-tile
+          label="Responses"
+          [value]="value.count"
+          [display]="formatCount(value.count)"
+          note="Ratings given in the range"
+        />
+        <nc-stat-tile
+          label="Low scores"
+          [value]="value.lowShare"
+          [display]="formatShare(value.lowShare)"
+          note="Scored 4 or less"
+        />
+        <nc-stat-tile
+          label="Players"
+          [value]="value.player.average"
+          [display]="formatAverage(value.player.average)"
+          [note]="formatCount(value.player.count) + ' rated while playing'"
+        />
+        <nc-stat-tile
+          label="Creators"
+          [value]="value.creator.average"
+          [display]="formatAverage(value.creator.average)"
+          [note]="formatCount(value.creator.count) + ' rated while building'"
+        />
+      </div>
+    }
+  }
+}
+
+<div class="mt-2 grid gap-2 xl:grid-cols-2">
+  <nc-panel
+    heading="Scores"
+    hint="How many ratings gave each score"
+    [state]="summaryState()"
+    [error]="panelError(summary)"
+    emptyIcon="mood-happy"
+    emptyTitle="No ratings in this range"
+    emptyHint="Ratings appear as people answer the rating prompt or rate Naucto from the menu."
+    (retry)="summary.reload()"
+  >
+    <div class="h-[260px]" [ncChart]="distributionOption()"></div>
+  </nc-panel>
+  <nc-panel
+    heading="Average over time"
+    hint="The average score of each period, and how many ratings it was taken from"
+    [state]="summaryState()"
+    [error]="panelError(summary)"
+    emptyIcon="trending-up"
+    emptyTitle="No ratings in this range"
+    emptyHint="Ratings appear as people answer the rating prompt or rate Naucto from the menu."
+    (retry)="summary.reload()"
+  >
+    <div class="h-[260px]" [ncChart]="trendOption()"></div>
+  </nc-panel>
+</div>
+
+<nc-panel
+  class="mt-2"
+  heading="Ratings"
+  hint="Newest first. Pick one to read it in full."
+  [state]="ratingsState()"
+  [error]="panelError(ratings)"
+  emptyIcon="message"
+  emptyTitle="No ratings in this range"
+  [emptyHint]="
+    filtered()
+      ? 'Nothing matches these filters. Clear them or pick a longer range.'
+      : 'Ratings appear as people answer the rating prompt or rate Naucto from the menu.'
+  "
+  [minHeight]="160"
+  (retry)="ratings.reload()"
+>
+  <nc-segmented actions label="Who rated" [options]="contexts" [(value)]="context" />
+  <div actions class="nc-segmented" role="group" aria-label="Only">
+    <button
+      type="button"
+      role="switch"
+      [attr.aria-checked]="lowOnly()"
+      (click)="lowOnly.set(!lowOnly())"
+    >
+      Low scores
+    </button>
+    <button
+      type="button"
+      role="switch"
+      [attr.aria-checked]="withComments()"
+      (click)="withComments.set(!withComments())"
+    >
+      With comments
+    </button>
+  </div>
+  @if (ratings.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>Date</th>
+            <th>Account</th>
+            <th>Context</th>
+            <th>Score</th>
+            <th>Reasons</th>
+            <th>Liked</th>
+            <th>Improve</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (rating of value.items; track rating.id) {
+            <tr
+              class="cursor-pointer"
+              [class.bg-raised]="selected()?.id === rating.id"
+              (click)="toggle(rating)"
+            >
+              <td class="whitespace-nowrap text-ink-3" [title]="dayTime(rating.createdAt) + ' UTC'">
+                {{ day(rating.createdAt) }}
+              </td>
+              <td>
+                <nc-account-cell class="max-w-[220px]" [account]="rating.account" />
+              </td>
+              <td>
+                <span class="nc-chip nc-chip-quiet">{{ contextLabels[rating.context] }}</span>
+              </td>
+              <td>
+                <span [class]="scoreChip(rating.score)">{{ rating.score }}</span>
+              </td>
+              <td>
+                <div class="flex max-w-[200px] flex-wrap gap-0.25">
+                  @for (reason of rating.reasons; track reason) {
+                    <span class="nc-chip nc-chip-quiet">{{ reasonLabels[reason] }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <p class="max-w-[220px] truncate" [title]="rating.liked ?? ''">
+                  {{ rating.liked }}
+                </p>
+              </td>
+              <td>
+                <p class="max-w-[220px] truncate" [title]="rating.improve ?? ''">
+                  {{ rating.improve }}
+                </p>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pages() > 1) {
+      <div class="mt-1 flex items-center justify-end gap-1">
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          <nc-icon name="chevron-left" [size]="12" /> Previous
+        </button>
+        <span class="font-mono text-label text-ink-3">{{ page() }} / {{ pages() }}</span>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === pages()"
+          (click)="page.set(page() + 1)"
+        >
+          Next <nc-icon name="chevron-right" [size]="12" />
+        </button>
+      </div>
+    }
+  }
+</nc-panel>
+
+@if (selected(); as rating) {
+  <nc-panel
+    class="mt-2"
+    [heading]="'Rating #' + rating.id"
+    [hint]="dayTime(rating.createdAt) + ' UTC · ' + sourceLabels[rating.source]"
+  >
+    <button
+      actions
+      type="button"
+      class="nc-button nc-button-ghost nc-button-sm"
+      (click)="selected.set(null)"
+    >
+      <nc-icon name="close" [size]="12" /> Close
+    </button>
+    <div class="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,2fr)]">
+      <div class="flex flex-col gap-1.5">
+        <nc-account-cell size="full" [account]="rating.account" />
+        <div>
+          <p class="label">Score</p>
+          <p class="mt-0.5 flex items-baseline gap-1">
+            <strong class="nc-readout text-[44px]" [class]="scoreInk(rating.score)">{{
+              rating.score
+            }}</strong>
+            <span class="font-mono text-label text-ink-3">/ 10</span>
+          </p>
+        </div>
+        <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-1.5 gap-y-0.5 text-meta">
+          <dt class="text-ink-3">Context</dt>
+          <dd class="text-ink">{{ contextLabels[rating.context] }}</dd>
+          <dt class="text-ink-3">Game</dt>
+          <dd class="text-ink">
+            @if (rating.release; as release) {
+              {{ release.name }}
+              <span class="font-mono text-micro text-ink-4">#{{ release.id }}</span>
+            } @else {
+              <span class="text-ink-4">None</span>
+            }
+          </dd>
+          <dt class="text-ink-3">App release</dt>
+          <dd class="font-mono text-ink">{{ rating.appRelease ?? '--' }}</dd>
+        </dl>
+        @if (rating.reasons.length > 0) {
+          <div>
+            <p class="label">Reasons</p>
+            <p class="mt-0.5 flex flex-wrap gap-0.25">
+              @for (reason of rating.reasons; track reason) {
+                <span class="nc-chip nc-chip-quiet">{{ reasonLabels[reason] }}</span>
+              }
+            </p>
+          </div>
+        }
+        @if (rating.bugReportIds.length > 0) {
+          <div>
+            <p class="label">Bug reports</p>
+            <p class="mt-0.5 flex flex-wrap gap-1">
+              @for (id of rating.bugReportIds; track id) {
+                <a
+                  class="inline-flex items-center gap-0.25 font-mono text-meta text-gold-ink hover:underline"
+                  [routerLink]="['/bugs', id]"
+                >
+                  <nc-icon name="bug" [size]="12" /> #{{ id }}
+                </a>
+              }
+            </p>
+          </div>
+        }
+      </div>
+      <div class="flex flex-col gap-1.5">
+        <div>
+          <p class="label">Liked</p>
+          @if (rating.liked) {
+            <p
+              class="mt-0.5 text-body whitespace-pre-wrap text-ink-body"
+              [textContent]="rating.liked"
+            ></p>
+          } @else {
+            <p class="mt-0.5 text-meta text-ink-4">Nothing written</p>
+          }
+        </div>
+        <div>
+          <p class="label">Would improve</p>
+          @if (rating.improve) {
+            <p
+              class="mt-0.5 text-body whitespace-pre-wrap text-ink-body"
+              [textContent]="rating.improve"
+            ></p>
+          } @else {
+            <p class="mt-0.5 text-meta text-ink-4">Nothing written</p>
+          }
+        </div>
+      </div>
+    </div>
+  </nc-panel>
+}

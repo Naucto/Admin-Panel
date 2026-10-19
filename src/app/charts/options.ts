@@ -2,7 +2,8 @@ import type { EChartsCoreOption } from 'echarts/core';
 
 import { periodLabel } from '../core/dates';
 import { formatCount, formatMetric, metricLabel } from '../core/metric-catalog';
-import type { Funnel, Grain, PresenceSample, Retention, Series } from '../core/types';
+import { type ScoreTone, scoreTone } from '../core/support-format';
+import type { Funnel, Grain, PresenceSample, RatingBucket, Retention, Series } from '../core/types';
 import {
   ACTIVITY_COLOURS,
   CHART_FONT_MONO,
@@ -471,6 +472,101 @@ export function presenceChart(
             },
           ]
         : []),
+    ],
+  };
+}
+
+/** How many ratings gave each score from 1 to 10, low scores in the warning ink and high in gold. */
+export function scoreDistributionChart(
+  distribution: number[],
+  ink: ChartInk = readInk(),
+): EChartsCoreOption {
+  const colours: Record<ScoreTone, string> = {
+    low: SERIES_COLOURS[4],
+    mid: ink.ink3,
+    high: SERIES_COLOURS[0],
+  };
+  const scores = Array.from({ length: 10 }, (_, index) => index + 1);
+  return {
+    grid: { left: 8, right: 8, top: 24, bottom: 4, containLabel: true },
+    tooltip: {
+      trigger: 'item',
+      formatter: ({ name, value }: { name: string; value: number }) =>
+        `Score ${escape(name)}<br><b>${formatCount(value)}</b>`,
+    },
+    xAxis: { type: 'category', data: scores.map(String) },
+    yAxis: { type: 'value', minInterval: 1 },
+    series: [
+      {
+        type: 'bar',
+        barMaxWidth: 28,
+        data: scores.map((score, index) => ({
+          value: distribution[index] ?? 0,
+          itemStyle: { color: colours[scoreTone(score)], borderRadius: [2, 2, 0, 0] },
+        })),
+        label: {
+          show: true,
+          position: 'top',
+          fontFamily: CHART_FONT_MONO,
+          fontSize: 10,
+          color: ink.ink2,
+          formatter: ({ value }: { value: number }) => (value ? formatCount(value, true) : ''),
+        },
+      },
+    ],
+  };
+}
+
+/**
+ * The average score period by period, over how many ratings it was taken from. A period with no
+ * rating has no average, and the line carries on across it rather than dropping to zero.
+ */
+export function ratingTrendChart(
+  buckets: RatingBucket[],
+  grain: Grain,
+  ink: ChartInk = readInk(),
+): EChartsCoreOption {
+  return {
+    grid: { left: 8, right: 8, top: 36, bottom: 4, containLabel: true },
+    legend: { top: 0, left: 0 },
+    tooltip: { trigger: 'axis' },
+    xAxis: {
+      type: 'category',
+      data: buckets.map((bucket) => periodLabel(bucket.start, grain)),
+      boundaryGap: true,
+    },
+    yAxis: [
+      { type: 'value', position: 'left', min: 0, max: 10, interval: 2 },
+      {
+        type: 'value',
+        position: 'right',
+        minInterval: 1,
+        splitLine: { show: false },
+        axisLabel: { color: ink.ink3 },
+      },
+    ],
+    series: [
+      {
+        name: 'Ratings',
+        type: 'bar',
+        yAxisIndex: 1,
+        barMaxWidth: 22,
+        data: buckets.map((bucket) => bucket.count),
+        itemStyle: { color: SERIES_COLOURS[1], opacity: 0.45, borderRadius: [2, 2, 0, 0] },
+      },
+      {
+        name: 'Average',
+        type: 'line',
+        data: buckets.map((bucket) =>
+          bucket.average === null ? null : Math.round(bucket.average * 10) / 10,
+        ),
+        connectNulls: true,
+        showSymbol: buckets.length <= SYMBOL_LIMIT,
+        symbol: 'rect',
+        symbolSize: 5,
+        itemStyle: { color: SERIES_COLOURS[0] },
+        lineStyle: { width: 2 },
+      },
     ],
   };
 }

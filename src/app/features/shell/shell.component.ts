@@ -28,6 +28,8 @@ const STATS_NAV: NavItem[] = [
   { path: '/explorer', label: 'Explorer', icon: 'chart' },
 ];
 
+const SUPPORT_NAV: NavItem[] = [{ path: '/feedback', label: 'Feedback', icon: 'mood-happy' }];
+
 const ADMIN_NAV: NavItem[] = [
   { path: '/admins', label: 'Admins', icon: 'shield' },
   { path: '/account', label: 'Account', icon: 'user' },
@@ -54,6 +56,7 @@ export default class ShellComponent {
   private readonly router = inject(Router);
 
   protected readonly statsNav = STATS_NAV;
+  protected readonly supportNav = SUPPORT_NAV;
   protected readonly adminNav = ADMIN_NAV;
   protected readonly presets = RANGE_PRESETS;
   protected readonly grains: { value: Grain; label: string }[] = [

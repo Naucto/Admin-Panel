@@ -58,6 +58,11 @@ export const routes: Routes = [
         ...page('Metric explorer', true),
       },
       {
+        path: 'feedback',
+        loadComponent: () => import('./features/ratings/ratings.page'),
+        ...page('Feedback', true),
+      },
+      {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
         ...page('Admins'),

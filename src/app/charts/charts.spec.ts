@@ -1,7 +1,13 @@
 import type { Point, Series } from '../core/types';
 import { combine } from './derived';
-import { funnelChart, retentionChart, trendChart } from './options';
-import type { ChartInk } from './palette';
+import {
+  funnelChart,
+  ratingTrendChart,
+  retentionChart,
+  scoreDistributionChart,
+  trendChart,
+} from './options';
+import { type ChartInk, SERIES_COLOURS } from './palette';
 import { shapeOf, total } from './series-data';
 
 const INK: ChartInk = {
@@ -148,5 +154,40 @@ describe('retentionChart', () => {
 
     expect(option.yAxis.data).toHaveLength(1);
     expect(option.series[0]?.data.map((cell) => cell.value[2])).toEqual([30, '-', '-']);
+  });
+});
+
+describe('scoreDistributionChart', () => {
+  type Built = {
+    xAxis: { data: string[] };
+    series: { data: { value: number; itemStyle: { color: string } }[] }[];
+  };
+
+  it('draws a bar for every score, low ones in the warning ink and high ones in gold', () => {
+    const option = scoreDistributionChart([1, 0, 2, 3, 4, 5, 6, 7, 8], INK) as Built;
+    const bars = option.series[0]?.data ?? [];
+
+    expect(option.xAxis.data).toEqual(['1', '2', '3', '4', '5', '6', '7', '8', '9', '10']);
+    expect(bars.map((bar) => bar.value)).toEqual([1, 0, 2, 3, 4, 5, 6, 7, 8, 0]);
+    expect(bars.slice(0, 4).every((bar) => bar.itemStyle.color === SERIES_COLOURS[4])).toBe(true);
+    expect(bars.slice(4, 7).every((bar) => bar.itemStyle.color === INK.ink3)).toBe(true);
+    expect(bars.slice(7).every((bar) => bar.itemStyle.color === SERIES_COLOURS[0])).toBe(true);
+  });
+});
+
+describe('ratingTrendChart', () => {
+  it('rounds each average and leaves a period without ratings empty', () => {
+    const option = ratingTrendChart(
+      [
+        { start: '2026-10-05', count: 3, average: 7.36 },
+        { start: '2026-10-06', count: 0, average: null },
+      ],
+      'DAY',
+      INK,
+    ) as { xAxis: { data: string[] }; series: { name: string; data: (number | null)[] }[] };
+
+    expect(option.xAxis.data).toEqual(['5 Oct', '6 Oct']);
+    expect(option.series.find((one) => one.name === 'Average')?.data).toEqual([7.4, null]);
+    expect(option.series.find((one) => one.name === 'Ratings')?.data).toEqual([3, 0]);
   });
 });

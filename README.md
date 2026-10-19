@@ -14,6 +14,7 @@ and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design to
 | Creators | Sign-ups, active accounts, time spent building, projects and releases                                                                                                                                        |
 | Live     | Who is online this minute and doing what, the last hour, games being played, presence over 24 hours or 7 days                                                                                                |
 | Explorer | Any metric of the registry, with its definition, at any grain, against the period before, split by its dimensions, period by period                                                                          |
+| Feedback | How people rate Naucto: the average out of 10, the share of low scores, players against creators, the scores and their trend, and every rating with its comments                                             |
 | Admins   | The admins, adding one from the existing Naucto accounts, removing one                                                                                                                                       |
 | Account  | Appearance, sign out                                                                                                                                                                                         |
 
