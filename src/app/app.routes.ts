@@ -73,6 +73,11 @@ export const routes: Routes = [
         ...page('Bug report'),
       },
       {
+        path: 'crashes',
+        loadComponent: () => import('./features/crashes/crashes.page'),
+        ...page('Crashes'),
+      },
+      {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
         ...page('Admins'),

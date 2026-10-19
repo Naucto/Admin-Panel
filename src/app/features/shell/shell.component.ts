@@ -39,6 +39,7 @@ const STATS_NAV: NavItem[] = [
 const SUPPORT_NAV: NavItem[] = [
   { path: '/feedback', label: 'Feedback', icon: 'mood-happy' },
   { path: '/bugs', label: 'Bug reports', icon: 'bug' },
+  { path: '/crashes', label: 'Crashes', icon: 'alert' },
 ];
 
 const BUG_COUNT_REFRESH_MS = 60_000;

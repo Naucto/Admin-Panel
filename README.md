@@ -16,6 +16,7 @@ and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design to
 | Explorer | Any metric of the registry, with its definition, at any grain, against the period before, split by its dimensions, period by period                                                                          |
 | Feedback | How people rate Naucto: the average out of 10, the share of low scores, players against creators, the scores and their trend, and every rating with its comments                                             |
 | Bugs     | Bug reports, new, open or closed, by category. Each opens on its own page with its screenshot, errors, console and context, where an admin sets its status and note                                          |
+| Crashes  | Crashes from the web app, the engine and the backend, grouped by fingerprint, regressions flagged. Each shows its stack and latest occurrences, and is resolved, ignored or reopened there                   |
 | Admins   | The admins, adding one from the existing Naucto accounts, removing one                                                                                                                                       |
 | Account  | Appearance, sign out                                                                                                                                                                                         |
 
