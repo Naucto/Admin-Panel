@@ -1,8 +1,9 @@
 import type { EChartsCoreOption } from 'echarts/core';
 
 import { periodLabel } from '../core/dates';
+import { instantLabel } from '../core/instants';
 import { formatCount, formatMetric, metricLabel } from '../core/metric-catalog';
-import type { Funnel, Grain, PresenceSample, Retention, Series } from '../core/types';
+import type { Funnel, Grain, Marker, PresenceSample, Retention, Series } from '../core/types';
 import {
   ACTIVITY_COLOURS,
   CHART_FONT_MONO,
@@ -10,6 +11,8 @@ import {
   readInk,
   SERIES_COLOURS,
 } from './palette';
+import { escape } from './html';
+import { groupMarkers, markerLineOption } from './markers';
 import { firstProvisional, shapeOf } from './series-data';
 
 export interface TrendLine {
@@ -41,10 +44,6 @@ const STATUS_NOTE: Record<string, string> = {
   provisional: ' <span style="opacity:.6">· still counting</span>',
   unavailable: ' <span style="opacity:.6">· unavailable</span>',
 };
-
-function escape(text: string): string {
-  return text.replace(/[&<>"']/g, (char) => `&#${char.charCodeAt(0)};`);
-}
 
 /**
  * A trend over periods. Three or fewer periods with data draw as labelled bars, since a line
@@ -402,12 +401,26 @@ export function retentionChart(retention: Retention, ink: ChartInk = readInk()):
 }
 
 /** The last hour of consenting browsers stacked by activity, with the anonymous estimate apart. */
+export interface PresenceExtras {
+  /** Moments to draw across the chart, such as posts. */
+  markers?: readonly Marker[];
+  /** A slider and wheel zoom under the chart, for a long history. */
+  zoom?: boolean;
+}
+
 export function presenceChart(
   samples: PresenceSample[],
   withAnonymous = true,
   ink: ChartInk = readInk(),
+  extras: PresenceExtras = {},
 ): EChartsCoreOption {
-  const times = samples.map((sample) => sample.at.slice(11, 16));
+  const first = Date.parse(samples[0]?.at ?? '');
+  const last = Date.parse(samples.at(-1)?.at ?? '');
+  const long = last - first > 86_400_000;
+  const times = samples.map((sample) => (long ? instantLabel(sample.at) : sample.at.slice(11, 16)));
+  const markerGroups = groupMarkers(extras.markers ?? [], (at) =>
+    at >= first && at <= last ? samples.findIndex((sample) => Date.parse(sample.at) >= at) : -1,
+  );
   const stacked = (name: string, colour: string, data: number[]): object => ({
     name,
     type: 'line',
@@ -419,17 +432,33 @@ export function presenceChart(
     data,
   });
   return {
-    grid: { left: 8, right: 8, top: 36, bottom: 4, containLabel: true },
+    grid: { left: 8, right: 8, top: 36, bottom: extras.zoom ? 44 : 4, containLabel: true },
     legend: { top: 0, left: 0 },
     tooltip: { trigger: 'axis' },
-    xAxis: { type: 'category', data: times, boundaryGap: false },
+    dataZoom: extras.zoom
+      ? [
+          { type: 'inside', zoomOnMouseWheel: true, moveOnMouseMove: true },
+          {
+            type: 'slider',
+            height: 18,
+            bottom: 4,
+            borderColor: ink.line,
+            fillerColor: 'rgba(255, 209, 0, 0.12)',
+            textStyle: { color: ink.ink3, fontFamily: CHART_FONT_MONO, fontSize: 9 },
+          },
+        ]
+      : undefined,
+    xAxis: { type: 'category', data: times, boundaryGap: false, axisLabel: { hideOverlap: true } },
     yAxis: { type: 'value', minInterval: 1 },
     series: [
-      stacked(
-        'Playing',
-        ACTIVITY_COLOURS.playing,
-        samples.map((s) => s.activeBrowsersPlaying),
-      ),
+      {
+        ...(stacked(
+          'Playing',
+          ACTIVITY_COLOURS.playing,
+          samples.map((s) => s.activeBrowsersPlaying),
+        ) as Record<string, unknown>),
+        markLine: markerLineOption(markerGroups, ink, true),
+      },
       stacked(
         'Building',
         ACTIVITY_COLOURS.building,
