@@ -77,8 +77,8 @@
           <thead>
             <tr>
               <th>Game</th>
-              <th class="num">Browsers</th>
-              <th class="num">Anon.</th>
+              <th class="num" title="Browsers that accepted analytics">Accepted</th>
+              <th class="num" title="Tabs that declined analytics or never answered">Declined</th>
             </tr>
           </thead>
           <tbody>
@@ -98,10 +98,44 @@
   </nc-panel>
 </div>
 
+<nc-panel class="mt-2" heading="Just now" hint="The last hour as it happens" [minHeight]="80">
+  <a actions routerLink="/timeline" class="nc-button nc-button-ghost nc-button-sm">
+    <nc-icon name="clock" [size]="24" /> Timeline
+  </a>
+  @if (recent.value(); as value) {
+    @if (value.items.length === 0) {
+      <p class="py-1 text-body text-ink-3">Nothing happened in the last hour.</p>
+    } @else {
+      <ol class="grid max-h-[240px] gap-x-2 overflow-auto md:grid-cols-2">
+        @for (item of value.items; track $index) {
+          <li class="flex items-baseline gap-1 border-b border-line-faint py-0.5">
+            <span class="w-[44px] shrink-0 font-mono text-micro text-ink-3">{{
+              item.at.slice(11, 16)
+            }}</span>
+            <span class="min-w-0 flex-1 truncate text-body text-ink-body">{{
+              describe(item)
+            }}</span>
+            @if (item.journey) {
+              <span class="font-mono text-micro text-ink-4">#{{ item.journey }}</span>
+            }
+          </li>
+        }
+      </ol>
+    }
+  } @else if (recent.error()) {
+    <p class="py-1 text-body text-ink-3">{{ panelError(recent) }}</p>
+  } @else {
+    <div class="nc-skeleton h-[60px] rounded-sm"></div>
+  }
+</nc-panel>
+
 <nc-panel
   class="mt-2"
   heading="Presence history"
-  [hint]="window() === '7d' ? 'The busiest minute of every quarter hour' : 'One point a minute'"
+  [hint]="
+    (window() === '7d' ? 'The busiest minute of every quarter hour' : 'One point a minute') +
+    ' · scroll or drag the slider to zoom'
+  "
   [state]="historyState()"
   [error]="panelError(history)"
   emptyIcon="chart"
@@ -109,6 +143,16 @@
   emptyHint="Presence samples are kept 90 days, starting from the first minute the sampler ran."
   (retry)="history.reload()"
 >
-  <nc-segmented actions label="Window" [options]="windows" [(value)]="window" />
+  <div actions class="flex items-center gap-0.5">
+    <nc-segmented label="Window" [options]="windows" [(value)]="window" />
+    <nc-marker-filter [markers]="markers.value() ?? []" />
+    <a
+      routerLink="/timeline"
+      [queryParams]="timelineLink()"
+      class="nc-button nc-button-ghost nc-button-sm"
+    >
+      <nc-icon name="zoom-in" [size]="24" /> Open in Timeline
+    </a>
+  </div>
   <div class="h-[300px]" [ncChart]="historyOption()"></div>
 </nc-panel>
