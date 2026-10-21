@@ -1,0 +1,434 @@
+<section class="nc-card flex flex-col gap-1.25 px-2 py-1.5" aria-label="What the page reads">
+  <nc-time-range />
+  <div class="flex flex-wrap items-center gap-1">
+    <div class="flex items-center gap-0.5">
+      <span class="label">Game</span>
+      <nc-game-picker class="w-[220px]" label="Every game" [(value)]="game" />
+    </div>
+    <label class="flex items-center gap-0.5">
+      <span class="label">Source</span>
+      <select class="nc-select max-w-[240px]" (change)="chooseSource(text($event))">
+        <option value="" [selected]="source() === null">Every source</option>
+        @for (one of sources.value() ?? []; track one.source) {
+          <option [value]="one.source" [selected]="one.source === source()">
+            {{ sourceName(one.source) }} · {{ formatCount(one.sessions) }}
+          </option>
+        }
+      </select>
+    </label>
+    <nc-marker-filter [markers]="markers.value() ?? []" />
+    <a routerLink="/posts" class="nc-button nc-button-ghost nc-button-sm ml-auto">
+      <nc-icon name="flag" [size]="24" /> Posts and their impact
+    </a>
+  </div>
+  <div class="flex flex-wrap items-center gap-0.5" role="group" aria-label="Rows">
+    <span class="label mr-0.5">Rows</span>
+    @for (row of allRows; track row.key) {
+      <button
+        type="button"
+        class="nc-chip"
+        [class.nc-chip-gold]="rowKeys().includes(row.key)"
+        [class.nc-chip-quiet]="!rowKeys().includes(row.key)"
+        [attr.aria-pressed]="rowKeys().includes(row.key)"
+        [title]="row.hint"
+        (click)="toggleRow(row.key)"
+      >
+        {{ row.label }}
+      </button>
+    }
+  </div>
+</section>
+
+<nc-panel
+  class="mt-2"
+  heading="Timeline"
+  hint="Drag across the chart to select a stretch"
+  [state]="chartState()"
+  [error]="panelError(timeline)"
+  emptyIcon="chart"
+  emptyTitle="Choose a row"
+  emptyHint="Pick at least one row above to draw."
+  (retry)="timeline.reload()"
+>
+  <div actions class="flex items-center gap-0.5">
+    @if (selection(); as chosen) {
+      <button
+        type="button"
+        class="nc-button nc-button-primary nc-button-sm"
+        (click)="zoomToSelection()"
+      >
+        <nc-icon name="zoom-in" [size]="24" /> Zoom to selection
+      </button>
+      <button
+        type="button"
+        class="nc-button nc-button-ghost nc-button-sm"
+        (click)="clearSelection()"
+      >
+        Clear
+      </button>
+    }
+    <nc-segmented label="View" [options]="views" [(value)]="view" />
+  </div>
+  @if (ignored().length > 0) {
+    <p class="mb-1 text-meta text-ink-3">
+      Not split by the chosen game or source, so shown for everyone: {{ ignored().join(', ') }}.
+    </p>
+  }
+  @if (view() === 'chart') {
+    <div
+      class="transition-opacity"
+      [class.opacity-60]="timeline.isLoading()"
+      [style.height.px]="chartHeight()"
+      [ncChart]="chart()"
+      [ncChartEvents]="chartEvents"
+      [ncChartAfterDraw]="afterDraw"
+    ></div>
+  } @else if (table(); as data) {
+    <div class="max-h-[520px] overflow-auto">
+      <table class="nc-table">
+        <thead class="sticky top-0 bg-panel">
+          <tr>
+            <th>Bucket (UTC)</th>
+            @for (column of data.columns; track column.name) {
+              <th class="num">
+                <span
+                  class="mr-0.5 inline-block h-[2px] w-[10px] align-middle"
+                  [style.background]="column.colour"
+                ></span>
+                {{ column.name }}
+              </th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data.rows; track row.at) {
+            <tr>
+              <td class="whitespace-nowrap">{{ row.at }}</td>
+              @for (value of row.values; track $index) {
+                <td class="num">{{ value === null ? '--' : formatCount(value) }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</nc-panel>
+
+<div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+  <nc-panel
+    [heading]="selection() ? 'The selection' : 'The whole window'"
+    [hint]="focusLabel()"
+    [state]="summaryState()"
+    [error]="panelError(summary)"
+    (retry)="summary.reload()"
+  >
+    <table class="nc-table">
+      <thead>
+        <tr>
+          <th>Metric</th>
+          <th class="num">Here</th>
+          <th class="num">{{ previousLabel() }}</th>
+          <th class="num">A week before</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of summaryRows(); track row.metric) {
+          <tr [title]="row.who">
+            <td>
+              <span
+                class="mr-0.5 inline-block h-[2px] w-[10px] align-middle"
+                [style.background]="row.colour"
+              ></span>
+              <span class="text-ink">{{ row.label }}</span>
+              @if (row.combine === 'max') {
+                <span class="text-micro text-ink-4"> · peak</span>
+              }
+            </td>
+            <td class="num text-ink">
+              {{ row.current === null ? '--' : formatCount(row.current) }}
+            </td>
+            <td class="num">
+              {{ row.previous === null ? '--' : formatCount(row.previous) }}
+              @if (change(row.current, row.previous); as delta) {
+                <span class="ml-0.5 text-micro" [class]="delta.tone">{{ delta.text }}</span>
+              }
+            </td>
+            <td class="num">
+              {{ row.lastWeek === null ? '--' : formatCount(row.lastWeek) }}
+              @if (change(row.current, row.lastWeek); as delta) {
+                <span class="ml-0.5 text-micro" [class]="delta.tone">{{ delta.text }}</span>
+              }
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </nc-panel>
+
+  <div class="flex flex-col gap-2">
+    <nc-panel
+      heading="Accepted or declined analytics"
+      hint="Plays and accounts of the same stretch, by what people answered"
+      [state]="summaryState()"
+      [error]="panelError(summary)"
+      [minHeight]="160"
+      (retry)="summary.reload()"
+    >
+      @if (consent(); as split) {
+        @if (split.plays === 0 && split.accounts === 0) {
+          <p class="py-1 text-body text-ink-3">No play and no account here.</p>
+        } @else {
+          <p class="text-body text-ink-body">
+            <strong class="font-mono text-ink">{{ formatCount(split.plays) }}</strong> plays,
+            <strong class="font-mono text-ink">{{ split.anonymousShare ?? 0 }}%</strong> without
+            analytics.
+          </p>
+          <div class="mt-1 flex h-[12px] gap-[2px] overflow-hidden rounded-xs bg-inset">
+            @for (bar of split.bars; track bar.label) {
+              @if (bar.value > 0) {
+                <div
+                  [style.width.%]="bar.share"
+                  [style.background]="bar.colour"
+                  [title]="bar.label + ': ' + formatCount(bar.value)"
+                ></div>
+              }
+            }
+          </div>
+          <ul class="mt-0.75 flex flex-wrap gap-x-1.5 gap-y-0.25">
+            @for (bar of split.bars; track bar.label) {
+              <li class="flex items-center gap-0.5 text-meta">
+                <span class="size-[8px] shrink-0 rounded-xs" [style.background]="bar.colour"></span>
+                <span class="text-ink-body">{{ bar.label }}</span>
+                <span class="font-mono text-ink">{{ formatCount(bar.value) }}</span>
+              </li>
+            }
+          </ul>
+          <p class="mt-1 text-meta text-ink-body">
+            <strong class="font-mono text-ink">{{ formatCount(split.accounts) }}</strong> accounts,
+            <strong class="font-mono text-hot-ink">{{ formatCount(split.unlinked) }}</strong>
+            without analytics.
+          </p>
+          <p class="mt-0.5 text-micro text-ink-4">
+            {{ formatCount(split.signedIn) }} anonymous plays were signed in. Anonymous tabs carry
+            no identifier.
+          </p>
+        }
+      }
+    </nc-panel>
+
+    <nc-panel
+      heading="Activity"
+      hint="Newest first. A code stands for one browser"
+      [state]="activityState()"
+      [error]="panelError(activity)"
+      emptyIcon="clock"
+      emptyTitle="Nothing happened here"
+      emptyHint="First visits, plays, accounts and projects show up here."
+      (retry)="activity.reload()"
+    >
+      <div class="mb-1 flex flex-wrap gap-0.5">
+        @for (kind of kinds(); track kind.kind) {
+          <button
+            type="button"
+            class="nc-chip"
+            [class.nc-chip-gold]="!hiddenKinds().has(kind.kind)"
+            [class.nc-chip-quiet]="hiddenKinds().has(kind.kind)"
+            [attr.aria-pressed]="!hiddenKinds().has(kind.kind)"
+            (click)="toggleKind(kind.kind)"
+          >
+            {{ kind.label }} · {{ formatCount(kind.count) }}
+          </button>
+        }
+        @if (journeyFilter(); as journey) {
+          <button type="button" class="nc-chip nc-chip-gold" (click)="journeyFilter.set(null)">
+            #{{ journey }} ✕
+          </button>
+        }
+      </div>
+      <ol class="max-h-[420px] overflow-auto">
+        @for (item of feed(); track $index) {
+          <li class="flex items-start gap-1 border-b border-line-faint py-0.5 last:border-b-0">
+            <span class="w-[92px] shrink-0 font-mono text-micro text-ink-3">{{
+              instantLabel(item.at)
+            }}</span>
+            <nc-icon
+              [name]="kindOf(item.kind).icon"
+              [size]="12"
+              class="mt-[3px] shrink-0"
+              [class]="kindOf(item.kind).tone"
+            />
+            <span class="min-w-0 flex-1">
+              <span class="text-body text-ink">{{ kindOf(item.kind).label }}</span>
+              <span class="text-meta text-ink-3"> {{ describe(item) }}</span>
+            </span>
+            @if (item.journey) {
+              <button
+                type="button"
+                class="shrink-0 font-mono text-micro text-ink-3 hover:text-gold-ink"
+                [title]="'Only this browser'"
+                (click)="journeyFilter.set(item.journey)"
+              >
+                #{{ item.journey }}
+              </button>
+            }
+          </li>
+        }
+      </ol>
+      @if (activity.value()?.truncated) {
+        <p class="mt-1 text-meta text-ink-3">
+          The newest 300. Select a shorter stretch for the rest.
+        </p>
+      }
+    </nc-panel>
+  </div>
+</div>
+
+<nc-panel
+  class="mt-2"
+  heading="Arrivals"
+  hint="First seen in this stretch, and what they did since"
+  [state]="arrivalsState()"
+  [error]="panelError(arrivals)"
+  emptyIcon="users"
+  emptyTitle="Nobody new here"
+  emptyHint="Nobody came for the first time here."
+  (retry)="arrivals.reload()"
+>
+  @if (arrivals.value(); as value) {
+    <div class="grid gap-2 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]">
+      <div>
+        <p class="label mb-0.75">What the newcomers did</p>
+        @for (step of steps(); track step.label) {
+          <div class="mb-0.5 flex items-center gap-1">
+            <span class="w-[140px] shrink-0 text-body text-ink-body">{{ step.label }}</span>
+            <div class="h-[10px] flex-1 overflow-hidden rounded-xs bg-inset">
+              <div class="h-full bg-gold" [style.width.%]="step.share ?? 0"></div>
+            </div>
+            <span class="w-[88px] shrink-0 text-right font-mono text-ui text-ink">
+              {{ formatCount(step.count) }}
+              @if (step.share !== null && $index > 0) {
+                <span class="text-micro text-ink-3">{{ step.share }}%</span>
+              }
+            </span>
+          </div>
+        }
+        <p class="mt-1 text-micro text-ink-3">
+          {{ formatCount(value.summary.existingAccounts) }} came back with an existing account.
+          Without analytics: {{ formatCount(value.summary.anonymousPlays) }} plays,
+          {{ formatCount(value.summary.unlinkedSignups) }} accounts.
+        </p>
+      </div>
+      <div>
+        <p class="label mb-0.75">Games played</p>
+        @if (value.games.length === 0) {
+          <p class="text-body text-ink-3">No game was played.</p>
+        } @else {
+          <table class="nc-table">
+            <thead>
+              <tr>
+                <th>Game</th>
+                <th class="num" title="Newcomers who played it">Newcomers</th>
+                <th class="num" title="Plays of the newcomers, until now">Their plays</th>
+                <th class="num" title="Plays in tabs without analytics, in this stretch">
+                  Anonymous plays
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (game of value.games; track game.releaseId) {
+                <tr>
+                  <td class="text-ink">{{ game.name ?? 'Deleted game' }}</td>
+                  <td class="num">{{ formatCount(game.players) }}</td>
+                  <td class="num">{{ formatCount(game.plays) }}</td>
+                  <td class="num text-hot-ink">{{ formatCount(game.anonymousPlays) }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        }
+      </div>
+    </div>
+
+    @if (value.visitors.length > 0) {
+      <p class="label mt-2 mb-0.75">Each newcomer · newest first</p>
+      <div class="max-h-[420px] overflow-auto">
+        <table class="nc-table">
+          <thead class="sticky top-0 bg-panel">
+            <tr>
+              <th>Browser</th>
+              <th>First seen</th>
+              <th>From</th>
+              <th>Where</th>
+              <th class="num">Visits</th>
+              <th class="num">Plays</th>
+              <th>Games</th>
+              <th>Account</th>
+              <th>Project</th>
+              <th>Published</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (visitor of value.visitors; track visitor.journey) {
+              <tr>
+                <td>
+                  <button
+                    type="button"
+                    class="font-mono text-micro text-ink-2 hover:text-gold-ink"
+                    title="Its activity"
+                    (click)="journeyFilter.set(visitor.journey)"
+                  >
+                    #{{ visitor.journey }}
+                  </button>
+                </td>
+                <td class="whitespace-nowrap">{{ instantLabel(visitor.firstSeenAt) }}</td>
+                <td>
+                  {{
+                    visitor.utmCampaign
+                      ? 'campaign ' + visitor.utmCampaign
+                      : visitor.utmSource
+                        ? 'utm ' + visitor.utmSource
+                        : (visitor.referrer ?? 'Direct')
+                  }}
+                </td>
+                <td class="whitespace-nowrap">{{ whereOf(visitor.country, visitor.device) }}</td>
+                <td class="num">{{ visitor.sessions }}</td>
+                <td class="num">{{ visitor.plays }}</td>
+                <td class="max-w-[200px] truncate" [title]="visitor.games.join(', ')">
+                  {{ visitor.games.join(', ') || '--' }}
+                </td>
+                <td class="whitespace-nowrap">
+                  @switch (visitor.account) {
+                    @case ('NEW') {
+                      <span class="nc-chip nc-chip-ok">New</span>
+                      <span class="text-micro text-ink-3">
+                        {{ instantLabel(visitor.signedUpAt ?? '') }}</span
+                      >
+                    }
+                    @case ('EXISTING') {
+                      <span class="nc-chip nc-chip-quiet">Existing</span>
+                    }
+                    @default {
+                      <span class="text-ink-4">--</span>
+                    }
+                  }
+                </td>
+                <td class="whitespace-nowrap">
+                  {{ visitor.projectCreatedAt ? instantLabel(visitor.projectCreatedAt) : '--' }}
+                </td>
+                <td class="whitespace-nowrap">
+                  {{ visitor.publishedAt ? instantLabel(visitor.publishedAt) : '--' }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (value.visitors.length < value.summary.arrived) {
+        <p class="mt-1 text-meta text-ink-3">
+          The newest {{ value.visitors.length }} of {{ formatCount(value.summary.arrived) }}.
+        </p>
+      }
+    }
+  }
+</nc-panel>

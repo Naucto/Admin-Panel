@@ -1,0 +1,323 @@
+<div class="grid gap-2 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
+  <div class="flex min-w-0 flex-col gap-2">
+    <nc-panel
+      [heading]="editing() === null ? 'Mark a post' : 'Change the post'"
+      hint="Shown on every chart"
+      [minHeight]="120"
+    >
+      <form class="flex flex-col gap-1" (submit)="$event.preventDefault(); save()">
+        <label class="flex flex-col gap-0.25">
+          <span class="label">Went out at, UTC</span>
+          <input
+            type="datetime-local"
+            class="nc-input"
+            required
+            [value]="draft().at"
+            (input)="update('at', $event)"
+          />
+          @if (draftLocal()) {
+            <span class="text-micro text-ink-3">Your clock: {{ draftLocal() }}</span>
+          }
+        </label>
+        <label class="flex flex-col gap-0.25">
+          <span class="label">What it was</span>
+          <input
+            class="nc-input"
+            maxlength="120"
+            required
+            placeholder="Launch trailer"
+            [value]="draft().label"
+            (input)="update('label', $event)"
+          />
+        </label>
+        <div class="grid grid-cols-2 gap-1">
+          <label class="flex min-w-0 flex-col gap-0.25">
+            <span class="label">Channel</span>
+            <input
+              class="nc-input"
+              maxlength="40"
+              list="nc-post-channels"
+              placeholder="YouTube"
+              [value]="draft().channel"
+              (input)="update('channel', $event)"
+            />
+            <datalist id="nc-post-channels">
+              @for (channel of channels; track channel) {
+                <option [value]="channel"></option>
+              }
+            </datalist>
+          </label>
+          <label class="flex min-w-0 flex-col gap-0.25">
+            <span class="label">Link</span>
+            <input
+              type="url"
+              class="nc-input"
+              maxlength="2048"
+              placeholder="https://"
+              [value]="draft().url"
+              (input)="update('url', $event)"
+            />
+          </label>
+        </div>
+        <div class="flex flex-col gap-0.25">
+          <span class="label">For</span>
+          <nc-segmented
+            label="Audience"
+            [options]="audiences"
+            [value]="draft().audience"
+            (valueChange)="setAudience($event)"
+          />
+        </div>
+        <div class="flex flex-col gap-0.25">
+          <span class="label">{{ gameLabel() }}</span>
+          <nc-game-picker [value]="draft().game" (valueChange)="setGame($event)" />
+        </div>
+        <div class="flex gap-0.75">
+          <button
+            type="submit"
+            class="nc-button nc-button-primary"
+            [disabled]="!draftValid() || saving()"
+          >
+            {{ editing() === null ? 'Add to the charts' : 'Save' }}
+          </button>
+          @if (editing() !== null) {
+            <button type="button" class="nc-button nc-button-ghost" (click)="cancel()">
+              Cancel
+            </button>
+          }
+        </div>
+      </form>
+    </nc-panel>
+
+    <nc-panel
+      heading="Posts"
+      [hint]="(markers.value()?.length ?? 0) + ' marked, newest first'"
+      [state]="markersState()"
+      [error]="panelError(markers)"
+      emptyIcon="flag"
+      emptyTitle="No post marked yet"
+      emptyHint="Mark when each post went out to read what followed it."
+      [minHeight]="120"
+      (retry)="markers.reload()"
+    >
+      <input
+        type="search"
+        class="nc-select mb-1 w-full normal-case"
+        placeholder="Filter by title, channel or game"
+        aria-label="Filter the posts"
+        [value]="listQuery()"
+        (input)="listQuery.set($any($event.target).value)"
+      />
+      <ul class="flex max-h-[420px] flex-col overflow-auto">
+        @for (marker of listed(); track marker.id) {
+          <li
+            class="flex items-center gap-0.5 border-b border-line-faint py-0.5 last:border-b-0"
+            [class.bg-gold-wash]="selected()?.id === marker.id"
+          >
+            <button type="button" class="min-w-0 flex-1 px-0.5 text-left" (click)="select(marker)">
+              <span class="block truncate text-body text-ink">{{ marker.label }}</span>
+              <span class="block truncate text-micro text-ink-3">
+                {{ instantLabel(marker.at) }}{{ marker.channel ? ' · ' + marker.channel : '' }} ·
+                {{ audienceName(marker.audience) }}{{ marker.game ? ' · ' + marker.game : '' }}
+              </span>
+            </button>
+            @if (marker.url) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm shrink-0"
+                [href]="marker.url"
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label="Open the post"
+                title="Open the post"
+              >
+                <nc-icon name="external-link" [size]="12" />
+              </a>
+            }
+            <button
+              type="button"
+              class="nc-button nc-button-ghost nc-button-sm shrink-0"
+              aria-label="Change"
+              title="Change"
+              (click)="edit(marker)"
+            >
+              <nc-icon name="edit" [size]="12" />
+            </button>
+            <button
+              type="button"
+              class="nc-button nc-button-ghost nc-button-sm shrink-0"
+              aria-label="Remove"
+              title="Remove"
+              (click)="remove(marker)"
+            >
+              <nc-icon name="trash" [size]="12" />
+            </button>
+          </li>
+        } @empty {
+          <li class="py-1 text-meta text-ink-3">No post matches.</li>
+        }
+      </ul>
+    </nc-panel>
+  </div>
+
+  <div class="flex min-w-0 flex-col gap-2">
+    <nc-panel
+      [heading]="selected() ? 'After “' + selected()!.label + '”' : 'Impact'"
+      [hint]="
+        selected()
+          ? instantLabel(selected()!.at) +
+            ' UTC · ' +
+            audienceName(selected()!.audience) +
+            ' · the ' +
+            windowLabel() +
+            ' after it'
+          : ''
+      "
+      [state]="impactState()"
+      [error]="panelError(impact)"
+      emptyIcon="flag"
+      emptyTitle="Mark a post first"
+      emptyHint="What followed it shows here, against the usual for those hours."
+      (retry)="impact.reload()"
+    >
+      <div actions class="flex items-center gap-0.5">
+        <nc-segmented label="Window" [options]="windows" [(value)]="window" />
+        @if (timelineLink(); as link) {
+          <a
+            routerLink="/timeline"
+            [queryParams]="link"
+            class="nc-button nc-button-ghost nc-button-sm"
+          >
+            <nc-icon name="chart" [size]="24" /> Timeline
+          </a>
+        }
+      </div>
+      @if (overlapping().length > 0) {
+        <p class="mb-1 truncate text-meta text-orange-ink" [title]="overlapping()[0]!.label">
+          <nc-icon name="warning-box" [size]="12" class="mr-0.25" />
+          Shared with “{{ overlapping()[0]!.label }}”{{
+            overlapping().length > 1 ? ' and ' + (overlapping().length - 1) + ' more' : ''
+          }}
+        </p>
+      }
+      <div class="overflow-x-auto">
+        <table class="nc-table">
+          <thead>
+            <tr>
+              <th>Metric</th>
+              <th class="num">After</th>
+              <th class="num">Usual</th>
+              <th class="num">Difference</th>
+              <th class="num">Change</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (row of impactRows(); track row.key) {
+              <tr
+                class="cursor-pointer"
+                [class.bg-gold-wash]="row.key === curveKey()"
+                (click)="curveKey.set(row.key)"
+              >
+                <td class="max-w-[260px] truncate" [title]="row.label">
+                  <span
+                    class="mr-0.5 inline-block h-[2px] w-[10px] align-middle"
+                    [style.background]="row.colour"
+                  ></span>
+                  <span class="text-ink">{{ row.label }}</span>
+                </td>
+                <td class="num text-ink">{{ figure(row.impact.after) }}</td>
+                <td class="num">{{ figure(row.impact.baseline) }}</td>
+                <td class="num">{{ signed(row.impact.difference) }}</td>
+                <td class="num" [class]="liftText(row.impact).tone">
+                  {{ liftText(row.impact).text }}
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <p class="mt-1 text-micro text-ink-3">{{ baselineNote(impactRows()[0]) }}</p>
+    </nc-panel>
+
+    @if (curve(); as chosen) {
+      <nc-panel heading="Running total since the post" [hint]="chosen.label">
+        <div class="h-[240px]" [ncChart]="chosen.spec"></div>
+      </nc-panel>
+    }
+
+    @if (selected()) {
+      <nc-panel
+        heading="Who arrived after it"
+        hint="First seen in the window, accepted analytics"
+        [state]="arrivals.value() ? 'ready' : arrivals.error() ? 'error' : 'loading'"
+        [error]="panelError(arrivals)"
+        [minHeight]="120"
+        (retry)="arrivals.reload()"
+      >
+        <label actions class="flex items-center gap-0.5">
+          <span class="label">From</span>
+          <select class="nc-select max-w-[200px]" (change)="chooseSource($event)">
+            <option value="" [selected]="source() === null">Anywhere</option>
+            @for (one of sources.value() ?? []; track one.source) {
+              <option [value]="one.source" [selected]="one.source === source()">
+                {{ sourceName(one.source) }} · {{ formatCount(one.visitorsNew) }}
+                {{ one.source === suggestedSource() ? '· channel' : '' }}
+              </option>
+            }
+          </select>
+        </label>
+        @if (arrivals.value(); as value) {
+          <div class="grid grid-cols-2 gap-1 sm:grid-cols-5">
+            @for (
+              tile of [
+                { label: 'Arrived', value: value.summary.arrived },
+                { label: 'Played', value: value.summary.played },
+                { label: 'New accounts', value: value.summary.signedUp },
+                { label: 'Projects', value: value.summary.createdProject },
+                { label: 'Published', value: value.summary.published },
+              ];
+              track tile.label
+            ) {
+              <div class="rounded-sm border border-line px-1 py-0.75">
+                <p class="label truncate">{{ tile.label }}</p>
+                <p class="mt-0.25 font-mono text-title text-ink">{{ formatCount(tile.value) }}</p>
+              </div>
+            }
+          </div>
+          <p class="mt-1 text-micro text-ink-3">
+            Without analytics: {{ formatCount(value.summary.anonymousPlays) }} plays (<span
+              class="text-hot-ink"
+              >{{ formatCount(value.summary.declinedPlays) }} declined</span
+            >,
+            <span class="text-gold-ink"
+              >{{ formatCount(value.summary.unansweredPlays) }} not answered</span
+            >), {{ formatCount(value.summary.unlinkedSignups) }} accounts.
+          </p>
+          @if (value.games.length > 0) {
+            <table class="nc-table mt-1">
+              <thead>
+                <tr>
+                  <th>Game</th>
+                  <th class="num">Newcomers</th>
+                  <th class="num">Their plays</th>
+                  <th class="num">Anonymous plays</th>
+                </tr>
+              </thead>
+              <tbody>
+                @for (game of value.games; track game.releaseId) {
+                  <tr>
+                    <td class="max-w-[220px] truncate text-ink">
+                      {{ game.name ?? 'Deleted game' }}
+                    </td>
+                    <td class="num">{{ formatCount(game.players) }}</td>
+                    <td class="num">{{ formatCount(game.plays) }}</td>
+                    <td class="num text-hot-ink">{{ formatCount(game.anonymousPlays) }}</td>
+                  </tr>
+                }
+              </tbody>
+            </table>
+          }
+        }
+      </nc-panel>
+    }
+  </div>
+</div>

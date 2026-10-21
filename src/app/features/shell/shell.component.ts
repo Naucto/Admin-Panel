@@ -21,11 +21,14 @@ interface NavItem {
 
 const STATS_NAV: NavItem[] = [
   { path: '/overview', label: 'Overview', icon: 'dashboard' },
+  { path: '/timeline', label: 'Timeline', icon: 'clock' },
+  { path: '/posts', label: 'Posts', icon: 'flag' },
   { path: '/audience', label: 'Audience', icon: 'users' },
   { path: '/games', label: 'Games', icon: 'gamepad' },
   { path: '/creators', label: 'Creators', icon: 'paint-bucket' },
   { path: '/live', label: 'Live', icon: 'zap' },
   { path: '/explorer', label: 'Explorer', icon: 'chart' },
+  { path: '/compare', label: 'Compare', icon: 'trending-up' },
 ];
 
 const ADMIN_NAV: NavItem[] = [
