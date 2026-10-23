@@ -12,8 +12,8 @@
         {{ name().charAt(0).toUpperCase() }}
       </span>
     }
-    <div class="min-w-0" [class.text-meta]="compact()">
-      <p class="truncate text-ink">{{ name() }}</p>
+    <div class="max-w-[280px] min-w-0" [class.text-meta]="compact()">
+      <p class="truncate text-ink" [title]="name()">{{ name() }}</p>
       <p class="truncate">
         @if (account().profileUrl; as profile) {
           <a
@@ -33,6 +33,7 @@
       <p class="flex min-w-0 items-center gap-0.25">
         <a
           class="truncate text-ink-3 hover:text-ink"
+          [title]="account().email"
           [href]="'mailto:' + account().email"
           (click)="$event.stopPropagation()"
         >

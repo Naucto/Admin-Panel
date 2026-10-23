@@ -175,13 +175,13 @@
         <span>Last {{ dayTime(crash.lastSeen) }} UTC</span>
       </p>
       <p
-        class="mt-1 text-body break-words whitespace-pre-wrap text-ink-body"
+        class="mt-1 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
         [textContent]="crash.message"
       ></p>
 
       <p class="mt-1.5 label">Last stack</p>
       <pre
-        class="mt-0.5 max-h-[360px] overflow-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-ink-body"
+        class="mt-0.5 max-h-[360px] overflow-y-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-ink-body"
         [textContent]="crash.lastStack"
       ></pre>
 

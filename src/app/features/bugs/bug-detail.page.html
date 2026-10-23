@@ -21,7 +21,7 @@
           <span class="nc-chip nc-chip-quiet">{{ categoryLabels[bug.category] }}</span>
           <span [class]="bugStatusChip(bug.status)">{{ statusLabels[bug.status] }}</span>
         </p>
-        <h2 class="mt-0.75 font-ui text-title break-words text-ink">{{ bug.title }}</h2>
+        <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ bug.title }}</h2>
         <p class="mt-0.5 text-meta text-ink-3">
           Sent {{ dayTime(bug.createdAt) }} UTC · Updated {{ dayTime(bug.updatedAt) }} UTC
         </p>
@@ -31,7 +31,7 @@
         <div class="flex min-w-0 flex-col gap-2">
           <nc-panel heading="Description">
             <p
-              class="text-body break-words whitespace-pre-wrap text-ink-body"
+              class="text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
               [textContent]="bug.description"
             ></p>
           </nc-panel>
@@ -79,7 +79,7 @@
                   <div>
                     <p class="label">Engine error</p>
                     <pre
-                      class="mt-0.5 overflow-x-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-hot-ink"
+                      class="mt-0.5 rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-hot-ink"
                       [textContent]="engineError"
                     ></pre>
                   </div>
@@ -88,7 +88,7 @@
                   <div>
                     <p class="label">App error</p>
                     <pre
-                      class="mt-0.5 overflow-x-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-hot-ink"
+                      class="mt-0.5 rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-hot-ink"
                       [textContent]="appError"
                     ></pre>
                   </div>
@@ -97,7 +97,7 @@
                   <div>
                     <p class="label">Console</p>
                     <pre
-                      class="mt-0.5 max-h-[360px] overflow-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta text-ink-body"
+                      class="mt-0.5 max-h-[360px] overflow-y-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-ink-body"
                       [textContent]="consoleText()"
                     ></pre>
                   </div>
@@ -129,12 +129,12 @@
               </p>
               <p class="mt-1 label">Liked</p>
               <p
-                class="mt-0.25 text-body whitespace-pre-wrap text-ink-body"
+                class="mt-0.25 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
                 [textContent]="rating.liked || '--'"
               ></p>
               <p class="mt-1 label">Would improve</p>
               <p
-                class="mt-0.25 text-body whitespace-pre-wrap text-ink-body"
+                class="mt-0.25 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
                 [textContent]="rating.improve || '--'"
               ></p>
             </nc-panel>
