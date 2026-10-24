@@ -37,7 +37,7 @@ const STATUS_TOASTS: Record<CrashStatus, string> = {
   IGNORED: 'ignored',
 };
 
-/** Crashes reported by the web app, the engine and the backend, grouped by fingerprint. */
+/** Crashes reported by the web app, the engine and the backend, one per error message. */
 @Component({
   selector: 'nc-crashes-page',
   imports: [IconComponent, PanelComponent, SegmentedComponent],

@@ -15,16 +15,16 @@ import { dayTime, longDay, utcDay } from '../../core/dates';
 import { FiltersStore } from '../../core/filters.store';
 import { formatCount } from '../../core/metric-catalog';
 import {
-  CONTEXT_LABELS,
+  ROLE_LABELS,
   formatAverage,
   formatShare,
   LOW_SCORE,
   REASON_LABELS,
   scoreChip,
   scoreInk,
-  SOURCE_LABELS,
+  ORIGIN_LABELS,
 } from '../../core/support-format';
-import type { FeedbackContext, Rating } from '../../core/types';
+import type { ReportRole, Rating } from '../../core/types';
 import { UserFeedbackApi } from '../../core/user-feedback.api';
 import { AccountCellComponent } from '../../ui/account-cell.component';
 import { ChartDirective } from '../../ui/chart.directive';
@@ -34,7 +34,7 @@ import { panelError, panelState } from '../../ui/panel-state';
 import { type SegmentOption, SegmentedComponent } from '../../ui/segmented.component';
 import { StatTileComponent } from '../../ui/stat-tile.component';
 
-type ContextFilter = 'ALL' | FeedbackContext;
+type RoleFilter = 'ALL' | ReportRole;
 
 const PAGE_SIZE = 20;
 
@@ -74,17 +74,17 @@ export default class RatingsPage {
     return value ? (ink: ChartInk) => ratingTrendChart(value.series, grain, ink) : null;
   });
 
-  protected readonly contexts: SegmentOption<ContextFilter>[] = [
+  protected readonly roles: SegmentOption<RoleFilter>[] = [
     { value: 'ALL', label: 'All' },
     { value: 'PLAYER', label: 'Players' },
     { value: 'CREATOR', label: 'Creators' },
   ];
-  protected readonly context = signal<ContextFilter>('ALL');
+  protected readonly role = signal<RoleFilter>('ALL');
   protected readonly lowOnly = signal(false);
   protected readonly withComments = signal(false);
   protected readonly page = linkedSignal({
     source: () => ({
-      context: this.context(),
+      role: this.role(),
       lowOnly: this.lowOnly(),
       withComments: this.withComments(),
       range: this.filters.range(),
@@ -93,10 +93,10 @@ export default class RatingsPage {
   });
   protected readonly ratings = resource({
     params: () => {
-      const context = this.context();
+      const role = this.role();
       return {
         ...this.filters.range(),
-        context: context === 'ALL' ? undefined : context,
+        role: role === 'ALL' ? undefined : role,
         maxScore: this.lowOnly() ? LOW_SCORE : undefined,
         withComments: this.withComments(),
         page: this.page(),
@@ -112,7 +112,7 @@ export default class RatingsPage {
     Math.max(1, Math.ceil((this.ratings.value()?.total ?? 0) / PAGE_SIZE)),
   );
   protected readonly filtered = computed(
-    () => this.context() !== 'ALL' || this.lowOnly() || this.withComments(),
+    () => this.role() !== 'ALL' || this.lowOnly() || this.withComments(),
   );
 
   /** The rating read in full under the table. */
@@ -126,9 +126,9 @@ export default class RatingsPage {
     return longDay(utcDay(Date.parse(iso)));
   }
 
-  protected readonly contextLabels = CONTEXT_LABELS;
+  protected readonly roleLabels = ROLE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
-  protected readonly sourceLabels = SOURCE_LABELS;
+  protected readonly originLabels = ORIGIN_LABELS;
   protected readonly dayTime = dayTime;
   protected readonly formatAverage = formatAverage;
   protected readonly formatCount = formatCount;

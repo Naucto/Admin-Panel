@@ -50,10 +50,13 @@ The Support group of the sidebar reads what people send from Naucto itself.
 - Bug reports (`features/bugs`) lists the reports and opens each on its own route, `bugs/:id`. The
   `id` reaches the page as an input through `withComponentInputBinding`. `core/bug-count.store.ts`
   keeps the sidebar's count of new reports, read at boot, every minute and after a triage save.
-- Crashes (`features/crashes`) lists crash groups by fingerprint and resolves, ignores or reopens
-  them.
-- The API class is `UserFeedbackApi` (`core/user-feedback.api.ts`), named apart from
-  `ui/feedback.service.ts`, which is the console's own toasts and confirmations.
+- Crashes (`features/crashes`) lists crashes, one per error message, and resolves, ignores or
+  reopens them. A crash is open while the team has not closed it, whatever its finer status.
+- The backend keeps all three as one report under `/admin/reports`. `core/report-views.ts` turns a
+  report into the rating, bug report or crash a page shows, so a page never reads the fields of
+  another kind. `UserFeedbackApi` (`core/user-feedback.api.ts`, named apart from
+  `ui/feedback.service.ts`, the console's own toasts and confirmations) reads ratings and bug
+  reports, and `CrashesApi` reads crashes.
 - A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and shown
   through an object URL that the page revokes when it leaves the report. That is the reason for
   `blob:` in the CSP's `img-src`.

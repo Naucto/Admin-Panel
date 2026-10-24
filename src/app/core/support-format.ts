@@ -5,9 +5,9 @@ import type {
   BugView,
   CrashSource,
   CrashStatus,
-  FeedbackContext,
-  FeedbackSource,
+  RatingOrigin,
   RatingReason,
+  ReportRole,
 } from './types';
 
 /** Scores of 4 or less count as low, as the backend's `lowShare` does; 8 and up as high. */
@@ -59,12 +59,13 @@ export function formatBytes(bytes: number): string {
     : `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
-export const CONTEXT_LABELS: Record<FeedbackContext, string> = {
+/** What the person said they mostly do on Naucto. */
+export const ROLE_LABELS: Record<ReportRole, string> = {
   PLAYER: 'Player',
   CREATOR: 'Creator',
 };
 
-export const SOURCE_LABELS: Record<FeedbackSource, string> = {
+export const ORIGIN_LABELS: Record<RatingOrigin, string> = {
   PROMPT: 'Prompted',
   MANUAL: 'From the menu',
 };
@@ -101,8 +102,7 @@ export const BUG_STATUS_LABELS: Record<BugStatus, string> = {
   TRIAGED: 'Triaged',
   IN_PROGRESS: 'In progress',
   RESOLVED: 'Resolved',
-  WONT_FIX: "Won't fix",
-  DUPLICATE: 'Duplicate',
+  IGNORED: 'Ignored',
 };
 
 const BUG_STATUS_CHIPS: Record<BugStatus, string> = {
@@ -110,8 +110,7 @@ const BUG_STATUS_CHIPS: Record<BugStatus, string> = {
   TRIAGED: 'nc-chip nc-chip-gold',
   IN_PROGRESS: 'nc-chip nc-chip-gold',
   RESOLVED: 'nc-chip nc-chip-ok',
-  WONT_FIX: 'nc-chip nc-chip-quiet',
-  DUPLICATE: 'nc-chip nc-chip-quiet',
+  IGNORED: 'nc-chip nc-chip-quiet',
 };
 
 export function bugStatusChip(status: BugStatus): string {

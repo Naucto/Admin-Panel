@@ -86,8 +86,7 @@ describe('support formatting', () => {
     expect(bugStatusChip('TRIAGED')).toBe('nc-chip nc-chip-gold');
     expect(bugStatusChip('IN_PROGRESS')).toBe('nc-chip nc-chip-gold');
     expect(bugStatusChip('RESOLVED')).toBe('nc-chip nc-chip-ok');
-    expect(bugStatusChip('WONT_FIX')).toBe('nc-chip nc-chip-quiet');
-    expect(bugStatusChip('DUPLICATE')).toBe('nc-chip nc-chip-quiet');
+    expect(bugStatusChip('IGNORED')).toBe('nc-chip nc-chip-quiet');
   });
 
   it('chips a crash group by its status', () => {
@@ -114,7 +113,7 @@ describe('support formatting', () => {
       'OTHER',
     ]);
     expect(BUG_CATEGORY_LABELS.NETPLAY).toBe('Multiplayer');
-    expect(BUG_STATUS_LABELS.WONT_FIX).toBe("Won't fix");
+    expect(BUG_STATUS_LABELS.IGNORED).toBe('Ignored');
   });
 
   it('reads averages out of 10, shares as percents and sizes in bytes', () => {

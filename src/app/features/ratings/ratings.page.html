@@ -95,7 +95,7 @@
   [minHeight]="160"
   (retry)="ratings.reload()"
 >
-  <nc-segmented actions label="Who rated" [options]="contexts" [(value)]="context" />
+  <nc-segmented actions label="Who rated" [options]="roles" [(value)]="role" />
   <div actions class="nc-segmented" role="group" aria-label="Only">
     <button
       type="button"
@@ -142,7 +142,7 @@
                 <nc-account-cell class="max-w-[220px]" [account]="rating.account" />
               </td>
               <td>
-                <span class="nc-chip nc-chip-quiet">{{ contextLabels[rating.context] }}</span>
+                <span class="nc-chip nc-chip-quiet">{{ roleLabels[rating.role] }}</span>
               </td>
               <td>
                 <span [class]="scoreChip(rating.score)">{{ rating.score }}</span>
@@ -197,7 +197,7 @@
   <nc-panel
     class="mt-2"
     [heading]="'Rating #' + rating.id"
-    [hint]="dayTime(rating.createdAt) + ' UTC · ' + sourceLabels[rating.source]"
+    [hint]="dayTime(rating.createdAt) + ' UTC · ' + originLabels[rating.origin]"
   >
     <button
       actions
@@ -221,7 +221,7 @@
         </div>
         <dl class="grid grid-cols-[auto_minmax(0,1fr)] gap-x-1.5 gap-y-0.5 text-meta">
           <dt class="text-ink-3">Context</dt>
-          <dd class="text-ink">{{ contextLabels[rating.context] }}</dd>
+          <dd class="text-ink">{{ roleLabels[rating.role] }}</dd>
           <dt class="text-ink-3">Game</dt>
           <dd class="text-ink">
             @if (rating.release; as release) {
@@ -231,8 +231,6 @@
               <span class="text-ink-4">None</span>
             }
           </dd>
-          <dt class="text-ink-3">App release</dt>
-          <dd class="font-mono text-ink">{{ rating.appRelease ?? '--' }}</dd>
         </dl>
         @if (rating.reasons.length > 0) {
           <div>

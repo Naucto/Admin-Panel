@@ -1,6 +1,6 @@
 <nc-panel
   heading="Crashes"
-  hint="Grouped by fingerprint. Pick one to read its stack and latest occurrences."
+  hint="One per error message. Pick one to read its stack and latest occurrences."
   [state]="crashesState()"
   [error]="panelError(crashes)"
   emptyIcon="check"
@@ -116,7 +116,7 @@
   <nc-panel
     class="mt-2"
     [heading]="group.name"
-    [hint]="sourceLabels[group.source] + ' · fingerprint ' + group.fingerprint"
+    [hint]="sourceLabels[group.source]"
     [state]="detailState()"
     [error]="panelError(detail)"
     [minHeight]="200"

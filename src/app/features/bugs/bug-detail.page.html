@@ -72,7 +72,7 @@
             }
           </nc-panel>
 
-          @if (consoleText() || bug.context.engineError || bug.context.appError) {
+          @if (consoleText() || bug.context.engineError) {
             <nc-panel heading="Errors and console" hint="As the browser captured them">
               <div class="flex flex-col gap-1.5">
                 @if (bug.context.engineError; as engineError) {
@@ -81,15 +81,6 @@
                     <pre
                       class="mt-0.5 rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-hot-ink"
                       [textContent]="engineError"
-                    ></pre>
-                  </div>
-                }
-                @if (bug.context.appError; as appError) {
-                  <div>
-                    <p class="label">App error</p>
-                    <pre
-                      class="mt-0.5 rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-hot-ink"
-                      [textContent]="appError"
                     ></pre>
                   </div>
                 }

@@ -180,8 +180,11 @@ export interface AdminSession {
   account: AccountSummary;
 }
 
-export type FeedbackContext = 'PLAYER' | 'CREATOR';
-export type FeedbackSource = 'PROMPT' | 'MANUAL';
+/** What the person said they mostly do on Naucto. */
+export type ReportRole = 'PLAYER' | 'CREATOR';
+export type RatingOrigin = 'PROMPT' | 'MANUAL';
+export type ReportKind = 'RATING' | 'BUG' | 'CRASH';
+export type ReportStatus = 'NEW' | 'TRIAGED' | 'IN_PROGRESS' | 'RESOLVED' | 'IGNORED';
 export type RatingReason =
   'BUGS' | 'PERFORMANCE' | 'HARD_TO_USE' | 'MISSING_FEATURE' | 'CONTENT' | 'OTHER';
 
@@ -208,9 +211,8 @@ export interface Rating {
   reasons: RatingReason[];
   liked: string | null;
   improve: string | null;
-  context: FeedbackContext;
-  source: FeedbackSource;
-  appRelease: string | null;
+  role: ReportRole;
+  origin: RatingOrigin;
   createdAt: string;
   account: FeedbackAccount;
   /** The game played just before a prompt. */
@@ -226,7 +228,7 @@ export interface RatingList {
 }
 
 export interface RatingQuery {
-  context?: FeedbackContext;
+  role?: ReportRole;
   maxScore?: number;
   withComments?: boolean;
   from?: string;
@@ -257,8 +259,8 @@ export interface RatingSummary extends RatingAverage {
 
 export type BugCategory =
   'GAMEPLAY' | 'EDITOR' | 'GRAPHICS' | 'SOUND' | 'NETPLAY' | 'ACCOUNT' | 'PERFORMANCE' | 'OTHER';
-export type BugStatus = 'NEW' | 'TRIAGED' | 'IN_PROGRESS' | 'RESOLVED' | 'WONT_FIX' | 'DUPLICATE';
-/** OPEN is anything not closed. CLOSED is resolved, declined or duplicate. */
+export type BugStatus = ReportStatus;
+/** OPEN is anything not closed. CLOSED is resolved or ignored. */
 export type BugView = 'NEW' | 'OPEN' | 'CLOSED' | 'ALL';
 
 export interface BugSummary {
@@ -286,7 +288,6 @@ export interface BugContext {
   appRelease?: string;
   language?: string;
   engineError?: string;
-  appError?: string;
   console?: string[];
   device?: string | null;
   browser?: string | null;
@@ -314,7 +315,6 @@ export type CrashSort = 'lastSeen' | 'count';
 
 export interface CrashGroup {
   id: number;
-  fingerprint: string;
   source: CrashSource;
   name: string;
   message: string;
@@ -357,4 +357,50 @@ export interface CrashDetail extends CrashGroup {
   lastStack: string;
   /** The latest occurrences, newest first. */
   events: CrashEvent[];
+}
+
+/** One report as `/admin/reports` answers it. The fields of the other kinds are null. */
+export interface AdminReport {
+  id: number;
+  kind: ReportKind;
+  status: ReportStatus;
+  createdAt: string;
+  updatedAt: string;
+  account: FeedbackAccount | null;
+  role: ReportRole | null;
+  route: string | null;
+  release: FeedbackRelease | null;
+  appRelease: string | null;
+  title: string | null;
+  message: string | null;
+  score: number | null;
+  reasons: RatingReason[];
+  liked: string | null;
+  improve: string | null;
+  origin: RatingOrigin | null;
+  followUpIds: number[];
+  category: BugCategory | null;
+  ratingId: number | null;
+  hasScreenshot: boolean;
+  source: CrashSource | null;
+  count: number;
+  lastSeen: string | null;
+  regressedAt: string | null;
+}
+
+export interface AdminReportDetail extends AdminReport {
+  adminNote: string | null;
+  projectId: number | null;
+  context: Record<string, unknown> | null;
+  rating: BugDetail['rating'];
+  screenshot: BugDetail['screenshot'];
+  stack: string | null;
+  occurrences: CrashEvent[];
+}
+
+export interface AdminReportList {
+  items: AdminReport[];
+  total: number;
+  page: number;
+  limit: number;
 }
