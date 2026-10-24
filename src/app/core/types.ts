@@ -7,9 +7,15 @@ export type Grain = 'DAY' | 'WEEK' | 'MONTH';
 export type PointStatus = 'final' | 'provisional' | 'unavailable';
 export type RoleName = 'User' | 'Moderator' | 'Admin';
 
+/**
+ * Whom a metric can count: browsers that accepted analytics, tabs that refused it or never
+ * answered, both, or what the server records for every account.
+ */
+export type Population = 'CONSENTED' | 'ANONYMOUS' | 'CONSENTED_AND_ANONYMOUS' | 'SERVER';
+
 export interface MetricInfo {
   name: string;
-  population: 'C' | 'C_LINKED' | 'A' | 'C_AND_A' | 'F' | 'PRESENCE';
+  population: Population;
   kind: 'additive' | 'max' | 'perGrain';
   finalization: 'ACTIVITY' | 'SESSION' | 'FACT' | 'MULTIPLAYER' | 'PRESENCE' | 'COHORT';
   version: number;
@@ -213,7 +219,7 @@ export type TimelineMetric =
 
 export interface TimelineSeries {
   metric: TimelineMetric;
-  population: MetricInfo['population'];
+  population: Population;
   combine: 'sum' | 'distinct' | 'max';
   definition: string;
   /** Filters of the request this metric is not split by. */

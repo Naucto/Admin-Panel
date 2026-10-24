@@ -151,7 +151,7 @@ describe('the timeline chart', () => {
     series: [
       {
         metric: 'signups',
-        population: 'F',
+        population: 'SERVER',
         combine: 'sum',
         definition: '',
         ignoredFilters: [],
@@ -160,7 +160,7 @@ describe('the timeline chart', () => {
       },
       {
         metric: 'signups_unlinked',
-        population: 'F',
+        population: 'SERVER',
         combine: 'sum',
         definition: '',
         ignoredFilters: [],
@@ -186,7 +186,7 @@ describe('the timeline chart', () => {
     const plays = TIMELINE_ROWS.find((row) => row.key === 'plays')!;
     const series = (metric: string, values: (number | null)[]): Timeline['series'][number] => ({
       metric: metric as Timeline['series'][number]['metric'],
-      population: 'A',
+      population: 'ANONYMOUS',
       combine: 'sum',
       definition: '',
       ignoredFilters: [],

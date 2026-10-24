@@ -42,7 +42,7 @@ NAUCTO_API=http://host.docker.internal:3000 npm start   # the backend somewhere 
 
 To give an account the admin role the first time, set its `role` column to `Admin` in the
 database; after that, admins add each other from the Admins page. For charts with something in
-them on a local backend, the backend's `npm run seed:analytics` writes 60 days of synthetic data.
+them on a local backend, the backend's `npm run seed:dev` writes 80 days of synthetic analytics.
 
 | Command             | Purpose                                                            |
 | ------------------- | ------------------------------------------------------------------ |
