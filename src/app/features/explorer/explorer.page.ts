@@ -27,12 +27,10 @@ import { panelError, panelState } from '../../ui/panel-state';
 import { SegmentedComponent } from '../../ui/segmented.component';
 
 const POPULATIONS: Record<MetricInfo['population'], string> = {
-  C: 'Browsers that accepted analytics',
-  C_LINKED: 'Accepting browsers linked to an account',
-  A: 'Tabs that declined, counted without any identifier',
-  C_AND_A: 'Everyone: accepting browsers and anonymous tabs',
-  F: 'Every account, from what happened on the server',
-  PRESENCE: 'Who was online, sampled each minute',
+  CONSENTED: 'Browsers that accepted analytics, and the accounts they are linked to',
+  ANONYMOUS: 'Tabs that refused analytics or never answered, counted without any identifier',
+  CONSENTED_AND_ANONYMOUS: 'Everyone: accepting browsers and anonymous tabs',
+  SERVER: 'Every account, from what the server records itself',
 };
 
 const KINDS: Record<MetricInfo['kind'], string> = {

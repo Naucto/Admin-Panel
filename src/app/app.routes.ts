@@ -48,6 +48,21 @@ export const routes: Routes = [
         ...page('Creators', true),
       },
       {
+        path: 'timeline',
+        loadComponent: () => import('./features/timeline/timeline.page'),
+        ...page('Timeline'),
+      },
+      {
+        path: 'posts',
+        loadComponent: () => import('./features/posts/posts.page'),
+        ...page('Posts and their impact'),
+      },
+      {
+        path: 'compare',
+        loadComponent: () => import('./features/compare/compare.page'),
+        ...page('Compare'),
+      },
+      {
         path: 'live',
         loadComponent: () => import('./features/live/live.page'),
         ...page('Live'),
