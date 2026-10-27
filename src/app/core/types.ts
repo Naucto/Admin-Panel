@@ -179,3 +179,228 @@ export interface AdminSession {
   expiresIn: number;
   account: AccountSummary;
 }
+
+/** What the person said they mostly do on Naucto. */
+export type ReportRole = 'PLAYER' | 'CREATOR';
+export type RatingOrigin = 'PROMPT' | 'MANUAL';
+export type ReportKind = 'RATING' | 'BUG' | 'CRASH';
+export type ReportStatus = 'NEW' | 'TRIAGED' | 'IN_PROGRESS' | 'RESOLVED' | 'IGNORED';
+export type RatingReason =
+  'BUGS' | 'PERFORMANCE' | 'HARD_TO_USE' | 'MISSING_FEATURE' | 'CONTENT' | 'OTHER';
+
+export interface FeedbackAccount {
+  id: number;
+  username: string;
+  nickname: string | null;
+  email: string;
+  role: RoleName;
+  createdAt: string;
+  /** The public profile on the web app, or null once the account is deleted. */
+  profileUrl: string | null;
+  deleted: boolean;
+}
+
+export interface FeedbackRelease {
+  id: number;
+  name: string;
+}
+
+export interface Rating {
+  id: number;
+  score: number;
+  reasons: RatingReason[];
+  liked: string | null;
+  improve: string | null;
+  role: ReportRole;
+  origin: RatingOrigin;
+  createdAt: string;
+  account: FeedbackAccount;
+  /** The game played just before a prompt. */
+  release: FeedbackRelease | null;
+  bugReportIds: number[];
+}
+
+export interface RatingList {
+  items: Rating[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface RatingQuery {
+  role?: ReportRole;
+  maxScore?: number;
+  withComments?: boolean;
+  from?: string;
+  to?: string;
+  page?: number;
+  limit?: number;
+}
+
+export interface RatingAverage {
+  count: number;
+  average: number | null;
+}
+
+export interface RatingBucket extends RatingAverage {
+  /** First day of the period. */
+  start: string;
+}
+
+export interface RatingSummary extends RatingAverage {
+  /** Share of scores of 4 or less, from 0 to 1. */
+  lowShare: number | null;
+  /** How many ratings gave each score, 1 to 10. */
+  distribution: number[];
+  player: RatingAverage;
+  creator: RatingAverage;
+  series: RatingBucket[];
+}
+
+export type BugCategory =
+  'GAMEPLAY' | 'EDITOR' | 'GRAPHICS' | 'SOUND' | 'NETPLAY' | 'ACCOUNT' | 'PERFORMANCE' | 'OTHER';
+export type BugStatus = ReportStatus;
+/** OPEN is anything not closed. CLOSED is resolved or ignored. */
+export type BugView = 'NEW' | 'OPEN' | 'CLOSED' | 'ALL';
+
+export interface BugSummary {
+  id: number;
+  title: string;
+  category: BugCategory;
+  status: BugStatus;
+  createdAt: string;
+  updatedAt: string;
+  account: FeedbackAccount;
+  release: FeedbackRelease | null;
+  hasScreenshot: boolean;
+}
+
+export interface BugList {
+  items: BugSummary[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+/** What the browser attached. Stored as sent, so every field may be missing. */
+export interface BugContext {
+  viewport?: string;
+  appRelease?: string;
+  language?: string;
+  engineError?: string;
+  console?: string[];
+  device?: string | null;
+  browser?: string | null;
+  os?: string | null;
+}
+
+export interface BugDetail extends BugSummary {
+  description: string;
+  route: string;
+  projectId: number | null;
+  context: BugContext;
+  adminNote: string | null;
+  rating: { id: number; score: number; liked: string | null; improve: string | null } | null;
+  screenshot: { mime: string; bytes: number } | null;
+}
+
+export interface BugUpdate {
+  status: BugStatus;
+  adminNote?: string | null;
+}
+
+export type CrashSource = 'WEB' | 'ENGINE' | 'BACKEND';
+export type CrashStatus = 'OPEN' | 'RESOLVED' | 'IGNORED';
+export type CrashSort = 'lastSeen' | 'count';
+
+export interface CrashGroup {
+  id: number;
+  source: CrashSource;
+  name: string;
+  message: string;
+  count: number;
+  firstSeen: string;
+  lastSeen: string;
+  lastRelease: string | null;
+  status: CrashStatus;
+  /** When a resolved group was last reported again. */
+  regressedAt: string | null;
+}
+
+export interface CrashList {
+  items: CrashGroup[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+export interface CrashQuery {
+  source?: CrashSource;
+  status?: CrashStatus;
+  sort?: CrashSort;
+  page?: number;
+  limit?: number;
+}
+
+export interface CrashEvent {
+  id: number;
+  createdAt: string;
+  route: string;
+  appRelease: string | null;
+  device: string | null;
+  browser: string | null;
+  os: string | null;
+  extra: Record<string, unknown> | null;
+}
+
+export interface CrashDetail extends CrashGroup {
+  lastStack: string;
+  /** The latest occurrences, newest first. */
+  events: CrashEvent[];
+}
+
+/** One report as `/admin/reports` answers it. The fields of the other kinds are null. */
+export interface AdminReport {
+  id: number;
+  kind: ReportKind;
+  status: ReportStatus;
+  createdAt: string;
+  updatedAt: string;
+  account: FeedbackAccount | null;
+  role: ReportRole | null;
+  route: string | null;
+  release: FeedbackRelease | null;
+  appRelease: string | null;
+  title: string | null;
+  message: string | null;
+  score: number | null;
+  reasons: RatingReason[];
+  liked: string | null;
+  improve: string | null;
+  origin: RatingOrigin | null;
+  followUpIds: number[];
+  category: BugCategory | null;
+  ratingId: number | null;
+  hasScreenshot: boolean;
+  source: CrashSource | null;
+  count: number;
+  lastSeen: string | null;
+  regressedAt: string | null;
+}
+
+export interface AdminReportDetail extends AdminReport {
+  adminNote: string | null;
+  projectId: number | null;
+  context: Record<string, unknown> | null;
+  rating: BugDetail['rating'];
+  screenshot: BugDetail['screenshot'];
+  stack: string | null;
+  occurrences: CrashEvent[];
+}
+
+export interface AdminReportList {
+  items: AdminReport[];
+  total: number;
+  page: number;
+  limit: number;
+}

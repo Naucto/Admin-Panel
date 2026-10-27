@@ -1,0 +1,226 @@
+<nc-panel
+  heading="Crashes"
+  hint="One per error message. Pick one to read its stack and latest occurrences."
+  [state]="crashesState()"
+  [error]="panelError(crashes)"
+  emptyIcon="check"
+  emptyTitle="No crashes. Nice."
+  [emptyHint]="emptyHint()"
+  [minHeight]="160"
+  (retry)="crashes.reload()"
+>
+  <nc-segmented actions label="Source" [options]="sources" [(value)]="source" />
+  <nc-segmented actions label="Status" [options]="statuses" [(value)]="status" />
+  @if (crashes.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>Source</th>
+            <th>Crash</th>
+            <th class="num">
+              <button
+                type="button"
+                class="nc-sort"
+                [attr.aria-pressed]="sort() === 'count'"
+                (click)="sort.set('count')"
+              >
+                Count
+              </button>
+            </th>
+            <th>First seen</th>
+            <th>
+              <button
+                type="button"
+                class="nc-sort"
+                [attr.aria-pressed]="sort() === 'lastSeen'"
+                (click)="sort.set('lastSeen')"
+              >
+                Last seen
+              </button>
+            </th>
+            <th>Last release</th>
+            <th>Status</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (group of value.items; track group.id) {
+            <tr
+              class="cursor-pointer"
+              [class.bg-raised]="selected()?.id === group.id"
+              (click)="toggle(group)"
+            >
+              <td>
+                <span class="nc-chip nc-chip-quiet">{{ sourceLabels[group.source] }}</span>
+              </td>
+              <td>
+                <p class="max-w-[420px] truncate font-mono text-ink" [title]="group.name">
+                  {{ group.name }}
+                </p>
+                <p class="max-w-[420px] truncate text-meta text-ink-3" [title]="group.message">
+                  {{ group.message }}
+                </p>
+              </td>
+              <td class="num">{{ formatCount(group.count) }}</td>
+              <td class="whitespace-nowrap text-ink-3" [title]="dayTime(group.firstSeen) + ' UTC'">
+                {{ shortAgo(group.firstSeen) }}
+              </td>
+              <td class="whitespace-nowrap text-ink-3" [title]="dayTime(group.lastSeen) + ' UTC'">
+                {{ shortAgo(group.lastSeen) }}
+              </td>
+              <td class="font-mono text-meta text-ink-3">{{ group.lastRelease ?? '--' }}</td>
+              <td>
+                <div class="flex flex-wrap gap-0.25">
+                  <span [class]="crashStatusChip(group.status)">{{
+                    statusLabels[group.status]
+                  }}</span>
+                  @if (regressed(group)) {
+                    <span
+                      class="nc-chip nc-chip-warn"
+                      [title]="'Reported again ' + dayTime(group.regressedAt!) + ' UTC'"
+                      >Regressed</span
+                    >
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pages() > 1) {
+      <div class="mt-1 flex items-center justify-end gap-1">
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          <nc-icon name="chevron-left" [size]="12" /> Previous
+        </button>
+        <span class="font-mono text-label text-ink-3">{{ page() }} / {{ pages() }}</span>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === pages()"
+          (click)="page.set(page() + 1)"
+        >
+          Next <nc-icon name="chevron-right" [size]="12" />
+        </button>
+      </div>
+    }
+  }
+</nc-panel>
+
+@if (selected(); as group) {
+  <nc-panel
+    class="mt-2"
+    [heading]="group.name"
+    [hint]="sourceLabels[group.source]"
+    [state]="detailState()"
+    [error]="panelError(detail)"
+    [minHeight]="200"
+    (retry)="detail.reload()"
+  >
+    <div actions class="flex flex-wrap items-center gap-1">
+      @if (detail.value(); as crash) {
+        @if (crash.status !== 'RESOLVED') {
+          <button
+            type="button"
+            class="nc-button nc-button-sm"
+            [disabled]="busy()"
+            (click)="setStatus(crash, 'RESOLVED')"
+          >
+            <nc-icon name="check" [size]="12" /> Resolve
+          </button>
+        }
+        @if (crash.status !== 'IGNORED') {
+          <button
+            type="button"
+            class="nc-button nc-button-ghost nc-button-sm"
+            [disabled]="busy()"
+            (click)="setStatus(crash, 'IGNORED')"
+          >
+            <nc-icon name="eye-closed" [size]="12" /> Ignore
+          </button>
+        }
+        @if (crash.status !== 'OPEN') {
+          <button
+            type="button"
+            class="nc-button nc-button-sm"
+            [disabled]="busy()"
+            (click)="setStatus(crash, 'OPEN')"
+          >
+            <nc-icon name="reload" [size]="12" /> Reopen
+          </button>
+        }
+      }
+    </div>
+    <button
+      actions
+      type="button"
+      class="nc-button nc-button-ghost nc-button-sm"
+      (click)="selected.set(null)"
+    >
+      <nc-icon name="close" [size]="12" /> Close
+    </button>
+    @if (detail.value(); as crash) {
+      <p class="flex flex-wrap items-center gap-1 text-meta text-ink-3">
+        <span [class]="crashStatusChip(crash.status)">{{ statusLabels[crash.status] }}</span>
+        @if (regressed(crash)) {
+          <span class="nc-chip nc-chip-warn">Regressed</span>
+        }
+        <span>{{ formatCount(crash.count) }} times</span>
+        <span>First {{ dayTime(crash.firstSeen) }} UTC</span>
+        <span>Last {{ dayTime(crash.lastSeen) }} UTC</span>
+      </p>
+      <p
+        class="mt-1 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+        [textContent]="crash.message"
+      ></p>
+
+      <p class="mt-1.5 label">Last stack</p>
+      <pre
+        class="mt-0.5 max-h-[360px] overflow-y-auto rounded-sm border border-line bg-inset p-1 font-mono text-meta whitespace-pre-wrap wrap-anywhere text-ink-body"
+        [textContent]="crash.lastStack"
+      ></pre>
+
+      <p class="mt-1.5 label">Latest occurrences</p>
+      @if (crash.events.length === 0) {
+        <p class="mt-0.5 text-meta text-ink-4">No occurrence kept</p>
+      } @else {
+        <div class="-mx-1 mt-0.5 overflow-x-auto">
+          <table class="nc-table">
+            <thead>
+              <tr>
+                <th>Time</th>
+                <th>Route</th>
+                <th>Release</th>
+                <th>Runtime</th>
+                <th>Extra</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (event of crash.events; track event.id) {
+                <tr>
+                  <td class="whitespace-nowrap text-ink-3">{{ dayTime(event.createdAt) }}</td>
+                  <td class="font-mono text-meta">{{ event.route }}</td>
+                  <td class="font-mono text-meta text-ink-3">{{ event.appRelease ?? '--' }}</td>
+                  <td class="text-meta">{{ runtimeLine(event) || '--' }}</td>
+                  <td>
+                    <p
+                      class="max-w-[360px] truncate font-mono text-micro text-ink-3"
+                      [title]="compactPairs(event.extra)"
+                    >
+                      {{ compactPairs(event.extra) || '--' }}
+                    </p>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    }
+  </nc-panel>
+}

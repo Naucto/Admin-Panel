@@ -1,8 +1,8 @@
 # Naucto Admin
 
 The console Naucto's admins sign in to: platform statistics from the usage analytics (NCTO-276),
-and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design tokens, and
-[Apache ECharts](https://echarts.apache.org) for the charts.
+what people rate and report (NCTO-309), and who holds the admin role. Angular 22, Tailwind 4 over
+Naucto's own design tokens, and [Apache ECharts](https://echarts.apache.org) for the charts.
 
 ## What it does
 
@@ -14,6 +14,9 @@ and who holds the admin role. Angular 22, Tailwind 4 over Naucto's own design to
 | Creators | Sign-ups, active accounts, time spent building, projects and releases                                                                                                                                        |
 | Live     | Who is online this minute and doing what, the last hour, games being played, presence over 24 hours or 7 days                                                                                                |
 | Explorer | Any metric of the registry, with its definition, at any grain, against the period before, split by its dimensions, period by period                                                                          |
+| Feedback | How people rate Naucto: the average out of 10, the share of low scores, players against creators, the scores and their trend, and every rating with its comments                                             |
+| Bugs     | Bug reports, new, open or closed, by category. Each opens on its own page with its screenshot, errors, console and context, where an admin sets its status and note                                          |
+| Crashes  | Crashes from the web app, the engine and the backend, grouped by fingerprint, regressions flagged. Each shows its stack and latest occurrences, and is resolved, ignored or reopened there                   |
 | Admins   | The admins, adding one from the existing Naucto accounts, removing one                                                                                                                                       |
 | Account  | Appearance, sign out                                                                                                                                                                                         |
 
@@ -29,7 +32,8 @@ reload keeps the session and closing it for good means signing in again.
 
 ## Run it
 
-It needs the Naucto backend (`NCTO-276-website-kpi` or later) and an admin account.
+It needs the Naucto backend (`NCTO-276-website-kpi` or later,
+`NCTO-309-website-bug-report-and-feedback` or later for the Support pages) and an admin account.
 
 ```sh
 npm install

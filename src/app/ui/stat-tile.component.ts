@@ -24,6 +24,8 @@ import { ChartDirective } from './chart.directive';
       @if (delta(); as change) {
         <span [class]="change.className">{{ change.text }}</span>
         <span class="text-ink-4">{{ comparedTo() }}</span>
+      } @else if (note()) {
+        <span class="text-ink-4">{{ note() }}</span>
       } @else {
         <span class="text-ink-4">{{
           value() === null
@@ -48,6 +50,8 @@ export class StatTileComponent {
   readonly previous = input<number | null>(null);
   readonly provisional = input(false);
   readonly comparedTo = input('vs previous');
+  /** Said under a figure that has no period before it to compare to. */
+  readonly note = input('');
   readonly trend = input<number[]>([]);
   readonly colour = input<string>('#ffd100');
 

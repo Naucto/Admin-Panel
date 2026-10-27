@@ -1,10 +1,18 @@
-import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
+import {
+  ChangeDetectionStrategy,
+  Component,
+  computed,
+  DestroyRef,
+  inject,
+  signal,
+} from '@angular/core';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { NavigationEnd, Router, RouterLink, RouterLinkActive, RouterOutlet } from '@angular/router';
 import { filter, map } from 'rxjs';
 
 import type { ShellRouteData } from '../../app.routes';
 import { AuthStore } from '../../core/auth.store';
+import { BugCountStore } from '../../core/bug-count.store';
 import { FiltersStore, RANGE_PRESETS, type RangePreset } from '../../core/filters.store';
 import { ThemeService } from '../../core/theme.service';
 import type { Grain } from '../../core/types';
@@ -27,6 +35,14 @@ const STATS_NAV: NavItem[] = [
   { path: '/live', label: 'Live', icon: 'zap' },
   { path: '/explorer', label: 'Explorer', icon: 'chart' },
 ];
+
+const SUPPORT_NAV: NavItem[] = [
+  { path: '/feedback', label: 'Feedback', icon: 'mood-happy' },
+  { path: '/bugs', label: 'Bug reports', icon: 'bug' },
+  { path: '/crashes', label: 'Crashes', icon: 'alert' },
+];
+
+const BUG_COUNT_REFRESH_MS = 60_000;
 
 const ADMIN_NAV: NavItem[] = [
   { path: '/admins', label: 'Admins', icon: 'shield' },
@@ -52,8 +68,10 @@ export default class ShellComponent {
   protected readonly filters = inject(FiltersStore);
   protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
+  private readonly bugCount = inject(BugCountStore);
 
   protected readonly statsNav = STATS_NAV;
+  protected readonly supportNav = SUPPORT_NAV;
   protected readonly adminNav = ADMIN_NAV;
   protected readonly presets = RANGE_PRESETS;
   protected readonly grains: { value: Grain; label: string }[] = [
@@ -61,6 +79,10 @@ export default class ShellComponent {
     { value: 'WEEK', label: 'Week' },
     { value: 'MONTH', label: 'Month' },
   ];
+  /** Counts shown beside a sidebar entry, by path; a zero shows nothing. */
+  protected readonly badges = computed<Record<string, number>>(() => ({
+    '/bugs': this.bugCount.count(),
+  }));
   protected readonly menuOpen = signal(false);
   protected readonly navOpen = signal(false);
 
@@ -77,6 +99,16 @@ export default class ShellComponent {
   protected readonly initial = computed(() =>
     (this.auth.account()?.nickname || this.auth.account()?.username || '?').charAt(0).toUpperCase(),
   );
+
+  constructor() {
+    void this.bugCount.refresh();
+    const timer = setInterval(() => {
+      void this.bugCount.refresh();
+    }, BUG_COUNT_REFRESH_MS);
+    inject(DestroyRef).onDestroy(() => {
+      clearInterval(timer);
+    });
+  }
 
   protected setPreset(preset: RangePreset): void {
     this.filters.setPreset(preset);
