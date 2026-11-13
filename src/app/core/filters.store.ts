@@ -28,8 +28,10 @@ export class FiltersStore {
   readonly days = computed(() => daysBetween(this.range().from, this.range().to));
   readonly grain = computed<Grain>(() => this.grainChoice() ?? grainFor(this.days()));
 
-  /** The calendar period a single-period view (a breakdown, the top games) reads. */
-  readonly periodGrain = computed<Grain>(() => (this.days() <= 7 ? 'WEEK' : 'MONTH'));
+  /** The range in a sentence, as `the last 30 days`. */
+  readonly rangeName = computed(
+    () => `the last ${RANGE_PRESETS.find((one) => one.value === this.preset())?.label ?? ''}`,
+  );
 
   setPreset(preset: RangePreset): void {
     this.preset.set(preset);

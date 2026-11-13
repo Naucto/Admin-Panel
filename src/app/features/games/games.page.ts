@@ -3,6 +3,7 @@ import {
   Component,
   computed,
   inject,
+  linkedSignal,
   resource,
   signal,
 } from '@angular/core';
@@ -11,7 +12,6 @@ import { trendChart } from '../../charts/options';
 import { type ChartInk, SERIES_COLOURS } from '../../charts/palette';
 import { shapeOf } from '../../charts/series-data';
 import { AnalyticsApi } from '../../core/analytics.api';
-import { utcDay } from '../../core/dates';
 import { FiltersStore } from '../../core/filters.store';
 import { formatCount, formatMetric } from '../../core/metric-catalog';
 import type { GameSort, GameStats, Series } from '../../core/types';
@@ -58,22 +58,19 @@ export default class GamesPage {
     { value: 'players', label: 'Players' },
     { value: 'mp_sessions', label: 'Multiplayer' },
   ];
-  protected readonly page = signal(1);
+  protected readonly page = linkedSignal({
+    source: () => this.filters.range(),
+    computation: () => 1,
+  });
   protected readonly games = resource({
-    params: () => ({
-      grain: this.filters.periodGrain(),
-      day: utcDay(),
-      sort: this.sort(),
-      page: this.page(),
-    }),
-    loader: ({ params }) =>
-      this.api.games(params.grain, params.day, params.sort, params.page, PAGE_SIZE),
+    params: () => ({ range: this.filters.range(), sort: this.sort(), page: this.page() }),
+    loader: ({ params }) => this.api.games(params.range, params.sort, params.page, PAGE_SIZE),
   });
   protected readonly pages = computed(() =>
     Math.max(1, Math.ceil((this.games.value()?.total ?? 0) / PAGE_SIZE)),
   );
-  protected readonly periodName = computed(() =>
-    this.filters.periodGrain() === 'WEEK' ? 'this week' : 'this month',
+  protected readonly playersUnknown = computed(
+    () => this.games.value()?.items.some((game) => game.players === null) ?? false,
   );
 
   /** The game whose own trend is open under the table. */

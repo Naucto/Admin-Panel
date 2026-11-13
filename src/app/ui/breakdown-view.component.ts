@@ -12,7 +12,7 @@ const BAR_LIMIT = 12;
 const KEY_LABELS: Record<string, string> = { '(none)': 'Unknown', '(other)': 'Other' };
 
 /**
- * One period of a metric split by a dimension. A single value is stated, a handful of shares of a
+ * A metric split by a dimension over a range of days. A single value is stated, a handful of shares of a
  * whole make a donut, and anything longer becomes ranked bars, which compare without a legend.
  */
 @Component({
@@ -30,6 +30,11 @@ const KEY_LABELS: Record<string, string> = { '(none)': 'Unknown', '(other)': 'Ot
     }
     @if (breakdown().truncated) {
       <p class="mt-0.5 text-meta text-ink-4">The rarest values are folded into (other).</p>
+    }
+    @if (breakdown().missingDays > 0) {
+      <p class="mt-0.5 text-meta text-ink-4">
+        {{ breakdown().missingDays }} days of this range are no longer kept and are left out.
+      </p>
     }
   `,
   host: { class: 'block' },

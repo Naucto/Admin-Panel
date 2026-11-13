@@ -1,0 +1,74 @@
+<button
+  type="button"
+  class="nc-button nc-button-ghost nc-button-sm"
+  [attr.aria-expanded]="open()"
+  (click)="open.set(!open())"
+>
+  <nc-icon name="flag" [size]="12" /> Posts {{ shown() }}/{{ markers().length }}
+</button>
+@if (open()) {
+  <button
+    type="button"
+    class="fixed inset-0 z-30 cursor-default"
+    aria-label="Close"
+    (click)="open.set(false)"
+  ></button>
+  <div class="nc-card absolute right-0 z-40 mt-0.25 w-[300px] p-1">
+    @if (markers().length === 0) {
+      <p class="text-meta text-ink-3">No post in this window.</p>
+    } @else {
+      <div class="mb-0.75 flex flex-wrap gap-0.5">
+        @for (channel of channels(); track channel.name) {
+          <button
+            type="button"
+            class="nc-chip"
+            [class.nc-chip-gold]="channel.shown"
+            [class.nc-chip-quiet]="!channel.shown"
+            [attr.aria-pressed]="channel.shown"
+            (click)="store.setAll(channel.markers, !channel.shown)"
+          >
+            {{ channel.name }} · {{ channel.markers.length }}
+          </button>
+        }
+      </div>
+      <ul class="max-h-[260px] overflow-auto">
+        @for (marker of newestFirst(); track marker.id) {
+          <li>
+            <label
+              class="flex cursor-pointer items-start gap-0.75 rounded-xs px-0.5 py-0.25 hover:bg-raised"
+            >
+              <input
+                type="checkbox"
+                class="mt-[3px]"
+                [checked]="isShown(marker)"
+                (change)="store.toggle(marker.id)"
+              />
+              <span class="min-w-0 flex-1">
+                <span class="block truncate text-body text-ink">{{ marker.label }}</span>
+                <span class="block text-micro text-ink-3">
+                  {{ instantLabel(marker.at) }}{{ marker.channel ? ' · ' + marker.channel : '' }}
+                </span>
+              </span>
+            </label>
+          </li>
+        }
+      </ul>
+      <div class="mt-0.75 flex gap-0.5">
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          (click)="store.setAll(markers(), true)"
+        >
+          Show all
+        </button>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          (click)="store.setAll(markers(), false)"
+        >
+          Hide all
+        </button>
+      </div>
+    }
+  </div>
+}

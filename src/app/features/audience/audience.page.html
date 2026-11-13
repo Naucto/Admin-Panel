@@ -54,7 +54,7 @@
     [state]="breakdownState()"
     [error]="panelError(breakdown)"
     emptyIcon="map"
-    [emptyTitle]="'No session ' + periodName() + ' yet'"
+    [emptyTitle]="'No session in ' + filters.rangeName()"
     (retry)="breakdown.reload()"
   >
     <select
@@ -92,7 +92,7 @@
 
   <nc-panel
     heading="Most visited pages"
-    [hint]="'Page views ' + periodName() + ', by page'"
+    [hint]="'Page views in ' + filters.rangeName() + ', by page'"
     [state]="pagesState()"
     [error]="panelError(pages)"
     emptyIcon="file"

@@ -1,0 +1,49 @@
+@if (value(); as chosen) {
+  <span class="nc-chip nc-chip-gold flex max-w-full items-center gap-0.5">
+    <span class="truncate normal-case">{{ chosen.name }}</span>
+    <span class="text-micro opacity-70">#{{ chosen.releaseId }}</span>
+    <button type="button" aria-label="Clear the game" (click)="clear()">
+      <nc-icon name="close" [size]="12" />
+    </button>
+  </span>
+} @else {
+  <input
+    type="search"
+    class="nc-select w-full min-w-[180px] normal-case"
+    autocomplete="off"
+    [placeholder]="label() || placeholder()"
+    [attr.aria-label]="placeholder()"
+    [value]="term()"
+    (input)="type($event)"
+    (focus)="focus()"
+    (blur)="blur()"
+    (keydown.enter)="chooseFirst($event)"
+    (keydown.escape)="open.set(false)"
+  />
+  @if (open()) {
+    <ul
+      class="nc-card absolute top-full left-0 z-30 mt-0.25 max-h-[260px] w-full min-w-[220px] overflow-auto p-0.25"
+      role="listbox"
+    >
+      @if (results.isLoading()) {
+        <li class="px-1 py-0.5 text-meta text-ink-3">Searching…</li>
+      } @else if ((results.value() ?? []).length === 0) {
+        <li class="px-1 py-0.5 text-meta text-ink-3">No published game matches.</li>
+      }
+      @for (game of results.value() ?? []; track game.releaseId) {
+        <li>
+          <button
+            type="button"
+            role="option"
+            class="flex w-full items-center gap-1 rounded-xs px-1 py-0.5 text-left text-body text-ink hover:bg-raised"
+            (mousedown)="$event.preventDefault()"
+            (click)="choose({ releaseId: game.releaseId, name: game.name })"
+          >
+            <span class="min-w-0 flex-1 truncate">{{ game.name }}</span>
+            <span class="font-mono text-micro text-ink-4">#{{ game.releaseId }}</span>
+          </button>
+        </li>
+      }
+    </ul>
+  }
+}

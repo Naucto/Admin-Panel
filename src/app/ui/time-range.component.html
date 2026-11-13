@@ -1,0 +1,91 @@
+<div class="nc-segmented" role="radiogroup" aria-label="Window">
+  @for (preset of presets; track preset.value) {
+    <button
+      type="button"
+      role="radio"
+      [attr.aria-checked]="store.preset() === preset.value"
+      (click)="choosePreset(preset.value)"
+    >
+      {{ preset.label }}
+    </button>
+  }
+</div>
+
+<form class="flex flex-wrap items-center gap-0.5" (submit)="$event.preventDefault(); apply()">
+  <label class="sr-only" for="nc-range-from">From, UTC</label>
+  <input
+    id="nc-range-from"
+    type="datetime-local"
+    class="nc-select w-[178px] normal-case"
+    [value]="fromText()"
+    (input)="fromText.set(text($event))"
+  />
+  <span class="text-meta text-ink-4" aria-hidden="true">to</span>
+  <label class="sr-only" for="nc-range-to">To, UTC</label>
+  <input
+    id="nc-range-to"
+    type="datetime-local"
+    class="nc-select w-[178px] normal-case"
+    [value]="toText()"
+    (input)="toText.set(text($event))"
+  />
+  <button type="submit" class="nc-button nc-button-sm" [disabled]="invalid()">Show</button>
+</form>
+
+<div class="flex items-center gap-0.25">
+  <button
+    type="button"
+    class="nc-button nc-button-ghost nc-button-sm"
+    aria-label="Earlier"
+    title="Earlier"
+    (click)="store.pan(-0.5)"
+  >
+    <nc-icon name="chevron-left" [size]="24" />
+  </button>
+  <button
+    type="button"
+    class="nc-button nc-button-ghost nc-button-sm"
+    aria-label="Later"
+    title="Later"
+    (click)="store.pan(0.5)"
+  >
+    <nc-icon name="chevron-right" [size]="24" />
+  </button>
+  <button
+    type="button"
+    class="nc-button nc-button-ghost nc-button-sm"
+    aria-label="Zoom out"
+    title="Zoom out"
+    (click)="store.zoomOut()"
+  >
+    <nc-icon name="zoom-out" [size]="24" />
+  </button>
+  <button
+    type="button"
+    class="nc-button nc-button-ghost nc-button-sm"
+    aria-label="Back to the previous window"
+    title="Back to the previous window"
+    [disabled]="store.history().length === 0"
+    (click)="store.back()"
+  >
+    <nc-icon name="undo" [size]="24" />
+  </button>
+</div>
+
+<label class="flex items-center gap-0.5">
+  <span class="label">Bucket</span>
+  <select class="nc-select" [value]="store.bucket()" (change)="chooseBucket(text($event))">
+    @for (option of bucketOptions(); track option.value) {
+      <option [value]="option.value" [selected]="option.value === store.bucket()">
+        {{ option.label }}
+      </option>
+    }
+  </select>
+</label>
+
+<span class="text-meta text-ink-3">
+  {{ span() }} · UTC
+  @if (store.following()) {
+    · follows now
+  }
+</span>

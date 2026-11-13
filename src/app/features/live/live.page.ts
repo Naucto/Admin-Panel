@@ -8,12 +8,18 @@ import {
   signal,
 } from '@angular/core';
 
+import { RouterLink } from '@angular/router';
+
 import { presenceChart } from '../../charts/options';
 import type { ChartInk } from '../../charts/palette';
 import { AnalyticsApi } from '../../core/analytics.api';
+import { MarkerVisibilityStore } from '../../core/marker-visibility.store';
 import { formatCount } from '../../core/metric-catalog';
-import type { PresenceSample } from '../../core/types';
+import { TimelineApi } from '../../core/timeline.api';
+import type { ActivityItem, PresenceSample } from '../../core/types';
 import { ChartDirective } from '../../ui/chart.directive';
+import { IconComponent } from '../../ui/icon.component';
+import { MarkerFilterComponent } from '../../ui/marker-filter.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { SegmentedComponent } from '../../ui/segmented.component';
@@ -41,12 +47,21 @@ function thin(samples: PresenceSample[], every: number): PresenceSample[] {
 
 @Component({
   selector: 'nc-live-page',
-  imports: [ChartDirective, PanelComponent, SegmentedComponent],
+  imports: [
+    ChartDirective,
+    IconComponent,
+    MarkerFilterComponent,
+    PanelComponent,
+    RouterLink,
+    SegmentedComponent,
+  ],
   templateUrl: './live.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export default class LivePage {
   private readonly api = inject(AnalyticsApi);
+  private readonly timelines = inject(TimelineApi);
+  private readonly visibility = inject(MarkerVisibilityStore);
 
   protected readonly live = resource({ loader: () => this.api.live() });
   protected readonly window = signal<HistoryWindow>('24h');
@@ -63,10 +78,29 @@ export default class LivePage {
     },
   });
   protected readonly updatedAt = signal(new Date());
+  protected readonly historyRange = computed(() => {
+    const to = Date.now();
+    return { from: to - (this.window() === '7d' ? 7 * 24 : 24) * HOUR_MS, to };
+  });
+  protected readonly markers = resource({
+    params: () => this.historyRange(),
+    loader: ({ params }) => this.timelines.markers(params),
+  });
+  protected readonly recent = resource({
+    loader: () => {
+      const to = Date.now() + 60_000;
+      return this.timelines.activity({ from: to - HOUR_MS, to }, 60);
+    },
+  });
+  protected readonly timelineLink = computed(() => {
+    const { from, to } = this.historyRange();
+    return { from: new Date(from).toISOString(), to: new Date(to).toISOString() };
+  });
 
   constructor() {
     const timer = setInterval(() => {
       this.live.reload();
+      this.recent.reload();
       this.updatedAt.set(new Date());
     }, REFRESH_MS);
     inject(DestroyRef).onDestroy(() => {
@@ -86,10 +120,30 @@ export default class LivePage {
         value: now.activeBrowsers,
         hint: 'accepted analytics, active this minute',
       },
-      { label: 'Anonymous tabs', value: now.anonTabs, hint: 'declined or not asked, an estimate' },
+      {
+        label: 'Anonymous tabs',
+        value: now.anonTabs,
+        hint: this.answers() ?? 'declined or not answered, an estimate',
+      },
       { label: 'Accounts', value: now.accounts, hint: 'signed in with a tab open' },
     ];
   });
+  /** The anonymous tabs of this minute by what they answered, when the backend says. */
+  private readonly answers = computed(() => {
+    const answers = this.live.value()?.anonymousByAnswer;
+    if (!answers) {
+      return null;
+    }
+    const parts = [
+      `${formatCount(answers.declined)} declined`,
+      `${formatCount(answers.unanswered)} not answered`,
+    ];
+    if (answers.unknown > 0) {
+      parts.push(`${formatCount(answers.unknown)} not sent`);
+    }
+    return parts.join(' · ');
+  });
+
   protected readonly activities = computed(() => {
     const now = this.current();
     if (!now) {
@@ -128,8 +182,23 @@ export default class LivePage {
       return null;
     }
     const samples = thin(value.samples, this.window() === '7d' ? 15 : 1);
-    return (ink: ChartInk) => presenceChart(samples, true, ink);
+    const markers = this.visibility.visible(this.markers.value() ?? []);
+    return (ink: ChartInk) => presenceChart(samples, true, ink, { markers, zoom: true });
   });
+
+  protected describe(item: ActivityItem): string {
+    const labels: Record<ActivityItem['kind'], string> = {
+      FIRST_VISIT: 'First visit',
+      FIRST_PLAY: `First play · ${item.game ?? 'a deleted game'}`,
+      SIGNUP: item.journey ? 'Account created' : 'Account created, analytics declined',
+      PROJECT_CREATED: 'Project created',
+      RELEASE_PUBLISHED: `Game published · ${item.game ?? ''}`,
+      RELEASE_UNPUBLISHED: `Game unpublished · ${item.game ?? ''}`,
+      MP_SESSION: `Multiplayer · ${item.game ?? 'a deleted game'}`,
+      ANONYMOUS_PLAYS: `${formatCount(item.count)} anonymous play${item.count > 1 ? 's' : ''} · ${item.game ?? 'a deleted game'} · ${item.consent === 'DECLINED' ? 'declined' : item.consent === 'UNANSWERED' ? 'not answered' : 'answer not sent'}${item.signedIn ? ', signed in' : ''}`,
+    };
+    return labels[item.kind];
+  }
 
   protected readonly formatCount = formatCount;
   protected readonly panelError = panelError;

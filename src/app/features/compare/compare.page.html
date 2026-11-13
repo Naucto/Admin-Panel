@@ -1,0 +1,155 @@
+<section class="nc-card flex flex-col gap-1.25 px-2 py-1.5" aria-label="What the chart reads">
+  <nc-time-range />
+
+  <div class="flex flex-col gap-0.5">
+    @for (one of series(); track one.id) {
+      <div class="flex flex-wrap items-center gap-0.75">
+        <span class="h-[2px] w-[16px] shrink-0" [style.background]="one.colour"></span>
+        <select
+          class="nc-select max-w-[260px]"
+          aria-label="Metric"
+          (change)="change(one.id, 'metric', $event)"
+        >
+          @for (option of metricOptions; track option.value) {
+            <option [value]="option.value" [selected]="option.value === one.metric">
+              {{ option.label }}
+            </option>
+          }
+        </select>
+        @if (labelOf(one.metric).byGame) {
+          <nc-game-picker
+            class="w-[200px]"
+            label="Every game"
+            [value]="gameOf(one)"
+            (valueChange)="setGame(one.id, $event)"
+          />
+        }
+        <select
+          class="nc-select max-w-[200px]"
+          aria-label="Source"
+          [disabled]="!labelOf(one.metric).bySource"
+          (change)="change(one.id, 'source', $event)"
+        >
+          <option value="" [selected]="one.source === null">Every source</option>
+          @for (source of sources.value() ?? []; track source.source) {
+            <option [value]="source.source" [selected]="source.source === one.source">
+              {{ sourceName(source.source) }}
+            </option>
+          }
+        </select>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          aria-label="Remove this series"
+          title="Remove this series"
+          (click)="removeSeries(one.id)"
+        >
+          <nc-icon name="close" [size]="12" />
+        </button>
+      </div>
+    }
+    <div class="flex flex-wrap items-center gap-1">
+      <button
+        type="button"
+        class="nc-button nc-button-sm"
+        [disabled]="series().length >= maxSeries"
+        (click)="add()"
+      >
+        <nc-icon name="plus" [size]="12" /> Add a series
+      </button>
+      <nc-segmented label="Scale" [options]="modes" [(value)]="mode" />
+      <nc-segmented label="Marks" [options]="kinds" [(value)]="kind" />
+      <nc-marker-filter [markers]="markers.value() ?? []" />
+    </div>
+  </div>
+
+  <form class="flex flex-wrap items-center gap-0.5" (submit)="$event.preventDefault(); saveView()">
+    <span class="label mr-0.5">Saved in this browser</span>
+    @for (view of views(); track view.name) {
+      <span class="nc-chip nc-chip-quiet flex items-center gap-0.5">
+        <button type="button" (click)="loadView(view)">{{ view.name }}</button>
+        <button
+          type="button"
+          [attr.aria-label]="'Delete ' + view.name"
+          (click)="deleteView(view.name)"
+        >
+          ✕
+        </button>
+      </span>
+    }
+    <input
+      class="nc-select w-[160px] normal-case"
+      placeholder="Name this chart"
+      aria-label="Name of the chart to save"
+      maxlength="40"
+      [value]="viewName()"
+      (input)="viewName.set(text($event))"
+    />
+    <button
+      type="submit"
+      class="nc-button nc-button-ghost nc-button-sm"
+      [disabled]="viewName().trim() === ''"
+    >
+      Save
+    </button>
+  </form>
+</section>
+
+<nc-panel
+  class="mt-2"
+  heading="Compare"
+  [hint]="mode() === 'peak' ? 'Each series as a share of its own peak' : 'Counts per bucket'"
+  [state]="state()"
+  [error]="panelError(data)"
+  emptyIcon="chart"
+  emptyTitle="Add a series"
+  emptyHint="Pick up to eight metrics, each for a game or a source of its own."
+  (retry)="data.reload()"
+>
+  <div
+    class="h-[380px] transition-opacity"
+    [class.opacity-60]="data.isLoading()"
+    [ncChart]="chart()"
+  ></div>
+</nc-panel>
+
+@if (table(); as data) {
+  <nc-panel class="mt-2" heading="As a table" hint="Counts per bucket, UTC">
+    <div class="max-h-[420px] overflow-auto">
+      <table class="nc-table">
+        <thead class="sticky top-0 bg-panel">
+          <tr>
+            <th>Bucket</th>
+            @for (column of data.columns; track column.name) {
+              <th class="num">
+                <span
+                  class="mr-0.5 inline-block h-[2px] w-[10px] align-middle"
+                  [style.background]="column.colour"
+                ></span>
+                {{ column.name }}
+              </th>
+            }
+          </tr>
+          <tr>
+            <th title="Peaks take the highest bucket; players count each browser once">
+              Whole window
+            </th>
+            @for (total of data.totals; track $index) {
+              <th class="num text-ink">{{ total === null ? '--' : formatCount(total) }}</th>
+            }
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of data.rows; track row.at) {
+            <tr>
+              <td class="whitespace-nowrap">{{ row.at }}</td>
+              @for (value of row.values; track $index) {
+                <td class="num">{{ value === null ? '--' : formatCount(value) }}</td>
+              }
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  </nc-panel>
+}
