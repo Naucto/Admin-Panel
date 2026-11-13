@@ -1,0 +1,114 @@
+<nc-panel
+  heading="Bug reports"
+  hint="Newest first. Pick one to read it and triage it."
+  [state]="bugsState()"
+  [error]="panelError(bugs)"
+  emptyIcon="bug"
+  [emptyTitle]="emptyTitle()"
+  [emptyHint]="emptyHint()"
+  [minHeight]="160"
+  (retry)="bugs.reload()"
+>
+  <nc-segmented actions label="Show" [options]="views" [(value)]="view" />
+  <select
+    actions
+    class="nc-select"
+    aria-label="Category"
+    [value]="category()"
+    (change)="setCategory($any($event.target).value)"
+  >
+    <option value="">All categories</option>
+    @for (option of categories; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+  @if (bugs.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th class="w-[56px]">#</th>
+            <th>Title</th>
+            <th>Category</th>
+            <th>Account</th>
+            <th>Game</th>
+            <th>Age</th>
+            <th>Status</th>
+            <th class="w-[32px]"><span class="sr-only">Screenshot</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (bug of value.items; track bug.id) {
+            <tr class="cursor-pointer" (click)="open(bug)">
+              <td class="font-mono text-ink-3">#{{ bug.id }}</td>
+              <td>
+                <a
+                  class="block max-w-[320px] truncate text-ink hover:underline"
+                  [routerLink]="['/bugs', bug.id]"
+                  [title]="bug.title"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ bug.title }}
+                </a>
+              </td>
+              <td>
+                <span class="nc-chip nc-chip-quiet">{{ categoryLabels[bug.category] }}</span>
+              </td>
+              <td>
+                <nc-account-cell class="max-w-[220px]" [account]="bug.account" />
+              </td>
+              <td>
+                @if (bug.release; as release) {
+                  <span class="block max-w-[160px] truncate" [title]="release.name">{{
+                    release.name
+                  }}</span>
+                } @else {
+                  <span class="text-ink-4">--</span>
+                }
+              </td>
+              <td class="whitespace-nowrap text-ink-3" [title]="dayTime(bug.createdAt) + ' UTC'">
+                {{ shortAgo(bug.createdAt) }}
+              </td>
+              <td>
+                <span [class]="bugStatusChip(bug.status)">{{ statusLabels[bug.status] }}</span>
+              </td>
+              <td>
+                @if (bug.hasScreenshot) {
+                  <nc-icon
+                    name="camera"
+                    [size]="12"
+                    class="text-ink-3"
+                    role="img"
+                    title="Has a screenshot"
+                    aria-label="Has a screenshot"
+                  />
+                }
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    @if (pages() > 1) {
+      <div class="mt-1 flex items-center justify-end gap-1">
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === 1"
+          (click)="page.set(page() - 1)"
+        >
+          <nc-icon name="chevron-left" [size]="12" /> Previous
+        </button>
+        <span class="font-mono text-label text-ink-3">{{ page() }} / {{ pages() }}</span>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm"
+          [disabled]="page() === pages()"
+          (click)="page.set(page() + 1)"
+        >
+          Next <nc-icon name="chevron-right" [size]="12" />
+        </button>
+      </div>
+    }
+  }
+</nc-panel>

@@ -1,0 +1,54 @@
+@if (account().deleted) {
+  <p class="flex items-center gap-0.5">
+    <span class="nc-chip nc-chip-quiet">Deleted account</span>
+    <span class="font-mono text-micro text-ink-4">#{{ account().id }}</span>
+  </p>
+} @else {
+  <div class="flex items-center gap-1">
+    @if (!compact()) {
+      <span
+        class="flex size-[36px] shrink-0 items-center justify-center rounded-xs bg-raised font-mono text-ui text-gold-ink"
+      >
+        {{ name().charAt(0).toUpperCase() }}
+      </span>
+    }
+    <div class="max-w-[280px] min-w-0" [class.text-meta]="compact()">
+      <p class="truncate text-ink" [title]="name()">{{ name() }}</p>
+      <p class="truncate">
+        @if (account().profileUrl; as profile) {
+          <a
+            class="inline-flex items-center gap-0.25 text-ink-3 hover:text-ink"
+            [href]="profile"
+            target="_blank"
+            rel="noopener noreferrer"
+            (click)="$event.stopPropagation()"
+          >
+            &#64;{{ account().username }}
+            <nc-icon name="external-link" [size]="12" />
+          </a>
+        } @else {
+          <span class="text-ink-3">&#64;{{ account().username }}</span>
+        }
+      </p>
+      <p class="flex min-w-0 items-center gap-0.25">
+        <a
+          class="truncate text-ink-3 hover:text-ink"
+          [title]="account().email"
+          [href]="'mailto:' + account().email"
+          (click)="$event.stopPropagation()"
+        >
+          {{ account().email }}
+        </a>
+        <button
+          type="button"
+          class="nc-button nc-button-ghost nc-button-sm h-[20px] shrink-0 px-0.5"
+          aria-label="Copy email"
+          title="Copy email"
+          (click)="copyEmail($event)"
+        >
+          <nc-icon name="copy" [size]="12" />
+        </button>
+      </p>
+    </div>
+  </div>
+}

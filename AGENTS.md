@@ -5,14 +5,14 @@ is and how to run it; this file is how the code is laid out and what to keep in 
 
 ## Layout
 
-| Path               | Purpose                                                                                                                                                                          |
-| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `src/app/core`     | Session (`auth.store.ts`), API access (`api.service.ts`, `analytics.api.ts`, `accounts.api.ts`), the response types (`types.ts`), shared filters, dates, metric labels and units |
-| `src/app/charts`   | ECharts setup, the theme read from the tokens, and pure option builders (`options.ts`)                                                                                           |
-| `src/app/ui`       | The console's small kit: panel, stat tile, segmented control, chart directive, breakdown view, icons, confirmations and toasts                                                   |
-| `src/app/features` | One folder per page, each lazily loaded                                                                                                                                          |
-| `src/styles`       | `naucto-tokens.css`, copied from the Naucto Frontend                                                                                                                             |
-| `nginx/`           | The production server and its `/api` proxy                                                                                                                                       |
+| Path               | Purpose                                                                                                                                                                     |
+| ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `src/app/core`     | Session (`auth.store.ts`), API access (`api.service.ts` and a `*.api.ts` per backend area), the response types (`types.ts`), shared filters, dates, metric labels and units |
+| `src/app/charts`   | ECharts setup, the theme read from the tokens, and pure option builders (`options.ts`)                                                                                      |
+| `src/app/ui`       | The console's small kit: panel, stat tile, segmented control, chart directive, breakdown view, icons, confirmations and toasts                                              |
+| `src/app/features` | One folder per page, each lazily loaded                                                                                                                                     |
+| `src/styles`       | `naucto-tokens.css`, copied from the Naucto Frontend                                                                                                                        |
+| `nginx/`           | The production server and its `/api` proxy                                                                                                                                  |
 
 ## Conventions
 
@@ -31,6 +31,8 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   changes, change it in the same branch.
 - No inline scripts and no third-party origins: the production CSP refuses both. That is also why
   critical CSS inlining is off in `angular.json`.
+- `img-src` allows `blob:` besides `'self'`: bug screenshots need the bearer, so they are fetched
+  and shown through object URLs.
 - Component selectors, directives and global classes take the `nc` prefix (`nc-panel`,
   `ncChart`, `.nc-button`). Never name anything `ad-…`, `ads`, `banner` or `sponsor`: ad blockers
   (Opera's built-in one, uBlock, AdBlock) hide elements by such names through EasyList's generic
@@ -66,6 +68,26 @@ and the top bar's range does not apply.
   posts reads them through it, so `nc-marker-filter` hides a post everywhere at once.
 - Saved Compare charts, the chosen Timeline rows and the hidden posts live in `localStorage`, a
   convenience of one browser. Posts themselves are server data (`admin/analytics/markers`).
+
+## Support
+
+The Support group of the sidebar reads what people send from Naucto itself.
+
+- Feedback (`features/ratings`) charts the platform ratings and lists them with their comments. It
+  is a stats page: the top bar's range and grain apply.
+- Bug reports (`features/bugs`) lists the reports and opens each on its own route, `bugs/:id`. The
+  `id` reaches the page as an input through `withComponentInputBinding`. `core/bug-count.store.ts`
+  keeps the sidebar's count of new reports, read at boot, every minute and after a triage save.
+- Crashes (`features/crashes`) lists crashes, one per error message, and resolves, ignores or
+  reopens them. A crash is open while the team has not closed it, whatever its finer status.
+- The backend keeps all three as one report under `/admin/reports`. `core/report-views.ts` turns a
+  report into the rating, bug report or crash a page shows, so a page never reads the fields of
+  another kind. `UserFeedbackApi` (`core/user-feedback.api.ts`, named apart from
+  `ui/feedback.service.ts`, the console's own toasts and confirmations) reads ratings and bug
+  reports, and `CrashesApi` reads crashes.
+- A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and shown
+  through an object URL that the page revokes when it leaves the report. That is the reason for
+  `blob:` in the CSP's `img-src`.
 
 ## Before finishing
 

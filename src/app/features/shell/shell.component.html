@@ -28,6 +28,26 @@
       }
     </div>
 
+    <p class="label mt-2 px-2.25 pb-0.75">Support</p>
+    <div class="flex flex-col gap-0.25 px-1">
+      @for (item of supportNav; track item.path) {
+        <a
+          class="nc-nav-link"
+          [routerLink]="item.path"
+          routerLinkActive="active"
+          (click)="navOpen.set(false)"
+        >
+          <nc-icon [name]="item.icon" [size]="24" />
+          {{ item.label }}
+          @if (badges()[item.path]; as count) {
+            <span class="nc-chip nc-chip-warn ml-auto" [attr.aria-label]="count + ' new'">{{
+              count
+            }}</span>
+          }
+        </a>
+      }
+    </div>
+
     <p class="label mt-2 px-2.25 pb-0.75">Administration</p>
     <div class="flex flex-col gap-0.25 px-1">
       @for (item of adminNav; track item.path) {
