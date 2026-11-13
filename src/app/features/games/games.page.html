@@ -13,11 +13,11 @@
 <nc-panel
   class="mt-2"
   heading="Top games"
-  [hint]="'Published games ' + periodName() + '. Pick one to see its own trend.'"
+  [hint]="'Published games in ' + filters.rangeName() + '. Pick one to see its own trend.'"
   [state]="gamesState()"
   [error]="panelError(games)"
   emptyIcon="trophy"
-  [emptyTitle]="'No game played ' + periodName() + ' yet'"
+  [emptyTitle]="'No game played in ' + filters.rangeName()"
   [minHeight]="160"
   (retry)="games.reload()"
 >
@@ -95,13 +95,24 @@
               </td>
               <td class="num">{{ formatCount(game.plays) }}</td>
               <td class="num">{{ formatMetric('playtime_ms', game.playtimeMs) }}</td>
-              <td class="num">{{ formatCount(game.players) }}</td>
+              <td class="num">{{ game.players === null ? 'n/a' : formatCount(game.players) }}</td>
               <td class="num">{{ formatCount(game.mpSessions) }}</td>
             </tr>
           }
         </tbody>
       </table>
     </div>
+    @if (playersUnknown()) {
+      <p class="mt-1 text-meta text-ink-4">
+        Players are distinct people, counted from the last 90 days of detail only. A longer range
+        has no count.
+      </p>
+    }
+    @if (value.missingDays > 0) {
+      <p class="mt-1 text-meta text-ink-4">
+        {{ value.missingDays }} days of this range are no longer kept and are left out.
+      </p>
+    }
     @if (pages() > 1) {
       <div class="mt-1 flex items-center justify-end gap-1">
         <button

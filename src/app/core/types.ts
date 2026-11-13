@@ -48,9 +48,11 @@ export interface Series {
 export interface Breakdown {
   metric: string;
   dimension: string;
-  grain: Grain;
-  periodStart: string;
+  from: string;
+  to: string;
   status: PointStatus;
+  /** Days of the range whose values are no longer kept, left out of the values. */
+  missingDays: number;
   truncated: boolean;
   values: { key: string; value: number }[];
 }
@@ -140,14 +142,16 @@ export interface GameStats {
   name: string | null;
   plays: number;
   playtimeMs: number;
-  players: number;
+  /** Null over a range reaching before the raw data kept: distinct players cannot be added. */
+  players: number | null;
   mpSessions: number;
 }
 
 export interface Games {
-  grain: Grain;
-  periodStart: string;
+  from: string;
+  to: string;
   status: PointStatus;
+  missingDays: number;
   items: GameStats[];
   total: number;
   page: number;

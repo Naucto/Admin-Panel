@@ -11,7 +11,7 @@ import { trendChart } from '../../charts/options';
 import { type ChartInk, SERIES_COLOURS } from '../../charts/palette';
 import { shapeOf, total, valued } from '../../charts/series-data';
 import { AnalyticsApi } from '../../core/analytics.api';
-import { addDays, daysBetween, periodLabel, utcDay } from '../../core/dates';
+import { addDays, daysBetween, periodLabel } from '../../core/dates';
 import { FiltersStore } from '../../core/filters.store';
 import {
   DIMENSION_LABELS,
@@ -117,15 +117,9 @@ export default class ExplorerPage {
   protected readonly breakdown = resource({
     params: () =>
       this.dimension()
-        ? {
-            metric: this.metric(),
-            dimension: this.dimension(),
-            grain: this.filters.periodGrain(),
-            day: utcDay(),
-          }
+        ? { metric: this.metric(), dimension: this.dimension(), range: this.filters.range() }
         : undefined,
-    loader: ({ params }) =>
-      this.api.breakdown(params.metric, params.dimension, params.grain, params.day),
+    loader: ({ params }) => this.api.breakdown(params.metric, params.dimension, params.range),
   });
 
   protected readonly seriesState = computed(() =>

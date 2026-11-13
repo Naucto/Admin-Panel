@@ -57,8 +57,8 @@ export class AnalyticsApi {
     return this.api.get('/admin/analytics/overview', { grain, day });
   }
 
-  breakdown(metric: string, dimension: string, grain: Grain, day: string): Promise<Breakdown> {
-    return this.api.get('/admin/analytics/breakdown', { metric, dimension, grain, day });
+  breakdown(metric: string, dimension: string, range: DayRange): Promise<Breakdown> {
+    return this.api.get('/admin/analytics/breakdown', { metric, dimension, ...range });
   }
 
   live(): Promise<Live> {
@@ -77,8 +77,8 @@ export class AnalyticsApi {
     return this.api.get('/admin/analytics/funnel', { ...range });
   }
 
-  games(grain: Grain, day: string, sort: GameSort, page: number, limit = 10): Promise<Games> {
-    return this.api.get('/admin/analytics/games', { grain, day, sort, page, limit });
+  games(range: DayRange, sort: GameSort, page: number, limit = 10): Promise<Games> {
+    return this.api.get('/admin/analytics/games', { ...range, sort, page, limit });
   }
 
   health(): Promise<Health> {

@@ -12,7 +12,6 @@ import { retentionChart, trendChart } from '../../charts/options';
 import { type ChartInk, SERIES_COLOURS } from '../../charts/palette';
 import { shapeOf, total } from '../../charts/series-data';
 import { AnalyticsApi } from '../../core/analytics.api';
-import { utcDay } from '../../core/dates';
 import { FiltersStore } from '../../core/filters.store';
 import { DIMENSION_LABELS, formatMetric } from '../../core/metric-catalog';
 import type { RetentionKind, Series } from '../../core/types';
@@ -68,23 +67,18 @@ export default class AudiencePage {
     label: DIMENSION_LABELS[value] ?? value,
   }));
   protected readonly breakdown = resource({
-    params: () => ({
-      dimension: this.dimension(),
-      grain: this.filters.periodGrain(),
-      day: utcDay(),
-    }),
-    loader: ({ params }) =>
-      this.api.breakdown('sessions', params.dimension, params.grain, params.day),
+    params: () => ({ dimension: this.dimension(), range: this.filters.range() }),
+    loader: ({ params }) => this.api.breakdown('sessions', params.dimension, params.range),
   });
   protected readonly preferDonut = computed(() => SHARE_DIMENSIONS.includes(this.dimension()));
   protected readonly breakdownHint = computed(
     () =>
-      `Sessions started ${this.periodName()}, by ${(DIMENSION_LABELS[this.dimension()] ?? this.dimension()).toLowerCase()}`,
+      `Sessions started in ${this.filters.rangeName()}, by ${(DIMENSION_LABELS[this.dimension()] ?? this.dimension()).toLowerCase()}`,
   );
 
   protected readonly pages = resource({
-    params: () => ({ grain: this.filters.periodGrain(), day: utcDay() }),
-    loader: ({ params }) => this.api.breakdown('pageviews', 'route', params.grain, params.day),
+    params: () => this.filters.range(),
+    loader: ({ params }) => this.api.breakdown('pageviews', 'route', params),
   });
 
   protected readonly retentionKind = signal<RetentionKind>('VISITOR');
@@ -96,10 +90,6 @@ export default class AudiencePage {
     params: () => ({ kind: this.retentionKind(), range: this.filters.range() }),
     loader: ({ params }) => this.api.retention(params.kind, params.range),
   });
-
-  protected readonly periodName = computed(() =>
-    this.filters.periodGrain() === 'WEEK' ? 'this week' : 'this month',
-  );
 
   private emptyOf(names: readonly string[]) {
     return (set: Record<string, Series>) =>

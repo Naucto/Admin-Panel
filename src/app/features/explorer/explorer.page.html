@@ -103,9 +103,7 @@
     @if (dimensions().length > 0) {
       <nc-panel
         heading="Split"
-        [hint]="
-          'This ' + (filters.periodGrain() === 'WEEK' ? 'week' : 'month') + ', by one dimension'
-        "
+        [hint]="'Over ' + filters.rangeName() + ', by one dimension'"
         [state]="dimension() ? breakdownState() : 'ready'"
         [error]="panelError(breakdown)"
         emptyIcon="chart-bar"
