@@ -199,6 +199,9 @@
   .nc-chip-gold {
     color: var(--nc-gold-ink);
   }
+  .nc-chip-danger {
+    color: var(--nc-hot-ink);
+  }
   .nc-chip-quiet {
     color: var(--nc-ink-3);
   }

@@ -2,12 +2,13 @@ import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterOutlet } from '@angular/router';
 
 import { ThemeService } from './core/theme.service';
+import { ActionDialogComponent } from './ui/action-dialog.component';
 import { FeedbackComponent } from './ui/feedback.component';
 
 @Component({
   selector: 'app-root',
-  imports: [RouterOutlet, FeedbackComponent],
-  template: '<router-outlet /><nc-feedback />',
+  imports: [RouterOutlet, ActionDialogComponent, FeedbackComponent],
+  template: '<router-outlet /><nc-action-dialog /><nc-feedback />',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class App {

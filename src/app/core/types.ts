@@ -594,3 +594,223 @@ export interface AdminReportList {
   page: number;
   limit: number;
 }
+
+/* Moderation: the backend's `admin/moderation/*` responses. */
+
+export type ModerationTargetType = 'USER' | 'PROJECT' | 'COMMENT';
+
+export type ModerationReason =
+  | 'SPAM'
+  | 'HARASSMENT'
+  | 'HATE'
+  | 'SEXUAL_CONTENT'
+  | 'VIOLENCE'
+  | 'ILLEGAL'
+  | 'IMPERSONATION'
+  | 'STOLEN_CONTENT'
+  | 'OTHER';
+
+export type FlagStatus = 'OPEN' | 'ACTIONED' | 'DISMISSED';
+
+export type ModerationActionType =
+  | 'ACCOUNT_WARNED'
+  | 'ACCOUNT_SUSPENDED'
+  | 'ACCOUNT_REINSTATED'
+  | 'ACCOUNT_DELETED'
+  | 'PROFILE_CLEARED'
+  | 'ROLE_CHANGED'
+  | 'PROJECT_HIDDEN'
+  | 'PROJECT_RESTORED'
+  | 'PROJECT_DELETED'
+  | 'COMMENT_HIDDEN'
+  | 'COMMENT_RESTORED'
+  | 'COMMENT_DELETED'
+  | 'FLAGS_DISMISSED'
+  | 'DRAFT_VIEWED';
+
+/** Where a target stands. Which values a target can take depends on what it is. */
+export type TargetState = 'VISIBLE' | 'UNPUBLISHED' | 'HIDDEN' | 'SUSPENDED' | 'DELETED' | 'GONE';
+
+/**
+ * What the signed-in staff member may do about a target, as the backend decided it. HIDE, RESTORE
+ * and DELETE bear on the game or the comment, the others on the account that owns it.
+ */
+export type ModerationOperation =
+  | 'DISMISS'
+  | 'HIDE'
+  | 'RESTORE'
+  | 'DELETE'
+  | 'WARN'
+  | 'SUSPEND'
+  | 'REINSTATE'
+  | 'CLEAR_PROFILE'
+  | 'DELETE_ACCOUNT';
+
+export type CaseView = 'OPEN' | 'RESOLVED' | 'ALL';
+export type CaseSort = 'lastFlagged' | 'flags';
+export type CaseStatus = 'OPEN' | 'RESOLVED';
+export type AccountStanding = 'GOOD' | 'WARNED' | 'SUSPENDED';
+export type ProjectModerationState = 'PUBLISHED' | 'UNPUBLISHED' | 'HIDDEN';
+export type CommentModerationState = 'VISIBLE' | 'HIDDEN' | 'DELETED';
+export type ProfilePart = 'NICKNAME' | 'DESCRIPTION' | 'PICTURE' | 'BACKGROUND';
+
+export interface Page<T> {
+  items: T[];
+  total: number;
+  page: number;
+  limit: number;
+}
+
+/** An account as a moderation screen names it. */
+export interface ModerationAccountRef {
+  id: number;
+  username: string;
+  nickname: string | null;
+  role: RoleName;
+  deleted: boolean;
+  profileUrl: string | null;
+  email: string | null;
+}
+
+/** The text of a game, a comment or a profile at one moment. */
+export interface TargetContent {
+  title: string | null;
+  body: string | null;
+}
+
+export interface ModerationAction {
+  id: number;
+  action: ModerationActionType;
+  actor: ModerationAccountRef;
+  targetType: ModerationTargetType;
+  targetId: number;
+  targetLabel: string | null;
+  subject: ModerationAccountRef | null;
+  reason: ModerationReason | null;
+  publicMessage: string | null;
+  internalNote: string | null;
+  snapshot: TargetContent | null;
+  expiresAt: string | null;
+  createdAt: string;
+}
+
+export interface CaseTarget {
+  type: ModerationTargetType;
+  id: number;
+  state: TargetState;
+  label: string | null;
+  owner: ModerationAccountRef | null;
+  projectId: number | null;
+  projectName: string | null;
+  playUrl: string | null;
+  previewPlayUrl: string | null;
+  previewEditUrl: string | null;
+}
+
+export interface CaseSummary {
+  target: CaseTarget;
+  status: CaseStatus;
+  openFlags: number;
+  totalFlags: number;
+  reasons: ModerationReason[];
+  firstFlaggedAt: string;
+  lastFlaggedAt: string;
+}
+
+export interface CaseFlag {
+  id: number;
+  reporter: ModerationAccountRef;
+  reason: ModerationReason;
+  details: string | null;
+  snapshot: TargetContent;
+  status: FlagStatus;
+  createdAt: string;
+  resolvedAt: string | null;
+  resolvedBy: ModerationAccountRef | null;
+}
+
+export interface CaseDetail extends CaseSummary {
+  current: TargetContent | null;
+  flags: CaseFlag[];
+  history: ModerationAction[];
+  ownerHistory: ModerationAction[];
+  allowedActions: ModerationOperation[];
+}
+
+export interface OpenCaseCount {
+  openCases: number;
+  openFlags: number;
+}
+
+export interface Suspension {
+  since: string;
+  until: string | null;
+}
+
+export interface ModerationAccount extends ModerationAccountRef {
+  createdAt: string;
+  standing: AccountStanding;
+  suspension: Suspension | null;
+  warnings: number;
+  games: number;
+  comments: number;
+  openFlags: number;
+  flagsFiled: number;
+}
+
+export interface ModerationAccountDetail extends ModerationAccount {
+  description: string | null;
+  allowedActions: ModerationOperation[];
+}
+
+export interface ModerationProject {
+  id: number;
+  name: string;
+  shortDesc: string;
+  owner: ModerationAccountRef;
+  state: ProjectModerationState;
+  createdAt: string;
+  updatedAt: string;
+  publishedAt: string | null;
+  hiddenAt: string | null;
+  openFlags: number;
+  playUrl: string | null;
+  previewPlayUrl: string;
+  previewEditUrl: string;
+}
+
+export interface ModerationProjectDetail extends ModerationProject {
+  longDesc: string | null;
+  tags: string[];
+  collaborators: ModerationAccountRef[];
+  forkedFromId: number | null;
+  hasCover: boolean;
+  allowedActions: ModerationOperation[];
+}
+
+export interface ModerationComment {
+  id: number;
+  content: string;
+  author: ModerationAccountRef;
+  projectId: number;
+  projectName: string;
+  parentId: number | null;
+  state: CommentModerationState;
+  createdAt: string;
+  hiddenAt: string | null;
+  openFlags: number;
+  playUrl: string | null;
+  allowedActions: ModerationOperation[];
+}
+
+/** What a decision sends. Which fields a given decision takes is `core/moderation-format.ts`'s to say. */
+export interface ModerationDecision {
+  reason?: ModerationReason;
+  publicMessage?: string;
+  internalNote?: string;
+  resolveFlags?: boolean;
+  durationDays?: number;
+  parts?: ProfilePart[];
+  confirmation?: 'DELETE';
+  removePublishedGames?: boolean;
+}
