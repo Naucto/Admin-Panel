@@ -112,6 +112,15 @@
                 <nc-icon name="grid" [size]="12" /> See its games
               </a>
             }
+            @if (found.comments > 0) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm mt-1"
+                routerLink="/moderation/comments"
+                [queryParams]="{ author: found.id }"
+              >
+                <nc-icon name="message" [size]="12" /> See its comments
+              </a>
+            }
           </nc-panel>
         </div>
       </div>

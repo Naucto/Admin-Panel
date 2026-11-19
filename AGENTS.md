@@ -129,6 +129,9 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - All games (`all-games.page`, `game-detail.page`) lists every game, published or not, and takes
   `?creator=` for the games of one account. A cover is read as bytes like a bug screenshot, since
   a hidden game's cover is no longer served.
+- Comments (`comments.page`) lists every comment and opens a row under the list, as Crashes does,
+  with its decisions and what was done about it. It takes `?author=` and `?game=`. A comment has
+  no page of its own, which is why `panelRoute` gives it none.
 - Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
   with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
   count. A screen only reloads its own data when it resolves true. The yes or no of

@@ -58,6 +58,13 @@
               <nc-icon name="external-link" [size]="12" /> Open on Naucto
             </a>
           }
+          <a
+            class="nc-button nc-button-ghost nc-button-sm"
+            routerLink="/moderation/comments"
+            [queryParams]="{ game: found.id }"
+          >
+            <nc-icon name="message" [size]="12" /> Its comments
+          </a>
           @if (auth.canAct()) {
             <a
               class="nc-button nc-button-ghost nc-button-sm"
