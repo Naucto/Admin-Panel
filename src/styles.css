@@ -273,6 +273,8 @@
 
   .nc-dialog {
     width: min(440px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
     padding: 0;
     border: 1px solid var(--nc-line-strong);
     border-radius: var(--radius-md);

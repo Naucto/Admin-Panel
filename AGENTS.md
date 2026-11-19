@@ -120,8 +120,15 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - `core/moderation-format.ts` holds the labels, the chip tones, what the dialog of each operation
   asks for (`operationForm`) and the body it sends (`decisionOf`). It is pure and tested, so a
   screen never decides by itself which fields a decision takes.
-- Every decision goes through `ActionDialogService.ask`, mounted once at the root. The yes or no of
+- A case (`features/moderation/case.page`, `moderation/cases/:targetType/:targetId`) shows the
+  content as it is now, each report with what it kept when the content has changed since, what was
+  done, and the owner with their record.
+- Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
+  with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
+  count. A screen only reloads its own data when it resolves true. The yes or no of
   `FeedbackService.confirm` is for everything else.
+- `nc-operation-buttons` draws one button per allowed operation, so a role never sees a button the
+  backend would refuse.
 - Which operations a screen offers comes from the `allowedActions` the backend sends with a
   target, never from the role alone.
 

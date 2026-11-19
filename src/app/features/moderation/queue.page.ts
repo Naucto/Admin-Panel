@@ -7,11 +7,13 @@ import {
   resource,
   signal,
 } from '@angular/core';
+import { Router, RouterLink } from '@angular/router';
 
 import { dayTime, shortAgo } from '../../core/dates';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   CASE_VIEW_LABELS,
+  caseRoute,
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
@@ -48,6 +50,7 @@ const EMPTY_TITLES: Record<CaseView, string> = {
     IconComponent,
     PagerComponent,
     PanelComponent,
+    RouterLink,
     SegmentedComponent,
   ],
   templateUrl: './queue.page.html',
@@ -55,6 +58,7 @@ const EMPTY_TITLES: Record<CaseView, string> = {
 })
 export default class QueuePage {
   private readonly api = inject(ModerationApi);
+  private readonly router = inject(Router);
 
   protected readonly views = optionsOf(CASE_VIEW_LABELS);
   protected readonly types = optionsOf(TARGET_TYPE_LABELS);
@@ -105,6 +109,10 @@ export default class QueuePage {
     this.reason.set(value as ModerationReason | '');
   }
 
+  protected open(row: CaseSummary): void {
+    void this.router.navigate(caseRoute(row.target.type, row.target.id));
+  }
+
   protected label(row: CaseSummary): string {
     return row.target.label || `${TARGET_TYPE_LABELS[row.target.type]} #${row.target.id}`;
   }
@@ -116,6 +124,7 @@ export default class QueuePage {
       : null;
   }
 
+  protected readonly caseRoute = caseRoute;
   protected readonly typeLabels = TARGET_TYPE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
   protected readonly stateLabels = TARGET_STATE_LABELS;

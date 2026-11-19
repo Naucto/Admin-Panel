@@ -69,14 +69,21 @@
         </thead>
         <tbody>
           @for (row of value.items; track row.target.type + ':' + row.target.id) {
-            <tr>
+            <tr class="cursor-pointer" (click)="open(row)">
               <td>
                 <span class="nc-chip nc-chip-quiet">{{ typeLabels[row.target.type] }}</span>
               </td>
               <td>
                 <div class="flex max-w-[320px] min-w-0 flex-col">
                   <span class="flex min-w-0 items-center gap-0.25">
-                    <span class="truncate text-ink" [title]="label(row)">{{ label(row) }}</span>
+                    <a
+                      class="truncate text-ink hover:underline"
+                      [routerLink]="caseRoute(row.target.type, row.target.id)"
+                      [title]="label(row)"
+                      (click)="$event.stopPropagation()"
+                    >
+                      {{ label(row) }}
+                    </a>
                     @if (row.target.playUrl; as site) {
                       <a
                         class="shrink-0 text-ink-3 hover:text-ink"
@@ -85,6 +92,7 @@
                         rel="noopener noreferrer"
                         aria-label="Open on Naucto"
                         title="Open on Naucto"
+                        (click)="$event.stopPropagation()"
                       >
                         <nc-icon name="external-link" [size]="12" />
                       </a>

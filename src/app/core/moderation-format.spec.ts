@@ -8,8 +8,10 @@ import {
   draftProblem,
   emptyDraft,
   leadingReason,
+  operationDone,
   operationForm,
   operationLabel,
+  operationRequest,
   panelRoute,
   suspensionDays,
   suspensionLabel,
@@ -140,6 +142,48 @@ describe('what a decision sends', () => {
 
   it('keeps the confirmation word out of a content deletion', () => {
     expect(decisionOf('DELETE', filled())).not.toHaveProperty('confirmation');
+  });
+});
+
+describe('where an operation goes', () => {
+  const comment = { type: 'COMMENT', id: 7, ownerId: 3 } as const;
+  const game = { type: 'PROJECT', id: 5, ownerId: 3 } as const;
+  const profile = { type: 'USER', id: 3, ownerId: 3 } as const;
+
+  it('dismisses the case of the target', () => {
+    expect(operationRequest('DISMISS', comment)).toEqual({
+      method: 'POST',
+      path: '/admin/moderation/cases/COMMENT/7/dismiss',
+    });
+  });
+
+  it('hides, restores and deletes the game or the comment itself', () => {
+    expect(operationRequest('HIDE', game)?.path).toBe('/admin/moderation/projects/5/hide');
+    expect(operationRequest('RESTORE', comment)?.path).toBe('/admin/moderation/comments/7/restore');
+    expect(operationRequest('DELETE', game)).toEqual({
+      method: 'DELETE',
+      path: '/admin/moderation/projects/5',
+    });
+  });
+
+  it('sends an account operation to the owner of the target', () => {
+    expect(operationRequest('WARN', comment)?.path).toBe('/admin/moderation/accounts/3/warn');
+    expect(operationRequest('CLEAR_PROFILE', profile)?.path).toBe(
+      '/admin/moderation/accounts/3/clear-profile',
+    );
+    expect(operationRequest('DELETE_ACCOUNT', game)).toEqual({
+      method: 'DELETE',
+      path: '/admin/moderation/accounts/3',
+    });
+  });
+
+  it('has nowhere to send what bears on nothing', () => {
+    expect(operationRequest('SUSPEND', { ...game, ownerId: null })).toBeNull();
+    expect(operationRequest('HIDE', profile)).toBeNull();
+  });
+
+  it.each(OPERATIONS)('says what %s did', (operation) => {
+    expect(operationDone(operation, 'COMMENT')).toMatch(/\.$/);
   });
 });
 
