@@ -1,7 +1,8 @@
-import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router } from '@angular/router';
 
 import { AuthStore } from '../../core/auth.store';
+import { roleLabel } from '../../core/roles';
 import { ThemeService } from '../../core/theme.service';
 import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
@@ -17,6 +18,7 @@ export default class AccountPage {
   private readonly router = inject(Router);
   protected readonly theme = inject(ThemeService);
   protected readonly account = this.auth.account;
+  protected readonly role = computed(() => roleLabel(this.auth.role()));
 
   protected async signOut(): Promise<void> {
     await this.auth.logout();

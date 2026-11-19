@@ -41,6 +41,24 @@ is and how to run it; this file is how the code is laid out and what to keep in 
 - Commits: `[ADMIN] [TYPE] Capitalized message`, TYPE among ADD/REMOVE/UPDATE/REFACTO/CLEAN/FIX,
   with the Jira key in the body (`Refs NCTO-276`). Branch = Jira key.
 
+## Roles
+
+Three staff roles sign in, and the backend decides again on every request what each may do. The
+console only keeps from drawing what would be refused.
+
+- `core/roles.ts` says which areas a role opens (`canOpen`) and whether it changes anything
+  (`canAct`, `isAdmin`). `core/nav.ts` builds the sidebar and the landing page from it. Both are
+  pure and tested in `roles.spec.ts`.
+- An admin opens and does everything. A moderator opens moderation only. A viewer opens every area
+  and changes nothing: it gets each screen without the controls that write, never a disabled
+  button that explains nothing.
+- A route names its area through the `page()` helper of `app.routes.ts`, and `areaGuard` sends a
+  role that does not open it to where that role starts. A new page states its area there.
+- A control that writes is wrapped in `@if (auth.isAdmin())`, or `auth.canAct()` once moderators
+  share it. A read needs nothing.
+- Only an admin is given email addresses, so `email` is nullable on every account the API hands
+  over. Draw the address only when there is one.
+
 ## Timeline, posts and compare
 
 These pages read the backend's raw timeline (`core/timeline.api.ts`) between two instants rather

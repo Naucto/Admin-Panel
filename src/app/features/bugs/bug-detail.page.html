@@ -131,11 +131,15 @@
             </nc-panel>
           }
 
-          <nc-panel heading="Triage" hint="Only admins see the note">
+          <nc-panel
+            heading="Triage"
+            [hint]="auth.isAdmin() ? 'Only staff see the note' : 'Read only'"
+          >
             <label class="block">
               <span class="label">Status</span>
               <select
                 class="nc-select mt-0.5 block w-full"
+                [disabled]="!auth.isAdmin()"
                 [value]="status()"
                 (change)="setStatus($any($event.target).value)"
               >
@@ -149,23 +153,26 @@
               <textarea
                 class="nc-input mt-0.5 block h-auto min-h-[112px] py-1"
                 [maxLength]="noteMax"
+                [readOnly]="!auth.isAdmin()"
                 [value]="note()"
                 (input)="note.set($any($event.target).value)"
               ></textarea>
             </label>
-            <div class="mt-1 flex items-center justify-between gap-1">
-              <span class="font-mono text-micro text-ink-4"
-                >{{ note().length }} / {{ noteMax }}</span
-              >
-              <button
-                type="button"
-                class="nc-button nc-button-primary"
-                [disabled]="saving() || !changed()"
-                (click)="save()"
-              >
-                <nc-icon name="save" [size]="12" /> Save
-              </button>
-            </div>
+            @if (auth.isAdmin()) {
+              <div class="mt-1 flex items-center justify-between gap-1">
+                <span class="font-mono text-micro text-ink-4"
+                  >{{ note().length }} / {{ noteMax }}</span
+                >
+                <button
+                  type="button"
+                  class="nc-button nc-button-primary"
+                  [disabled]="saving() || !changed()"
+                  (click)="save()"
+                >
+                  <nc-icon name="save" [size]="12" /> Save
+                </button>
+              </div>
+            }
           </nc-panel>
         </div>
       </div>

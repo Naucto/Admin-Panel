@@ -123,7 +123,7 @@
     (retry)="detail.reload()"
   >
     <div actions class="flex flex-wrap items-center gap-1">
-      @if (detail.value(); as crash) {
+      @if (auth.isAdmin() ? detail.value() : null; as crash) {
         @if (crash.status !== 'RESOLVED') {
           <button
             type="button"

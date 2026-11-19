@@ -1,93 +1,95 @@
 <div class="grid gap-2 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)]">
   <div class="flex min-w-0 flex-col gap-2">
-    <nc-panel
-      [heading]="editing() === null ? 'Mark a post' : 'Change the post'"
-      hint="Shown on every chart"
-      [minHeight]="120"
-    >
-      <form class="flex flex-col gap-1" (submit)="$event.preventDefault(); save()">
-        <label class="flex flex-col gap-0.25">
-          <span class="label">Went out at, UTC</span>
-          <input
-            type="datetime-local"
-            class="nc-input"
-            required
-            [value]="draft().at"
-            (input)="update('at', $event)"
-          />
-          @if (draftLocal()) {
-            <span class="text-micro text-ink-3">Your clock: {{ draftLocal() }}</span>
-          }
-        </label>
-        <label class="flex flex-col gap-0.25">
-          <span class="label">What it was</span>
-          <input
-            class="nc-input"
-            maxlength="120"
-            required
-            placeholder="Launch trailer"
-            [value]="draft().label"
-            (input)="update('label', $event)"
-          />
-        </label>
-        <div class="grid grid-cols-2 gap-1">
-          <label class="flex min-w-0 flex-col gap-0.25">
-            <span class="label">Channel</span>
+    @if (auth.isAdmin()) {
+      <nc-panel
+        [heading]="editing() === null ? 'Mark a post' : 'Change the post'"
+        hint="Shown on every chart"
+        [minHeight]="120"
+      >
+        <form class="flex flex-col gap-1" (submit)="$event.preventDefault(); save()">
+          <label class="flex flex-col gap-0.25">
+            <span class="label">Went out at, UTC</span>
+            <input
+              type="datetime-local"
+              class="nc-input"
+              required
+              [value]="draft().at"
+              (input)="update('at', $event)"
+            />
+            @if (draftLocal()) {
+              <span class="text-micro text-ink-3">Your clock: {{ draftLocal() }}</span>
+            }
+          </label>
+          <label class="flex flex-col gap-0.25">
+            <span class="label">What it was</span>
             <input
               class="nc-input"
-              maxlength="40"
-              list="nc-post-channels"
-              placeholder="YouTube"
-              [value]="draft().channel"
-              (input)="update('channel', $event)"
-            />
-            <datalist id="nc-post-channels">
-              @for (channel of channels; track channel) {
-                <option [value]="channel"></option>
-              }
-            </datalist>
-          </label>
-          <label class="flex min-w-0 flex-col gap-0.25">
-            <span class="label">Link</span>
-            <input
-              type="url"
-              class="nc-input"
-              maxlength="2048"
-              placeholder="https://"
-              [value]="draft().url"
-              (input)="update('url', $event)"
+              maxlength="120"
+              required
+              placeholder="Launch trailer"
+              [value]="draft().label"
+              (input)="update('label', $event)"
             />
           </label>
-        </div>
-        <div class="flex flex-col gap-0.25">
-          <span class="label">For</span>
-          <nc-segmented
-            label="Audience"
-            [options]="audiences"
-            [value]="draft().audience"
-            (valueChange)="setAudience($event)"
-          />
-        </div>
-        <div class="flex flex-col gap-0.25">
-          <span class="label">{{ gameLabel() }}</span>
-          <nc-game-picker [value]="draft().game" (valueChange)="setGame($event)" />
-        </div>
-        <div class="flex gap-0.75">
-          <button
-            type="submit"
-            class="nc-button nc-button-primary"
-            [disabled]="!draftValid() || saving()"
-          >
-            {{ editing() === null ? 'Add to the charts' : 'Save' }}
-          </button>
-          @if (editing() !== null) {
-            <button type="button" class="nc-button nc-button-ghost" (click)="cancel()">
-              Cancel
+          <div class="grid grid-cols-2 gap-1">
+            <label class="flex min-w-0 flex-col gap-0.25">
+              <span class="label">Channel</span>
+              <input
+                class="nc-input"
+                maxlength="40"
+                list="nc-post-channels"
+                placeholder="YouTube"
+                [value]="draft().channel"
+                (input)="update('channel', $event)"
+              />
+              <datalist id="nc-post-channels">
+                @for (channel of channels; track channel) {
+                  <option [value]="channel"></option>
+                }
+              </datalist>
+            </label>
+            <label class="flex min-w-0 flex-col gap-0.25">
+              <span class="label">Link</span>
+              <input
+                type="url"
+                class="nc-input"
+                maxlength="2048"
+                placeholder="https://"
+                [value]="draft().url"
+                (input)="update('url', $event)"
+              />
+            </label>
+          </div>
+          <div class="flex flex-col gap-0.25">
+            <span class="label">For</span>
+            <nc-segmented
+              label="Audience"
+              [options]="audiences"
+              [value]="draft().audience"
+              (valueChange)="setAudience($event)"
+            />
+          </div>
+          <div class="flex flex-col gap-0.25">
+            <span class="label">{{ gameLabel() }}</span>
+            <nc-game-picker [value]="draft().game" (valueChange)="setGame($event)" />
+          </div>
+          <div class="flex gap-0.75">
+            <button
+              type="submit"
+              class="nc-button nc-button-primary"
+              [disabled]="!draftValid() || saving()"
+            >
+              {{ editing() === null ? 'Add to the charts' : 'Save' }}
             </button>
-          }
-        </div>
-      </form>
-    </nc-panel>
+            @if (editing() !== null) {
+              <button type="button" class="nc-button nc-button-ghost" (click)="cancel()">
+                Cancel
+              </button>
+            }
+          </div>
+        </form>
+      </nc-panel>
+    }
 
     <nc-panel
       heading="Posts"
@@ -133,24 +135,26 @@
                 <nc-icon name="external-link" [size]="12" />
               </a>
             }
-            <button
-              type="button"
-              class="nc-button nc-button-ghost nc-button-sm shrink-0"
-              aria-label="Change"
-              title="Change"
-              (click)="edit(marker)"
-            >
-              <nc-icon name="edit" [size]="12" />
-            </button>
-            <button
-              type="button"
-              class="nc-button nc-button-ghost nc-button-sm shrink-0"
-              aria-label="Remove"
-              title="Remove"
-              (click)="remove(marker)"
-            >
-              <nc-icon name="trash" [size]="12" />
-            </button>
+            @if (auth.isAdmin()) {
+              <button
+                type="button"
+                class="nc-button nc-button-ghost nc-button-sm shrink-0"
+                aria-label="Change"
+                title="Change"
+                (click)="edit(marker)"
+              >
+                <nc-icon name="edit" [size]="12" />
+              </button>
+              <button
+                type="button"
+                class="nc-button nc-button-ghost nc-button-sm shrink-0"
+                aria-label="Remove"
+                title="Remove"
+                (click)="remove(marker)"
+              >
+                <nc-icon name="trash" [size]="12" />
+              </button>
+            }
           </li>
         } @empty {
           <li class="py-1 text-meta text-ink-3">No post matches.</li>

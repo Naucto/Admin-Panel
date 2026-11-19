@@ -37,7 +37,10 @@
                         }
                       </p>
                       <p class="truncate text-meta text-ink-3">
-                        &#64;{{ admin.username }} · {{ admin.email }}
+                        &#64;{{ admin.username }}
+                        @if (admin.email; as email) {
+                          · {{ email }}
+                        }
                       </p>
                     </div>
                   </div>
@@ -45,7 +48,9 @@
                 <td class="whitespace-nowrap text-ink-3">{{ since(admin.createdAt) }}</td>
                 <td>
                   <div class="flex justify-end gap-0.5">
-                    @if (!isMe(admin)) {
+                    @if (!auth.isAdmin()) {
+                      <span class="text-meta text-ink-4">Read only</span>
+                    } @else if (!isMe(admin)) {
                       <button
                         type="button"
                         class="nc-button nc-button-danger nc-button-sm"
@@ -67,63 +72,68 @@
     }
   </nc-panel>
 
-  <nc-panel
-    heading="Add an admin"
-    hint="Find an existing Naucto account and give it the admin role"
-  >
-    <label class="relative block">
-      <span class="sr-only">Search accounts</span>
-      <nc-icon
-        name="search"
-        [size]="24"
-        class="pointer-events-none absolute top-[6px] left-1 text-ink-4"
-      />
-      <input
-        class="nc-input nc-input-icon"
-        type="search"
-        placeholder="Handle, display name or email"
-        autocomplete="off"
-        [value]="term()"
-        (input)="typeTerm($any($event.target).value)"
-      />
-    </label>
+  @if (auth.isAdmin()) {
+    <nc-panel
+      heading="Add an admin"
+      hint="Find an existing Naucto account and give it the admin role"
+    >
+      <label class="relative block">
+        <span class="sr-only">Search accounts</span>
+        <nc-icon
+          name="search"
+          [size]="24"
+          class="pointer-events-none absolute top-[6px] left-1 text-ink-4"
+        />
+        <input
+          class="nc-input nc-input-icon"
+          type="search"
+          placeholder="Handle, display name or email"
+          autocomplete="off"
+          [value]="term()"
+          (input)="typeTerm($any($event.target).value)"
+        />
+      </label>
 
-    <div class="mt-1.5">
-      @if (term().trim().length < 2) {
-        <p class="py-1 text-meta text-ink-3">Type at least two characters.</p>
-      } @else if (results.isLoading()) {
-        <div class="nc-skeleton h-[120px] rounded-sm"></div>
-      } @else if (results.error()) {
-        <p class="py-1 text-body text-hot-ink">{{ panelError(results) }}</p>
-      } @else if (results.value(); as accounts) {
-        @if (accounts.length === 0) {
-          <p class="py-1 text-meta text-ink-3">No Naucto account matches “{{ term() }}”.</p>
-        }
-        <ul class="flex flex-col gap-0.5">
-          @for (account of accounts; track account.id) {
-            <li class="flex items-center gap-1 rounded-sm border border-line-soft px-1 py-0.75">
-              <div class="min-w-0 flex-1">
-                <p class="truncate text-ink">{{ account.nickname || account.username }}</p>
-                <p class="truncate text-meta text-ink-3">
-                  &#64;{{ account.username }} · {{ account.email }}
-                </p>
-              </div>
-              @if (account.role === 'Admin') {
-                <span class="nc-chip nc-chip-gold">Admin</span>
-              } @else {
-                <button
-                  type="button"
-                  class="nc-button nc-button-sm"
-                  [disabled]="busy() === account.id"
-                  (click)="promote(account)"
-                >
-                  <nc-icon name="plus" [size]="12" /> Make admin
-                </button>
-              }
-            </li>
+      <div class="mt-1.5">
+        @if (term().trim().length < 2) {
+          <p class="py-1 text-meta text-ink-3">Type at least two characters.</p>
+        } @else if (results.isLoading()) {
+          <div class="nc-skeleton h-[120px] rounded-sm"></div>
+        } @else if (results.error()) {
+          <p class="py-1 text-body text-hot-ink">{{ panelError(results) }}</p>
+        } @else if (results.value(); as accounts) {
+          @if (accounts.length === 0) {
+            <p class="py-1 text-meta text-ink-3">No Naucto account matches “{{ term() }}”.</p>
           }
-        </ul>
-      }
-    </div>
-  </nc-panel>
+          <ul class="flex flex-col gap-0.5">
+            @for (account of accounts; track account.id) {
+              <li class="flex items-center gap-1 rounded-sm border border-line-soft px-1 py-0.75">
+                <div class="min-w-0 flex-1">
+                  <p class="truncate text-ink">{{ account.nickname || account.username }}</p>
+                  <p class="truncate text-meta text-ink-3">
+                    &#64;{{ account.username }}
+                    @if (account.email; as email) {
+                      · {{ email }}
+                    }
+                  </p>
+                </div>
+                @if (account.role === 'Admin') {
+                  <span class="nc-chip nc-chip-gold">Admin</span>
+                } @else {
+                  <button
+                    type="button"
+                    class="nc-button nc-button-sm"
+                    [disabled]="busy() === account.id"
+                    (click)="promote(account)"
+                  >
+                    <nc-icon name="plus" [size]="12" /> Make admin
+                  </button>
+                }
+              </li>
+            }
+          </ul>
+        }
+      </div>
+    </nc-panel>
+  }
 </div>
