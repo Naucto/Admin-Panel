@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  DestroyRef,
   inject,
   resource,
   signal,
@@ -12,21 +11,28 @@ import { AccountsApi } from '../../core/accounts.api';
 import { errorMessage } from '../../core/api-error';
 import { AuthStore } from '../../core/auth.store';
 import { longDay, utcDay } from '../../core/dates';
-import type { AccountSummary } from '../../core/types';
+import { roleGrant, roleLabel, STAFF_ROLES } from '../../core/roles';
+import type { AccountSummary, RoleName } from '../../core/types';
 import { FeedbackService } from '../../ui/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { SearchBoxComponent } from '../../ui/search-box.component';
 
-const SEARCH_DELAY_MS = 250;
+const ROLE_CHIPS: Record<RoleName, string> = {
+  User: 'nc-chip nc-chip-quiet',
+  Viewer: 'nc-chip nc-chip-quiet',
+  Moderator: 'nc-chip nc-chip-ok',
+  Admin: 'nc-chip nc-chip-gold',
+};
 
 /**
- * Who administers Naucto. Admins are ordinary Naucto accounts holding the admin role: one is added
- * by finding the account and promoting it, and removed by taking the role back.
+ * Who signs in to the console. Staff are ordinary Naucto accounts holding a role: one is added by
+ * finding the account and giving it a role, and removed by taking the role back.
  */
 @Component({
   selector: 'nc-admins-page',
-  imports: [IconComponent, PanelComponent],
+  imports: [IconComponent, PanelComponent, SearchBoxComponent],
   templateUrl: './admins.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -35,70 +41,67 @@ export default class AdminsPage {
   private readonly feedback = inject(FeedbackService);
   protected readonly auth = inject(AuthStore);
 
-  protected readonly admins = resource({ loader: () => this.api.admins() });
-  protected readonly adminsState = computed(() =>
-    panelState(this.admins, (list) => list.length === 0),
+  protected readonly roles = STAFF_ROLES.map((role) => ({ value: role, label: roleLabel(role) }));
+
+  protected readonly staff = resource({ loader: () => this.api.staff() });
+  protected readonly staffState = computed(() =>
+    panelState(this.staff, (list) => list.length === 0),
   );
+  protected readonly hint = computed(() => {
+    const list = this.staff.value() ?? [];
+    return STAFF_ROLES.map((role) => {
+      const count = list.filter((account) => account.role === role).length;
+      return `${count} ${roleLabel(role).toLowerCase()}${count === 1 ? '' : 's'}`;
+    })
+      .reverse()
+      .join(', ');
+  });
 
   protected readonly term = signal('');
-  private readonly debounced = signal('');
   protected readonly results = resource({
-    params: () => (this.debounced().length >= 2 ? this.debounced() : undefined),
+    params: () => (this.term().length >= 2 ? this.term() : undefined),
     loader: ({ params }) => this.api.search(params),
   });
   protected readonly busy = signal<number | null>(null);
-  private searchTimer: ReturnType<typeof setTimeout> | null = null;
-
-  constructor() {
-    inject(DestroyRef).onDestroy(() => {
-      if (this.searchTimer) {
-        clearTimeout(this.searchTimer);
-      }
-    });
-  }
-
-  protected typeTerm(value: string): void {
-    this.term.set(value);
-    if (this.searchTimer) {
-      clearTimeout(this.searchTimer);
-    }
-    this.searchTimer = setTimeout(() => {
-      this.debounced.set(value.trim());
-    }, SEARCH_DELAY_MS);
-  }
 
   protected isMe(account: { id: number }): boolean {
     return this.auth.account()?.id === account.id;
   }
 
-  protected async promote(account: AccountSummary): Promise<void> {
-    const confirmed = await this.feedback.confirm({
-      title: `Make @${account.username} an admin?`,
-      message: `${account.email ?? `@${account.username}`} will be able to sign in to this console, read every figure and add or remove admins.`,
-      confirmLabel: 'Make admin',
-    });
-    if (confirmed) {
-      await this.act(account.id, async () => {
-        await this.api.setRole(account.id, 'Admin');
-        this.feedback.toast(`@${account.username} is now an admin.`);
-        this.term.set('');
-        this.debounced.set('');
-      });
+  /** Gives a role, or takes every role back with `User`, once the admin confirmed what it means. */
+  protected async give(account: AccountSummary, value: string): Promise<void> {
+    const role = value as RoleName;
+    if (role === account.role) {
+      return;
     }
-  }
-
-  protected async revoke(admin: AccountSummary): Promise<void> {
+    const removing = role === 'User';
     const confirmed = await this.feedback.confirm({
-      title: `Remove @${admin.username} from the admins?`,
-      message: `${admin.email ?? `@${admin.username}`} keeps their Naucto account but loses access to this console at once.`,
-      confirmLabel: 'Remove admin role',
-      danger: true,
+      title: removing
+        ? `Remove @${account.username} from the staff?`
+        : `Make @${account.username} ${role === 'Admin' ? 'an admin' : `a ${roleLabel(role).toLowerCase()}`}?`,
+      message: `${account.email ?? `@${account.username}`} ${roleGrant(role)}.`,
+      confirmLabel: removing ? 'Remove from the staff' : `Make ${roleLabel(role).toLowerCase()}`,
+      danger: removing || role === 'Admin',
     });
-    if (confirmed) {
-      await this.act(admin.id, async () => {
-        await this.api.setRole(admin.id, 'User');
-        this.feedback.toast(`@${admin.username} is no longer an admin.`);
-      });
+    if (!confirmed) {
+      // A select keeps what was picked: reading the list again puts the held role back in it.
+      this.staff.reload();
+      return;
+    }
+    this.busy.set(account.id);
+    try {
+      await this.api.setRole(account.id, role);
+      this.feedback.toast(
+        removing
+          ? `@${account.username} is no longer on the staff.`
+          : `@${account.username} is now ${role === 'Admin' ? 'an admin' : `a ${roleLabel(role).toLowerCase()}`}.`,
+      );
+      this.results.reload();
+    } catch (error) {
+      this.feedback.toast(errorMessage(error), 'error');
+    } finally {
+      this.busy.set(null);
+      this.staff.reload();
     }
   }
 
@@ -106,17 +109,11 @@ export default class AdminsPage {
     return longDay(utcDay(Date.parse(iso)));
   }
 
-  private async act(id: number, action: () => Promise<void>): Promise<void> {
-    this.busy.set(id);
-    try {
-      await action();
-      this.admins.reload();
-    } catch (error) {
-      this.feedback.toast(errorMessage(error), 'error');
-    } finally {
-      this.busy.set(null);
-    }
+  protected name(account: AccountSummary): string {
+    return account.nickname || account.username;
   }
 
+  protected readonly roleChips = ROLE_CHIPS;
+  protected readonly roleLabel = roleLabel;
   protected readonly panelError = panelError;
 }

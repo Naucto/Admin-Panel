@@ -150,7 +150,7 @@ export const routes: Routes = [
       {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
-        ...page('Admins', 'administration'),
+        ...page('Staff', 'administration'),
       },
       {
         path: 'account',

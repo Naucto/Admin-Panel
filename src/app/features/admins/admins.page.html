@@ -1,69 +1,89 @@
 <div class="grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
   <nc-panel
-    heading="Admins"
-    hint="Naucto accounts that can open this console"
-    [state]="adminsState()"
-    [error]="panelError(admins)"
+    heading="Staff"
+    [hint]="hint()"
+    [state]="staffState()"
+    [error]="panelError(staff)"
     emptyIcon="shield"
-    emptyTitle="No admin"
+    emptyTitle="Nobody on the staff"
     [minHeight]="160"
-    (retry)="admins.reload()"
+    (retry)="staff.reload()"
   >
-    @if (admins.value(); as list) {
+    @if (staff.value(); as list) {
       <div class="-mx-1 overflow-x-auto">
         <table class="nc-table">
           <thead>
             <tr>
               <th>Account</th>
+              <th>Role</th>
               <th>Member since</th>
-              <th class="text-right">Actions</th>
+              @if (auth.isAdmin()) {
+                <th class="text-right">Change</th>
+              }
             </tr>
           </thead>
           <tbody>
-            @for (admin of list; track admin.id) {
+            @for (member of list; track member.id) {
               <tr>
                 <td>
                   <div class="flex items-center gap-1">
                     <span
                       class="flex size-[30px] shrink-0 items-center justify-center rounded-xs bg-raised font-mono text-ui text-gold-ink"
                     >
-                      {{ (admin.nickname || admin.username).charAt(0).toUpperCase() }}
+                      {{ name(member).charAt(0).toUpperCase() }}
                     </span>
                     <div class="min-w-0">
                       <p class="truncate text-ink">
-                        {{ admin.nickname || admin.username }}
-                        @if (isMe(admin)) {
+                        {{ name(member) }}
+                        @if (isMe(member)) {
                           <span class="nc-chip nc-chip-gold ml-0.5">You</span>
                         }
                       </p>
                       <p class="truncate text-meta text-ink-3">
-                        &#64;{{ admin.username }}
-                        @if (admin.email; as email) {
+                        &#64;{{ member.username }}
+                        @if (member.email; as email) {
                           · {{ email }}
                         }
                       </p>
                     </div>
                   </div>
                 </td>
-                <td class="whitespace-nowrap text-ink-3">{{ since(admin.createdAt) }}</td>
                 <td>
-                  <div class="flex justify-end gap-0.5">
-                    @if (!auth.isAdmin()) {
-                      <span class="text-meta text-ink-4">Read only</span>
-                    } @else if (!isMe(admin)) {
-                      <button
-                        type="button"
-                        class="nc-button nc-button-danger nc-button-sm"
-                        [disabled]="busy() === admin.id"
-                        (click)="revoke(admin)"
-                      >
-                        Remove
-                      </button>
-                    } @else {
-                      <span class="text-meta text-ink-4">Your own role cannot be changed here</span>
-                    }
-                  </div>
+                  <span [class]="roleChips[member.role]">{{ roleLabel(member.role) }}</span>
                 </td>
+                <td class="whitespace-nowrap text-ink-3">{{ since(member.createdAt) }}</td>
+                @if (auth.isAdmin()) {
+                  <td>
+                    <div class="flex items-center justify-end gap-0.5">
+                      @if (isMe(member)) {
+                        <span class="text-meta text-ink-4"
+                          >Your own role cannot be changed here</span
+                        >
+                      } @else {
+                        <select
+                          class="nc-select"
+                          [attr.aria-label]="'Role of ' + member.username"
+                          [disabled]="busy() === member.id"
+                          (change)="give(member, $any($event.target).value)"
+                        >
+                          @for (role of roles; track role.value) {
+                            <option [value]="role.value" [selected]="role.value === member.role">
+                              {{ role.label }}
+                            </option>
+                          }
+                        </select>
+                        <button
+                          type="button"
+                          class="nc-button nc-button-danger nc-button-sm"
+                          [disabled]="busy() === member.id"
+                          (click)="give(member, 'User')"
+                        >
+                          Remove
+                        </button>
+                      }
+                    </div>
+                  </td>
+                }
               </tr>
             }
           </tbody>
@@ -74,28 +94,13 @@
 
   @if (auth.isAdmin()) {
     <nc-panel
-      heading="Add an admin"
-      hint="Find an existing Naucto account and give it the admin role"
+      heading="Add to the staff"
+      hint="Find a Naucto account and give it a role. It signs in here with its Naucto password."
     >
-      <label class="relative block">
-        <span class="sr-only">Search accounts</span>
-        <nc-icon
-          name="search"
-          [size]="24"
-          class="pointer-events-none absolute top-[6px] left-1 text-ink-4"
-        />
-        <input
-          class="nc-input nc-input-icon"
-          type="search"
-          placeholder="Handle, display name or email"
-          autocomplete="off"
-          [value]="term()"
-          (input)="typeTerm($any($event.target).value)"
-        />
-      </label>
+      <nc-search-box class="w-full" placeholder="Handle, display name or email" [(value)]="term" />
 
       <div class="mt-1.5">
-        @if (term().trim().length < 2) {
+        @if (term().length < 2) {
           <p class="py-1 text-meta text-ink-3">Type at least two characters.</p>
         } @else if (results.isLoading()) {
           <div class="nc-skeleton h-[120px] rounded-sm"></div>
@@ -109,7 +114,7 @@
             @for (account of accounts; track account.id) {
               <li class="flex items-center gap-1 rounded-sm border border-line-soft px-1 py-0.75">
                 <div class="min-w-0 flex-1">
-                  <p class="truncate text-ink">{{ account.nickname || account.username }}</p>
+                  <p class="truncate text-ink">{{ name(account) }}</p>
                   <p class="truncate text-meta text-ink-3">
                     &#64;{{ account.username }}
                     @if (account.email; as email) {
@@ -117,17 +122,20 @@
                     }
                   </p>
                 </div>
-                @if (account.role === 'Admin') {
-                  <span class="nc-chip nc-chip-gold">Admin</span>
+                @if (account.role !== 'User') {
+                  <span [class]="roleChips[account.role]">{{ roleLabel(account.role) }}</span>
                 } @else {
-                  <button
-                    type="button"
-                    class="nc-button nc-button-sm"
+                  <select
+                    class="nc-select"
+                    [attr.aria-label]="'Give ' + account.username + ' a role'"
                     [disabled]="busy() === account.id"
-                    (click)="promote(account)"
+                    (change)="give(account, $any($event.target).value)"
                   >
-                    <nc-icon name="plus" [size]="12" /> Make admin
-                  </button>
+                    <option value="User" selected>Give a role</option>
+                    @for (role of roles; track role.value) {
+                      <option [value]="role.value">{{ role.label }}</option>
+                    }
+                  </select>
                 }
               </li>
             }

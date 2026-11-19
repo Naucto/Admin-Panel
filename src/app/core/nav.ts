@@ -60,7 +60,7 @@ const GROUPS: GroupSpec[] = [
     label: 'Administration',
     area: null,
     items: [
-      { path: '/admins', label: 'Admins', icon: 'shield', area: 'administration' },
+      { path: '/admins', label: 'Staff', icon: 'shield', area: 'administration' },
       { path: '/account', label: 'Account', icon: 'user' },
     ],
   },
