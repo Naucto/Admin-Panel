@@ -175,6 +175,14 @@
           <nc-panel heading="Owner" [minHeight]="60">
             @if (found.target.owner; as owner) {
               <nc-account-cell size="full" [account]="owner" />
+              @if (!owner.deleted) {
+                <a
+                  class="nc-button nc-button-ghost nc-button-sm mt-1"
+                  [routerLink]="['/moderation/users', owner.id]"
+                >
+                  <nc-icon name="user" [size]="12" /> Open the account
+                </a>
+              }
               @if (auth.canAct() && accountOperations().length > 0) {
                 <nc-operation-buttons
                   class="mt-1.5"
