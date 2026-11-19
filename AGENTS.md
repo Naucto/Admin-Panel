@@ -126,6 +126,9 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - Users (`users.page`, `user-detail.page`) lists every account with its standing and opens one on
   its record, read from the log by `subjectUserId`. A directory searches through `nc-search-box`,
   which settles once the typing pauses.
+- All games (`all-games.page`, `game-detail.page`) lists every game, published or not, and takes
+  `?creator=` for the games of one account. A cover is read as bytes like a bug screenshot, since
+  a hidden game's cover is no longer served.
 - Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
   with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
   count. A screen only reloads its own data when it resolves true. The yes or no of

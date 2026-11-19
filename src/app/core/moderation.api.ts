@@ -13,10 +13,13 @@ import type {
   ModerationAction,
   ModerationActionType,
   ModerationDecision,
+  ModerationProject,
+  ModerationProjectDetail,
   ModerationReason,
   ModerationTargetType,
   OpenCaseCount,
   Page,
+  ProjectModerationState,
   RoleName,
 } from './types';
 
@@ -33,6 +36,14 @@ export interface AccountQuery {
   search?: string;
   standing?: AccountStanding;
   role?: RoleName;
+  page: number;
+  limit: number;
+}
+
+export interface ProjectQuery {
+  search?: string;
+  state?: ProjectModerationState;
+  creatorId?: number;
   page: number;
   limit: number;
 }
@@ -71,6 +82,19 @@ export class ModerationApi {
 
   account(id: number): Promise<ModerationAccountDetail> {
     return this.api.get(`/admin/moderation/accounts/${id}`);
+  }
+
+  projects(query: ProjectQuery): Promise<Page<ModerationProject>> {
+    return this.api.get('/admin/moderation/projects', { ...query });
+  }
+
+  project(id: number): Promise<ModerationProjectDetail> {
+    return this.api.get(`/admin/moderation/projects/${id}`);
+  }
+
+  /** The cover as bytes, withheld or not: an `<img>` cannot send the bearer. */
+  projectCover(id: number): Promise<Blob> {
+    return this.api.getBlob(`/admin/moderation/projects/${id}/cover`);
   }
 
   /** What staff did, newest first. */

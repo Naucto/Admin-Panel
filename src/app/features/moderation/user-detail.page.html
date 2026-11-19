@@ -103,6 +103,15 @@
                 <dd class="text-right font-mono text-ink">{{ figure.value }}</dd>
               }
             </dl>
+            @if (found.games > 0) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm mt-1"
+                routerLink="/moderation/games"
+                [queryParams]="{ creator: found.id }"
+              >
+                <nc-icon name="grid" [size]="12" /> See its games
+              </a>
+            }
           </nc-panel>
         </div>
       </div>
