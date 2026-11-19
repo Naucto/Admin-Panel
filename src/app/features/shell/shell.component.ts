@@ -13,6 +13,7 @@ import { filter, map } from 'rxjs';
 import type { ShellRouteData } from '../../app.routes';
 import { AuthStore } from '../../core/auth.store';
 import { BugCountStore } from '../../core/bug-count.store';
+import { CaseCountStore } from '../../core/case-count.store';
 import { FiltersStore, RANGE_PRESETS, type RangePreset } from '../../core/filters.store';
 import { landingFor, navFor } from '../../core/nav';
 import { canOpen, roleLabel } from '../../core/roles';
@@ -22,7 +23,10 @@ import { IconComponent } from '../../ui/icon.component';
 import { LogoComponent } from '../../ui/logo.component';
 import { SegmentedComponent } from '../../ui/segmented.component';
 
-const BUG_COUNT_REFRESH_MS = 60_000;
+const COUNT_REFRESH_MS = 60_000;
+
+const badge = (count: number, hint: string): { count: number; hint: string } | null =>
+  count > 0 ? { count, hint } : null;
 
 @Component({
   selector: 'nc-shell',
@@ -44,6 +48,7 @@ export default class ShellComponent {
   protected readonly theme = inject(ThemeService);
   private readonly router = inject(Router);
   private readonly bugCount = inject(BugCountStore);
+  private readonly caseCount = inject(CaseCountStore);
 
   protected readonly nav = computed(() => navFor(this.auth.role()));
   protected readonly home = computed(() => landingFor(this.auth.role()));
@@ -55,9 +60,12 @@ export default class ShellComponent {
     { value: 'MONTH', label: 'Month' },
   ];
   /** Counts shown beside a sidebar entry, by path; a zero shows nothing. */
-  protected readonly badges = computed<Record<string, number>>(() => ({
-    '/bugs': this.bugCount.count(),
-  }));
+  protected readonly badges = computed<Record<string, { count: number; hint: string } | null>>(
+    () => ({
+      '/bugs': badge(this.bugCount.count(), 'new'),
+      '/moderation/queue': badge(this.caseCount.count(), 'waiting for a decision'),
+    }),
+  );
   protected readonly menuOpen = signal(false);
   protected readonly navOpen = signal(false);
 
@@ -76,14 +84,18 @@ export default class ShellComponent {
   );
 
   constructor() {
-    // The count is a support figure: a role that does not open support would only be refused it.
-    if (!canOpen(this.auth.role(), 'support')) {
-      return;
-    }
-    void this.bugCount.refresh();
-    const timer = setInterval(() => {
-      void this.bugCount.refresh();
-    }, BUG_COUNT_REFRESH_MS);
+    // A count belongs to an area: a role that does not open it would only be refused the figure.
+    const role = this.auth.role();
+    const refresh = (): void => {
+      if (canOpen(role, 'support')) {
+        void this.bugCount.refresh();
+      }
+      if (canOpen(role, 'moderation')) {
+        void this.caseCount.refresh();
+      }
+    };
+    refresh();
+    const timer = setInterval(refresh, COUNT_REFRESH_MS);
     inject(DestroyRef).onDestroy(() => {
       clearInterval(timer);
     });
