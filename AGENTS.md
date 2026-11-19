@@ -132,6 +132,9 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - Comments (`comments.page`) lists every comment and opens a row under the list, as Crashes does,
   with its decisions and what was done about it. It takes `?author=` and `?game=`. A comment has
   no page of its own, which is why `panelRoute` gives it none.
+- Log (`log.page`) reads every action, newest first, filtered by action, by what it was about and,
+  through `?actor=`, by staff member. The backend only ever appends to it, so the page has no
+  control that writes.
 - Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
   with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
   count. A screen only reloads its own data when it resolves true. The yes or no of

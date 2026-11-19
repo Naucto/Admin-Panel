@@ -1,0 +1,135 @@
+<nc-panel
+  heading="Log"
+  [hint]="hint()"
+  [state]="logState()"
+  [error]="panelError(log)"
+  emptyIcon="list"
+  [emptyTitle]="filtered() ? 'Nothing matches' : 'Nothing done yet'"
+  [emptyHint]="
+    filtered()
+      ? 'Clear the filters to see the rest.'
+      : 'Every warning, suspension, removal and staff preview is written here as it happens.'
+  "
+  [minHeight]="160"
+  (retry)="log.reload()"
+>
+  @if (actor(); as staff) {
+    <a
+      actions
+      class="nc-button nc-button-ghost nc-button-sm"
+      routerLink="/moderation/log"
+      title="Show what every staff member did"
+    >
+      Staff #{{ staff }} <nc-icon name="close" [size]="12" />
+    </a>
+  }
+  <select
+    actions
+    class="nc-select"
+    aria-label="Action"
+    [value]="action()"
+    (change)="setAction($any($event.target).value)"
+  >
+    <option value="">All actions</option>
+    @for (option of actionOptions; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+  <select
+    actions
+    class="nc-select"
+    aria-label="What it was about"
+    [value]="targetType()"
+    (change)="setTargetType($any($event.target).value)"
+  >
+    <option value="">Everything</option>
+    @for (option of typeOptions; track option.value) {
+      <option [value]="option.value">{{ option.label }}s</option>
+    }
+  </select>
+  @if (log.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>When</th>
+            <th>Staff</th>
+            <th>Action</th>
+            <th>About</th>
+            <th>Account</th>
+            <th>Said</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (entry of value.items; track entry.id) {
+            <tr class="align-top">
+              <td class="whitespace-nowrap text-ink-3">
+                {{ dayTime(entry.createdAt) }}
+                @if (entry.expiresAt; as expiry) {
+                  <span class="block text-micro text-ink-4">until {{ dayTime(expiry) }}</span>
+                }
+              </td>
+              <td>
+                <a
+                  class="block max-w-[160px] truncate text-ink hover:underline"
+                  routerLink="/moderation/log"
+                  [queryParams]="{ actor: entry.actor.id }"
+                  [title]="'Only what ' + name(entry.actor) + ' did'"
+                >
+                  {{ name(entry.actor) }}
+                </a>
+              </td>
+              <td>
+                <div class="flex flex-wrap gap-0.25">
+                  <span [class]="actionChip(entry.action)">{{ actionLabels[entry.action] }}</span>
+                  @if (entry.reason; as reason) {
+                    <span class="nc-chip nc-chip-quiet">{{ reasonLabels[reason] }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <div class="flex max-w-[260px] min-w-0 flex-col">
+                  @if (entry.targetLabel) {
+                    <span class="text-micro text-ink-4">
+                      {{ typeLabels[entry.targetType] }} #{{ entry.targetId }}
+                    </span>
+                  }
+                  <nc-entity-link
+                    [type]="entry.targetType"
+                    [id]="entry.targetId"
+                    [label]="entry.targetLabel"
+                  />
+                </div>
+              </td>
+              <td>
+                @if (entry.subject; as subject) {
+                  <nc-entity-link type="USER" [id]="subject.id" [label]="name(subject)" />
+                } @else {
+                  <span class="text-ink-4">--</span>
+                }
+              </td>
+              <td>
+                <div class="max-w-[360px] text-meta">
+                  @if (entry.publicMessage; as message) {
+                    <p class="whitespace-pre-wrap wrap-anywhere text-ink-body">
+                      <span class="label mr-0.5">Told</span>{{ message }}
+                    </p>
+                  }
+                  @if (entry.internalNote; as note) {
+                    <p class="whitespace-pre-wrap wrap-anywhere text-ink-3">
+                      <span class="label mr-0.5">Note</span>{{ note }}
+                    </p>
+                  }
+                  @if (!entry.publicMessage && !entry.internalNote) {
+                    <span class="text-ink-4">--</span>
+                  }
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nc-pager [(page)]="page" [pages]="pages()" />
+  }
+</nc-panel>
