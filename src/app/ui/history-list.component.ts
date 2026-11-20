@@ -14,7 +14,8 @@ import { EntityLinkComponent } from './entity-link.component';
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
 export class HistoryListComponent {
-  readonly actions = input.required<readonly ModerationAction[]>();
+  /** Not named `actions`: a bound `[actions]` matches the `[actions]` slot of `nc-panel`. */
+  readonly entries = input.required<readonly ModerationAction[]>();
   readonly emptyText = input('Nothing done yet');
   /** Off where every row is about the same target and naming it again says nothing. */
   readonly showTarget = input(true);

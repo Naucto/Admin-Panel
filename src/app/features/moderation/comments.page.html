@@ -179,7 +179,7 @@
             <div class="nc-skeleton h-[48px] rounded-sm"></div>
           }
           @default {
-            <nc-history-list [actions]="history.value()?.items ?? []" [showTarget]="false" />
+            <nc-history-list [entries]="history.value()?.items ?? []" [showTarget]="false" />
           }
         }
       </div>

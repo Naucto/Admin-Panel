@@ -149,7 +149,7 @@
           </nc-panel>
 
           <nc-panel heading="What was done about it" [minHeight]="60">
-            <nc-history-list [actions]="found.history" [showTarget]="false" />
+            <nc-history-list [entries]="found.history" [showTarget]="false" />
           </nc-panel>
         </div>
 
@@ -206,7 +206,7 @@
             hint="What staff did about this account before"
             [minHeight]="60"
           >
-            <nc-history-list [actions]="found.ownerHistory" emptyText="Nothing on record" />
+            <nc-history-list [entries]="found.ownerHistory" emptyText="Nothing on record" />
           </nc-panel>
         </div>
       </div>
