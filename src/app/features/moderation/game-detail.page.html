@@ -135,7 +135,7 @@
             (retry)="history.reload()"
           >
             @if (history.value(); as value) {
-              <nc-history-list [actions]="value.items" [showTarget]="false" />
+              <nc-history-list [entries]="value.items" [showTarget]="false" />
               <nc-pager [(page)]="historyPage" [pages]="historyPages()" />
             }
           </nc-panel>

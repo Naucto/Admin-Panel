@@ -20,7 +20,7 @@ Naucto's own design tokens, and [Apache ECharts](https://echarts.apache.org) for
 | Feedback | How people rate Naucto: the average out of 10, the share of low scores, players against creators, the scores and their trend, and every rating with its comments                                                                                                                                                                                                                                                |
 | Bugs     | Bug reports, new, open or closed, by category. Each opens on its own page with its screenshot, errors, console and context, where an admin sets its status and note                                                                                                                                                                                                                                             |
 | Crashes  | Crashes from the web app, the engine and the backend, grouped by fingerprint, regressions flagged. Each shows its stack and latest occurrences, and is resolved, ignored or reopened there                                                                                                                                                                                                                      |
-| Admins   | The admins, adding one from the existing Naucto accounts, removing one                                                                                                                                                                                                                                                                                                                                          |
+| Staff    | Who signs in here: admins, moderators and viewers, each added from the existing Naucto accounts, changed or removed                                                                                                                                                                                                                                                                                             |
 | Account  | Appearance, sign out                                                                                                                                                                                                                                                                                                                                                                                            |
 
 Every view says what it holds when there is little or nothing yet: three periods or fewer draw as
@@ -45,7 +45,7 @@ NAUCTO_API=http://host.docker.internal:3000 npm start   # the backend somewhere 
 ```
 
 To give an account the admin role the first time, set its `role` column to `Admin` in the
-database; after that, admins add each other from the Admins page. For charts with something in
+database; after that, admins hand out the admin, moderator and viewer roles from the Staff page. For charts with something in
 them on a local backend, the backend's `npm run seed:dev` writes 80 days of synthetic analytics.
 
 | Command             | Purpose                                                            |

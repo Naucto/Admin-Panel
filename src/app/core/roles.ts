@@ -36,6 +36,23 @@ const ROLE_LABELS: Record<RoleName, string> = {
   Admin: 'Admin',
 };
 
+/** The roles an admin hands out, from the one that does least to the one that does most. */
+export const STAFF_ROLES: readonly RoleName[] = ['Viewer', 'Moderator', 'Admin'];
+
+const ROLE_GRANTS: Record<RoleName, string> = {
+  User: 'keeps their Naucto account and loses access to this console',
+  Viewer: 'signs in to this console and reads every screen, without changing anything',
+  Moderator:
+    'signs in to this console and works the moderation screens: reviews reports, hides and restores content, warns and suspends accounts',
+  Admin:
+    'signs in to this console, reads and changes everything, deletes for good and hands out roles',
+};
+
+/** What holding a role comes to, as the clause that follows the name of the account. */
+export function roleGrant(role: RoleName): string {
+  return ROLE_GRANTS[role];
+}
+
 export function roleLabel(role: RoleName | null): string {
   return role ? ROLE_LABELS[role] : '';
 }

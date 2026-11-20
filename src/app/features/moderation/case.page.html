@@ -149,7 +149,7 @@
           </nc-panel>
 
           <nc-panel heading="What was done about it" [minHeight]="60">
-            <nc-history-list [actions]="found.history" [showTarget]="false" />
+            <nc-history-list [entries]="found.history" [showTarget]="false" />
           </nc-panel>
         </div>
 
@@ -157,8 +157,12 @@
           @if (auth.canAct() && found.allowedActions.length === 0) {
             <nc-panel heading="Decision" [minHeight]="60">
               <p class="text-meta text-ink-3">
-                Nothing here is yours to decide: the case is about you, or about an account of your
-                rank or above.
+                @if (found.target.state === 'DELETED' || found.target.state === 'GONE') {
+                  Nothing is left to decide: what was reported is no longer there.
+                } @else {
+                  Nothing here is yours to decide: the case is about you, or about an account of
+                  your rank or above.
+                }
               </p>
             </nc-panel>
           } @else if (auth.canAct() && targetOperations().length > 0) {
@@ -202,7 +206,7 @@
             hint="What staff did about this account before"
             [minHeight]="60"
           >
-            <nc-history-list [actions]="found.ownerHistory" emptyText="Nothing on record" />
+            <nc-history-list [entries]="found.ownerHistory" emptyText="Nothing on record" />
           </nc-panel>
         </div>
       </div>

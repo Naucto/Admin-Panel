@@ -56,6 +56,10 @@ console only keeps from drawing what would be refused.
   role that does not open it to where that role starts. A new page states its area there.
 - A control that writes is wrapped in `@if (auth.isAdmin())`, or `auth.canAct()` once moderators
   share it. A read needs nothing.
+- An admin hands out the three roles on the Staff page (`features/admins`, still at `/admins`).
+  `STAFF_ROLES` and `roleGrant` in `core/roles.ts` say which roles there are and what each comes
+  to, which is the sentence the confirmation shows. The backend writes every change to the
+  moderation log.
 - Only an admin is given email addresses, so `email` is nullable on every account the API hands
   over. Draw the address only when there is one.
 

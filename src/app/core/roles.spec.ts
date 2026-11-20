@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 
 import { landingFor, navFor } from './nav';
-import { type Area, canAct, canOpen, isAdmin } from './roles';
+import { type Area, canAct, canOpen, isAdmin, roleGrant, STAFF_ROLES } from './roles';
 import type { RoleName } from './types';
 
 const AREAS: Area[] = ['stats', 'support', 'moderation', 'administration'];
@@ -39,6 +39,22 @@ describe('what a role changes', () => {
   ])('%s acts: %s, as an admin: %s', (role, acts, admin) => {
     expect(canAct(role)).toBe(acts);
     expect(isAdmin(role)).toBe(admin);
+  });
+});
+
+describe('the roles an admin hands out', () => {
+  it('offers every role that opens something, and never the plain account', () => {
+    expect([...STAFF_ROLES].sort()).toEqual(
+      (['Admin', 'Moderator', 'Viewer', 'User'] as const)
+        .filter((role) => AREAS.some((area) => canOpen(role, area)))
+        .sort(),
+    );
+  });
+
+  it('says what each role comes to as a clause after the account', () => {
+    for (const role of ['User', ...STAFF_ROLES] as const) {
+      expect(roleGrant(role)).toMatch(/^[a-z].*[^.]$/);
+    }
   });
 });
 

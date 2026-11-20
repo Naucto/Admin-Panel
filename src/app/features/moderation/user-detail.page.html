@@ -71,7 +71,7 @@
             (retry)="record.reload()"
           >
             @if (record.value(); as value) {
-              <nc-history-list [actions]="value.items" />
+              <nc-history-list [entries]="value.items" />
               <nc-pager [(page)]="recordPage" [pages]="recordPages()" />
             }
           </nc-panel>
