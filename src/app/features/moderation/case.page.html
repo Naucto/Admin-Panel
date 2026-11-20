@@ -157,8 +157,12 @@
           @if (auth.canAct() && found.allowedActions.length === 0) {
             <nc-panel heading="Decision" [minHeight]="60">
               <p class="text-meta text-ink-3">
-                Nothing here is yours to decide: the case is about you, or about an account of your
-                rank or above.
+                @if (found.target.state === 'DELETED' || found.target.state === 'GONE') {
+                  Nothing is left to decide: what was reported is no longer there.
+                } @else {
+                  Nothing here is yours to decide: the case is about you, or about an account of
+                  your rank or above.
+                }
               </p>
             </nc-panel>
           } @else if (auth.canAct() && targetOperations().length > 0) {
