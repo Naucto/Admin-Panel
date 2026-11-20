@@ -1,0 +1,160 @@
+<dialog
+  #dialog
+  class="nc-dialog w-[min(520px,calc(100vw-32px))]"
+  (cancel)="$event.preventDefault(); actions.answer(null)"
+>
+  @if (view(); as shown) {
+    <form class="flex flex-col gap-1.5 p-2.5" (submit)="$event.preventDefault(); send()">
+      <div>
+        <h2 class="font-ui text-title text-ink">{{ shown.title }}</h2>
+        <p class="mt-0.5 truncate text-meta text-ink-3" [title]="shown.request.subject">
+          {{ shown.request.subject }}
+        </p>
+        <p class="mt-1 text-body text-ink-body">{{ shown.effect }}</p>
+      </div>
+
+      @if (shown.form.reason) {
+        <label class="flex flex-col gap-0.25">
+          <span class="label">Reason</span>
+          <select
+            class="nc-select h-[36px] normal-case"
+            required
+            (change)="setReason($any($event.target).value)"
+          >
+            <option value="" [selected]="draft().reason === null">Choose a reason</option>
+            @for (reason of reasons; track reason.value) {
+              <option [value]="reason.value" [selected]="reason.value === draft().reason">
+                {{ reason.label }}
+              </option>
+            }
+          </select>
+        </label>
+      }
+
+      @if (shown.form.duration) {
+        <div class="flex flex-col gap-0.25">
+          <span class="label">For</span>
+          <nc-segmented
+            label="How long the suspension lasts"
+            [options]="durations"
+            [value]="draft().duration"
+            (valueChange)="set('duration', $event)"
+          />
+        </div>
+      }
+
+      @if (shown.form.parts) {
+        <fieldset class="flex flex-col gap-0.25">
+          <legend class="label">Clear</legend>
+          <div class="mt-0.25 flex flex-wrap gap-x-1.5 gap-y-0.5">
+            @for (part of parts; track part.value) {
+              <label class="flex items-center gap-0.5 text-body text-ink-body">
+                <input
+                  type="checkbox"
+                  class="accent-[var(--nc-gold)]"
+                  [checked]="draft().parts.includes(part.value)"
+                  (change)="togglePart(part.value)"
+                />
+                {{ part.label }}
+              </label>
+            }
+          </div>
+        </fieldset>
+      }
+
+      @if (shown.form.message !== 'none') {
+        <label class="flex flex-col gap-0.25">
+          <span class="flex items-baseline justify-between gap-1">
+            <span class="label">
+              What the account is told{{ shown.form.message === 'optional' ? ', optional' : '' }}
+            </span>
+            <span class="font-mono text-micro text-ink-4">
+              {{ draft().publicMessage.length }} / {{ messageMax }}
+            </span>
+          </span>
+          <textarea
+            class="nc-input block h-auto min-h-[84px] py-1"
+            [maxLength]="messageMax"
+            [required]="shown.form.message === 'required'"
+            [value]="draft().publicMessage"
+            (input)="set('publicMessage', $any($event.target).value)"
+          ></textarea>
+        </label>
+      }
+
+      <label class="flex flex-col gap-0.25">
+        <span class="flex items-baseline justify-between gap-1">
+          <span class="label">Note for staff, optional</span>
+          <span class="font-mono text-micro text-ink-4">
+            {{ draft().internalNote.length }} / {{ noteMax }}
+          </span>
+        </span>
+        <textarea
+          class="nc-input block h-auto min-h-[60px] py-1"
+          [maxLength]="noteMax"
+          [value]="draft().internalNote"
+          (input)="set('internalNote', $any($event.target).value)"
+        ></textarea>
+      </label>
+
+      @if (shown.form.publishedGames) {
+        <label class="flex items-start gap-0.5 text-body text-ink-body">
+          <input
+            type="checkbox"
+            class="mt-[3px] accent-[var(--nc-gold)]"
+            [checked]="draft().removePublishedGames"
+            (change)="set('removePublishedGames', $any($event.target).checked)"
+          />
+          <span>
+            Remove its published games too
+            <span class="block text-meta text-ink-3">Left alone, they stay without an author.</span>
+          </span>
+        </label>
+      }
+
+      @if (shown.form.resolveFlags && shown.request.openFlags > 0) {
+        <label class="flex items-center gap-0.5 text-body text-ink-body">
+          <input
+            type="checkbox"
+            class="accent-[var(--nc-gold)]"
+            [checked]="draft().resolveFlags"
+            (change)="set('resolveFlags', $any($event.target).checked)"
+          />
+          Close the {{ shown.request.openFlags }} open
+          {{ shown.request.openFlags === 1 ? 'report' : 'reports' }} as acted on
+        </label>
+      }
+
+      @if (shown.form.typeToConfirm) {
+        <label class="flex flex-col gap-0.25">
+          <span class="label">Type {{ confirmWord }} to confirm</span>
+          <input
+            class="nc-input font-mono"
+            autocomplete="off"
+            spellcheck="false"
+            [value]="draft().confirmation"
+            (input)="set('confirmation', $any($event.target).value)"
+          />
+        </label>
+      }
+
+      <div class="mt-1 flex items-center justify-end gap-1">
+        @if (problem(); as missing) {
+          <span class="mr-auto text-meta text-ink-3">{{ missing }}</span>
+        }
+        <button type="button" class="nc-button nc-button-ghost" (click)="actions.answer(null)">
+          Cancel
+        </button>
+        <button
+          type="submit"
+          class="nc-button"
+          [class.nc-button-danger]="shown.form.danger"
+          [class.nc-button-primary]="!shown.form.danger"
+          [disabled]="problem() !== null"
+        >
+          {{ shown.title }}
+        </button>
+      </div>
+    </form>
+  }
+</dialog>
