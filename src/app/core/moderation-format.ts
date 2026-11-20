@@ -339,6 +339,94 @@ export function operationEffect(
   }
 }
 
+/** What the toast says once an operation went through. */
+export function operationDone(
+  operation: ModerationOperation,
+  targetType: ModerationTargetType,
+): string {
+  const noun = TARGET_NOUNS[targetType];
+  switch (operation) {
+    case 'DISMISS':
+      return 'The reports are dismissed.';
+    case 'HIDE':
+      return `The ${noun} is hidden.`;
+    case 'RESTORE':
+      return `The ${noun} is back on the site.`;
+    case 'DELETE':
+      return `The ${noun} is deleted.`;
+    case 'WARN':
+      return 'The account is warned.';
+    case 'SUSPEND':
+      return 'The account is suspended.';
+    case 'REINSTATE':
+      return 'The account is reinstated.';
+    case 'CLEAR_PROFILE':
+      return 'The profile is cleared.';
+    case 'DELETE_ACCOUNT':
+      return 'The account is deleted.';
+  }
+}
+
+const ACCOUNT_OPERATIONS: readonly ModerationOperation[] = [
+  'WARN',
+  'SUSPEND',
+  'REINSTATE',
+  'CLEAR_PROFILE',
+  'DELETE_ACCOUNT',
+];
+
+/** Whether an operation bears on the account that owns a target, not on the target itself. */
+export function bearsOnAccount(operation: ModerationOperation): boolean {
+  return ACCOUNT_OPERATIONS.includes(operation);
+}
+
+const ACCOUNT_STEPS: Partial<Record<ModerationOperation, string>> = {
+  WARN: '/warn',
+  SUSPEND: '/suspend',
+  REINSTATE: '/reinstate',
+  CLEAR_PROFILE: '/clear-profile',
+  DELETE_ACCOUNT: '',
+};
+
+const CONTENT_ROOTS: Record<Exclude<ModerationTargetType, 'USER'>, string> = {
+  PROJECT: '/admin/moderation/projects',
+  COMMENT: '/admin/moderation/comments',
+};
+
+export interface OperationRequest {
+  method: 'POST' | 'DELETE';
+  path: string;
+}
+
+/**
+ * The backend route of an operation. Null when the operation has nothing to bear on: an account
+ * operation on a target whose owner is gone, or hiding a profile.
+ */
+export function operationRequest(
+  operation: ModerationOperation,
+  target: { type: ModerationTargetType; id: number; ownerId: number | null },
+): OperationRequest | null {
+  if (operation === 'DISMISS') {
+    return { method: 'POST', path: `/admin/moderation/cases/${target.type}/${target.id}/dismiss` };
+  }
+  if (bearsOnAccount(operation)) {
+    const accountId = target.type === 'USER' ? target.id : target.ownerId;
+    return accountId === null
+      ? null
+      : {
+          method: operation === 'DELETE_ACCOUNT' ? 'DELETE' : 'POST',
+          path: `/admin/moderation/accounts/${accountId}${ACCOUNT_STEPS[operation] ?? ''}`,
+        };
+  }
+  if (target.type === 'USER') {
+    return null;
+  }
+  const root = `${CONTENT_ROOTS[target.type]}/${target.id}`;
+  return operation === 'DELETE'
+    ? { method: 'DELETE', path: root }
+    : { method: 'POST', path: `${root}/${operation === 'HIDE' ? 'hide' : 'restore'}` };
+}
+
 /** What staff have filled in so far. */
 export interface DecisionDraft {
   reason: ModerationReason | null;

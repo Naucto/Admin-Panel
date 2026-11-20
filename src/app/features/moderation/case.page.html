@@ -1,0 +1,203 @@
+<a routerLink="/moderation/queue" class="nc-button nc-button-ghost nc-button-sm mb-1.5">
+  <nc-icon name="arrow-left" [size]="12" /> Queue
+</a>
+
+@switch (detailState()) {
+  @case ('loading') {
+    <div class="nc-card nc-skeleton h-[88px]"></div>
+    <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div class="nc-card nc-skeleton h-[360px]"></div>
+      <div class="nc-card nc-skeleton h-[360px]"></div>
+    </div>
+  }
+  @case ('error') {
+    <nc-panel
+      state="error"
+      [error]="panelError(detail)"
+      [minHeight]="160"
+      (retry)="detail.reload()"
+    />
+  }
+  @default {
+    @if (detail.value(); as found) {
+      <header class="nc-card px-2.5 py-2">
+        <p class="flex flex-wrap items-center gap-1">
+          <span class="nc-chip nc-chip-quiet">{{ typeLabels[found.target.type] }}</span>
+          <span [class]="caseStatusChip(found.status)">{{ statusLabels[found.status] }}</span>
+          <span [class]="targetStateChip(found.target.state)">{{
+            stateLabels[found.target.state]
+          }}</span>
+          <span class="font-mono text-meta text-ink-3">#{{ found.target.id }}</span>
+        </p>
+        <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ title() }}</h2>
+        @if (found.target.type === 'COMMENT' && found.target.projectName) {
+          <p class="mt-0.25 text-body text-ink-3">On {{ found.target.projectName }}</p>
+        }
+        <p class="mt-0.5 text-meta text-ink-3">
+          {{ found.openFlags }} open of {{ found.totalFlags }}
+          {{ found.totalFlags === 1 ? 'report' : 'reports' }} · First
+          {{ dayTime(found.firstFlaggedAt) }} UTC · Last {{ dayTime(found.lastFlaggedAt) }} UTC
+        </p>
+        <div class="mt-1 flex flex-wrap gap-0.75">
+          @if (found.target.playUrl; as site) {
+            <a
+              class="nc-button nc-button-ghost nc-button-sm"
+              [href]="site"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <nc-icon name="external-link" [size]="12" /> Open on Naucto
+            </a>
+          }
+          @if (auth.canAct() && found.target.type === 'PROJECT') {
+            @if (found.target.previewPlayUrl; as preview) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm"
+                [href]="preview"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Read only, and logged"
+              >
+                <nc-icon name="play" [size]="12" /> Preview in the player
+              </a>
+            }
+            @if (found.target.previewEditUrl; as preview) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm"
+                [href]="preview"
+                target="_blank"
+                rel="noopener noreferrer"
+                title="Read only, and logged"
+              >
+                <nc-icon name="code" [size]="12" /> Preview in the editor
+              </a>
+            }
+          }
+        </div>
+      </header>
+
+      <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div class="flex min-w-0 flex-col gap-2">
+          <nc-panel heading="As it is now" [minHeight]="60">
+            @if (found.current; as current) {
+              @if (current.title) {
+                <p class="text-body wrap-anywhere text-ink">{{ current.title }}</p>
+              }
+              @if (current.body) {
+                <p
+                  class="mt-0.5 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+                  [textContent]="current.body"
+                ></p>
+              }
+              @if (!current.title && !current.body) {
+                <p class="text-meta text-ink-4">Nothing written there</p>
+              }
+            } @else {
+              <p class="text-meta text-ink-4">It is gone. The reports below kept what it said.</p>
+            }
+          </nc-panel>
+
+          <nc-panel heading="Reports" [hint]="found.flags.length + ' in all, newest first'">
+            <ul class="flex flex-col">
+              @for (flag of found.flags; track flag.id) {
+                <li class="border-b border-line-faint py-1.25 first:pt-0 last:border-b-0 last:pb-0">
+                  <div class="flex flex-wrap items-start justify-between gap-1">
+                    <nc-account-cell [account]="flag.reporter" />
+                    <p class="flex flex-wrap items-center gap-0.5 text-meta text-ink-3">
+                      <span class="nc-chip nc-chip-quiet">{{ reasonLabels[flag.reason] }}</span>
+                      <span [class]="flagStatusChip(flag.status)">{{
+                        flagStatusLabels[flag.status]
+                      }}</span>
+                      <span [title]="dayTime(flag.createdAt) + ' UTC'">{{
+                        shortAgo(flag.createdAt)
+                      }}</span>
+                    </p>
+                  </div>
+                  @if (flag.details) {
+                    <p
+                      class="mt-0.75 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+                      [textContent]="flag.details"
+                    ></p>
+                  }
+                  @if (changedSince(flag)) {
+                    <div class="mt-0.75 rounded-sm border border-line bg-inset p-1">
+                      <p class="label">As it was reported</p>
+                      @if (flag.snapshot.title) {
+                        <p class="mt-0.25 text-meta wrap-anywhere text-ink">
+                          {{ flag.snapshot.title }}
+                        </p>
+                      }
+                      @if (flag.snapshot.body) {
+                        <p
+                          class="mt-0.25 text-meta whitespace-pre-wrap wrap-anywhere text-ink-body"
+                          [textContent]="flag.snapshot.body"
+                        ></p>
+                      }
+                    </div>
+                  }
+                  @if (flag.resolvedAt; as resolved) {
+                    <p class="mt-0.5 text-micro text-ink-4">
+                      Closed {{ dayTime(resolved) }} UTC
+                      @if (flag.resolvedBy; as closer) {
+                        by {{ closer.nickname || closer.username }}
+                      }
+                    </p>
+                  }
+                </li>
+              }
+            </ul>
+          </nc-panel>
+
+          <nc-panel heading="What was done about it" [minHeight]="60">
+            <nc-history-list [actions]="found.history" [showTarget]="false" />
+          </nc-panel>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-2">
+          @if (auth.canAct() && found.allowedActions.length === 0) {
+            <nc-panel heading="Decision" [minHeight]="60">
+              <p class="text-meta text-ink-3">
+                Nothing here is yours to decide: the case is about you, or about an account of your
+                rank or above.
+              </p>
+            </nc-panel>
+          } @else if (auth.canAct() && targetOperations().length > 0) {
+            <nc-panel heading="Decision" [minHeight]="60">
+              <nc-operation-buttons
+                [operations]="targetOperations()"
+                [targetType]="found.target.type"
+                [busy]="actions.busy()"
+                (choose)="run($event)"
+              />
+            </nc-panel>
+          }
+
+          <nc-panel heading="Owner" [minHeight]="60">
+            @if (found.target.owner; as owner) {
+              <nc-account-cell size="full" [account]="owner" />
+              @if (auth.canAct() && accountOperations().length > 0) {
+                <nc-operation-buttons
+                  class="mt-1.5"
+                  [operations]="accountOperations()"
+                  [targetType]="found.target.type"
+                  [busy]="actions.busy()"
+                  (choose)="run($event)"
+                />
+              }
+            } @else {
+              <p class="text-meta text-ink-4">The account is gone</p>
+            }
+          </nc-panel>
+
+          <nc-panel
+            heading="The owner's record"
+            hint="What staff did about this account before"
+            [minHeight]="60"
+          >
+            <nc-history-list [actions]="found.ownerHistory" emptyText="Nothing on record" />
+          </nc-panel>
+        </div>
+      </div>
+    }
+  }
+}
