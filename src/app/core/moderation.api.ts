@@ -8,10 +8,12 @@ import type {
   CaseSort,
   CaseSummary,
   CaseView,
+  CommentModerationState,
   ModerationAccount,
   ModerationAccountDetail,
   ModerationAction,
   ModerationActionType,
+  ModerationComment,
   ModerationDecision,
   ModerationProject,
   ModerationProjectDetail,
@@ -44,6 +46,15 @@ export interface ProjectQuery {
   search?: string;
   state?: ProjectModerationState;
   creatorId?: number;
+  page: number;
+  limit: number;
+}
+
+export interface CommentQuery {
+  search?: string;
+  state?: CommentModerationState;
+  projectId?: number;
+  authorId?: number;
   page: number;
   limit: number;
 }
@@ -95,6 +106,10 @@ export class ModerationApi {
   /** The cover as bytes, withheld or not: an `<img>` cannot send the bearer. */
   projectCover(id: number): Promise<Blob> {
     return this.api.getBlob(`/admin/moderation/projects/${id}/cover`);
+  }
+
+  comments(query: CommentQuery): Promise<Page<ModerationComment>> {
+    return this.api.get('/admin/moderation/comments', { ...query });
   }
 
   /** What staff did, newest first. */
