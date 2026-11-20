@@ -128,6 +128,16 @@ export const routes: Routes = [
         ...page('User', 'moderation'),
       },
       {
+        path: 'moderation/games',
+        loadComponent: () => import('./features/moderation/all-games.page'),
+        ...page('All games', 'moderation'),
+      },
+      {
+        path: 'moderation/games/:id',
+        loadComponent: () => import('./features/moderation/game-detail.page'),
+        ...page('Game', 'moderation'),
+      },
+      {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
         ...page('Admins', 'administration'),

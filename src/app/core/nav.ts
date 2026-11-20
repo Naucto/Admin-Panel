@@ -51,6 +51,7 @@ const GROUPS: GroupSpec[] = [
     items: [
       { path: '/moderation/queue', label: 'Queue', icon: 'warning-box' },
       { path: '/moderation/users', label: 'Users', icon: 'group' },
+      { path: '/moderation/games', label: 'All games', icon: 'grid' },
     ],
   },
   {
