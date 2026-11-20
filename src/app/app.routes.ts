@@ -106,6 +106,12 @@ export const routes: Routes = [
         loadComponent: () => import('./features/crashes/crashes.page'),
         ...page('Crashes', 'support'),
       },
+      { path: 'moderation', pathMatch: 'full', redirectTo: 'moderation/queue' },
+      {
+        path: 'moderation/queue',
+        loadComponent: () => import('./features/moderation/queue.page'),
+        ...page('Report queue', 'moderation'),
+      },
       {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),

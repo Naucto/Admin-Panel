@@ -107,6 +107,24 @@ The Support group of the sidebar reads what people send from Naucto itself.
   through an object URL that the page revokes when it leaves the report. That is the reason for
   `blob:` in the CSP's `img-src`.
 
+## Moderation
+
+The Moderation group reads what users reported on Naucto and what staff did about it, from the
+backend's `admin/moderation` routes (`core/moderation.api.ts`).
+
+- "Report" already names bug reports, crashes and ratings in the code, so a user's report of a
+  game, a comment or a profile is a **flag** there, and every flag on one target makes a **case**.
+  The screens still say "report", which is the word people know.
+- The Queue (`features/moderation/queue.page`) lists cases, never single flags.
+  `core/case-count.store.ts` keeps the sidebar's count of open cases, read like the bug count.
+- `core/moderation-format.ts` holds the labels, the chip tones, what the dialog of each operation
+  asks for (`operationForm`) and the body it sends (`decisionOf`). It is pure and tested, so a
+  screen never decides by itself which fields a decision takes.
+- Every decision goes through `ActionDialogService.ask`, mounted once at the root. The yes or no of
+  `FeedbackService.confirm` is for everything else.
+- Which operations a screen offers comes from the `allowedActions` the backend sends with a
+  target, never from the role alone.
+
 ## Before finishing
 
 `npm run typecheck && npm test && npm run build`, and `npm run format:check`.

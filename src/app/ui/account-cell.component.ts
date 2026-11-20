@@ -19,7 +19,10 @@ import { IconComponent } from './icon.component';
 export class AccountCellComponent {
   private readonly feedback = inject(FeedbackService);
 
-  readonly account = input.required<FeedbackAccount>();
+  readonly account =
+    input.required<
+      Pick<FeedbackAccount, 'id' | 'username' | 'nickname' | 'email' | 'profileUrl' | 'deleted'>
+    >();
   readonly size = input<'compact' | 'full'>('compact');
 
   protected readonly name = computed(() => this.account().nickname || this.account().username);

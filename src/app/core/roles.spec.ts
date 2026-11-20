@@ -44,11 +44,14 @@ describe('what a role changes', () => {
 
 describe('the sidebar of a role', () => {
   it('gives an admin every group', () => {
-    expect(labels('Admin')).toEqual(['Stats', 'Support', 'Administration']);
+    expect(labels('Admin')).toEqual(['Stats', 'Support', 'Moderation', 'Administration']);
   });
 
-  it('keeps the admins list from a moderator, who still reaches their own account', () => {
-    expect(paths('Moderator')).toEqual(['/account']);
+  it('gives a moderator moderation and their own account, and no admins list', () => {
+    expect(labels('Moderator')).toEqual(['Moderation', 'Administration']);
+    expect(paths('Moderator').filter((path) => !path.startsWith('/moderation/'))).toEqual([
+      '/account',
+    ]);
   });
 
   it('never lists a group with nothing in it', () => {
@@ -62,7 +65,7 @@ describe('where a role starts', () => {
   it.each<[RoleName | null, string]>([
     ['Admin', '/overview'],
     ['Viewer', '/overview'],
-    ['Moderator', '/account'],
+    ['Moderator', '/moderation/queue'],
     [null, '/account'],
   ])('%s starts on %s', (role, path) => {
     expect(landingFor(role)).toBe(path);
