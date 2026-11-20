@@ -12,6 +12,7 @@ import {
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { AuthStore } from '../../core/auth.store';
 import { errorMessage } from '../../core/api-error';
 import { BugCountStore } from '../../core/bug-count.store';
 import { dayTime } from '../../core/dates';
@@ -45,6 +46,7 @@ export default class BugDetailPage {
   private readonly api = inject(UserFeedbackApi);
   private readonly feedback = inject(FeedbackService);
   private readonly bugCount = inject(BugCountStore);
+  protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
   readonly id = input.required({ transform: numberAttribute });

@@ -8,6 +8,7 @@ import {
   signal,
 } from '@angular/core';
 
+import { AuthStore } from '../../core/auth.store';
 import { errorMessage } from '../../core/api-error';
 import { CrashesApi } from '../../core/crashes.api';
 import { dayTime, shortAgo } from '../../core/dates';
@@ -47,6 +48,7 @@ const STATUS_TOASTS: Record<CrashStatus, string> = {
 export default class CrashesPage {
   private readonly api = inject(CrashesApi);
   private readonly feedback = inject(FeedbackService);
+  protected readonly auth = inject(AuthStore);
 
   protected readonly sources: SegmentOption<SourceFilter>[] = [
     { value: 'ALL', label: 'All' },

@@ -14,43 +14,15 @@ import type { ShellRouteData } from '../../app.routes';
 import { AuthStore } from '../../core/auth.store';
 import { BugCountStore } from '../../core/bug-count.store';
 import { FiltersStore, RANGE_PRESETS, type RangePreset } from '../../core/filters.store';
+import { landingFor, navFor } from '../../core/nav';
+import { canOpen, roleLabel } from '../../core/roles';
 import { ThemeService } from '../../core/theme.service';
 import type { Grain } from '../../core/types';
-import type { IconName } from '../../ui/icon-paths';
 import { IconComponent } from '../../ui/icon.component';
 import { LogoComponent } from '../../ui/logo.component';
 import { SegmentedComponent } from '../../ui/segmented.component';
 
-interface NavItem {
-  path: string;
-  label: string;
-  icon: IconName;
-}
-
-const STATS_NAV: NavItem[] = [
-  { path: '/overview', label: 'Overview', icon: 'dashboard' },
-  { path: '/timeline', label: 'Timeline', icon: 'clock' },
-  { path: '/posts', label: 'Posts', icon: 'flag' },
-  { path: '/audience', label: 'Audience', icon: 'users' },
-  { path: '/games', label: 'Games', icon: 'gamepad' },
-  { path: '/creators', label: 'Creators', icon: 'paint-bucket' },
-  { path: '/live', label: 'Live', icon: 'zap' },
-  { path: '/explorer', label: 'Explorer', icon: 'chart' },
-  { path: '/compare', label: 'Compare', icon: 'trending-up' },
-];
-
-const SUPPORT_NAV: NavItem[] = [
-  { path: '/feedback', label: 'Feedback', icon: 'mood-happy' },
-  { path: '/bugs', label: 'Bug reports', icon: 'bug' },
-  { path: '/crashes', label: 'Crashes', icon: 'alert' },
-];
-
 const BUG_COUNT_REFRESH_MS = 60_000;
-
-const ADMIN_NAV: NavItem[] = [
-  { path: '/admins', label: 'Admins', icon: 'shield' },
-  { path: '/account', label: 'Account', icon: 'user' },
-];
 
 @Component({
   selector: 'nc-shell',
@@ -73,9 +45,9 @@ export default class ShellComponent {
   private readonly router = inject(Router);
   private readonly bugCount = inject(BugCountStore);
 
-  protected readonly statsNav = STATS_NAV;
-  protected readonly supportNav = SUPPORT_NAV;
-  protected readonly adminNav = ADMIN_NAV;
+  protected readonly nav = computed(() => navFor(this.auth.role()));
+  protected readonly home = computed(() => landingFor(this.auth.role()));
+  protected readonly role = computed(() => roleLabel(this.auth.role()));
   protected readonly presets = RANGE_PRESETS;
   protected readonly grains: { value: Grain; label: string }[] = [
     { value: 'DAY', label: 'Day' },
@@ -104,6 +76,10 @@ export default class ShellComponent {
   );
 
   constructor() {
+    // The count is a support figure: a role that does not open support would only be refused it.
+    if (!canOpen(this.auth.role(), 'support')) {
+      return;
+    }
     void this.bugCount.refresh();
     const timer = setInterval(() => {
       void this.bugCount.refresh();

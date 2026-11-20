@@ -5,7 +5,7 @@
 
 export type Grain = 'DAY' | 'WEEK' | 'MONTH';
 export type PointStatus = 'final' | 'provisional' | 'unavailable';
-export type RoleName = 'User' | 'Moderator' | 'Admin';
+export type RoleName = 'User' | 'Viewer' | 'Moderator' | 'Admin';
 
 /**
  * Whom a metric can count: browsers that accepted analytics, tabs that refused it or never
@@ -181,7 +181,8 @@ export interface AccountSummary {
   id: number;
   username: string;
   nickname: string | null;
-  email: string;
+  /** Null for a reader who does not read addresses: anyone but an admin. */
+  email: string | null;
   role: RoleName;
   createdAt: string;
 }
@@ -380,7 +381,8 @@ export interface FeedbackAccount {
   id: number;
   username: string;
   nickname: string | null;
-  email: string;
+  /** Null for a reader who does not read addresses: anyone but an admin. */
+  email: string | null;
   role: RoleName;
   createdAt: string;
   /** The public profile on the web app, or null once the account is deleted. */

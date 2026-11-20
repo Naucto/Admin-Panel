@@ -10,7 +10,7 @@
         <h2 class="font-ui text-display text-ink">{{ me.nickname || me.username }}</h2>
         <p class="mt-0.25 text-body text-ink-3">&#64;{{ me.username }} · {{ me.email }}</p>
       </div>
-      <span class="nc-chip nc-chip-gold">Admin</span>
+      <span class="nc-chip nc-chip-gold">{{ role() }}</span>
     </section>
 
     <nc-panel heading="Preferences">

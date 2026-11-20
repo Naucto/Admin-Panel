@@ -74,7 +74,7 @@ export default class AdminsPage {
   protected async promote(account: AccountSummary): Promise<void> {
     const confirmed = await this.feedback.confirm({
       title: `Make @${account.username} an admin?`,
-      message: `${account.email} will be able to sign in to this console, read every figure and add or remove admins.`,
+      message: `${account.email ?? `@${account.username}`} will be able to sign in to this console, read every figure and add or remove admins.`,
       confirmLabel: 'Make admin',
     });
     if (confirmed) {
@@ -90,7 +90,7 @@ export default class AdminsPage {
   protected async revoke(admin: AccountSummary): Promise<void> {
     const confirmed = await this.feedback.confirm({
       title: `Remove @${admin.username} from the admins?`,
-      message: `${admin.email} keeps their Naucto account but loses access to this console at once.`,
+      message: `${admin.email ?? `@${admin.username}`} keeps their Naucto account but loses access to this console at once.`,
       confirmLabel: 'Remove admin role',
       danger: true,
     });
