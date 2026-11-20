@@ -118,6 +118,16 @@ export const routes: Routes = [
         ...page('Reported', 'moderation'),
       },
       {
+        path: 'moderation/users',
+        loadComponent: () => import('./features/moderation/users.page'),
+        ...page('Users', 'moderation'),
+      },
+      {
+        path: 'moderation/users/:id',
+        loadComponent: () => import('./features/moderation/user-detail.page'),
+        ...page('User', 'moderation'),
+      },
+      {
         path: 'admins',
         loadComponent: () => import('./features/admins/admins.page'),
         ...page('Admins', 'administration'),

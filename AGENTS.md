@@ -123,6 +123,9 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - A case (`features/moderation/case.page`, `moderation/cases/:targetType/:targetId`) shows the
   content as it is now, each report with what it kept when the content has changed since, what was
   done, and the owner with their record.
+- Users (`users.page`, `user-detail.page`) lists every account with its standing and opens one on
+  its record, read from the log by `subjectUserId`. A directory searches through `nc-search-box`,
+  which settles once the typing pauses.
 - Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
   with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
   count. A screen only reloads its own data when it resolves true. The yes or no of
