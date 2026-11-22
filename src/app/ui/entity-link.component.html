@@ -1,0 +1,25 @@
+@if (route(); as link) {
+  <a
+    class="truncate text-ink underline-offset-2 hover:underline"
+    [routerLink]="link"
+    [title]="name()"
+    (click)="$event.stopPropagation()"
+  >
+    {{ name() }}
+  </a>
+} @else {
+  <span class="truncate text-ink" [title]="name()">{{ name() }}</span>
+}
+@if (siteUrl(); as site) {
+  <a
+    class="shrink-0 text-ink-3 hover:text-ink"
+    [href]="site"
+    target="_blank"
+    rel="noopener noreferrer"
+    aria-label="Open on Naucto"
+    title="Open on Naucto"
+    (click)="$event.stopPropagation()"
+  >
+    <nc-icon name="external-link" [size]="12" />
+  </a>
+}

@@ -199,6 +199,9 @@
   .nc-chip-gold {
     color: var(--nc-gold-ink);
   }
+  .nc-chip-danger {
+    color: var(--nc-hot-ink);
+  }
   .nc-chip-quiet {
     color: var(--nc-ink-3);
   }
@@ -270,6 +273,8 @@
 
   .nc-dialog {
     width: min(440px, calc(100vw - 32px));
+    max-height: calc(100dvh - 32px);
+    margin: auto;
     padding: 0;
     border: 1px solid var(--nc-line-strong);
     border-radius: var(--radius-md);

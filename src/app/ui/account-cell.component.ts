@@ -5,7 +5,8 @@ import { FeedbackService } from './feedback.service';
 import { IconComponent } from './icon.component';
 
 /**
- * Who sent a rating or a report: their name, their public profile and a way to write to them.
+ * Who sent a rating or a report: their name, their public profile and, for a reader who is given
+ * the address, a way to write to them.
  * Compact fits a table cell; full stands on its own in a detail card.
  */
 @Component({
@@ -18,7 +19,10 @@ import { IconComponent } from './icon.component';
 export class AccountCellComponent {
   private readonly feedback = inject(FeedbackService);
 
-  readonly account = input.required<FeedbackAccount>();
+  readonly account =
+    input.required<
+      Pick<FeedbackAccount, 'id' | 'username' | 'nickname' | 'email' | 'profileUrl' | 'deleted'>
+    >();
   readonly size = input<'compact' | 'full'>('compact');
 
   protected readonly name = computed(() => this.account().nickname || this.account().username);
@@ -27,7 +31,7 @@ export class AccountCellComponent {
   protected async copyEmail(event: Event): Promise<void> {
     event.stopPropagation();
     try {
-      await navigator.clipboard.writeText(this.account().email);
+      await navigator.clipboard.writeText(this.account().email ?? '');
       this.feedback.toast('Email copied');
     } catch {
       this.feedback.toast('The email could not be copied.', 'error');

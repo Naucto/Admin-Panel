@@ -41,6 +41,28 @@ is and how to run it; this file is how the code is laid out and what to keep in 
 - Commits: `[ADMIN] [TYPE] Capitalized message`, TYPE among ADD/REMOVE/UPDATE/REFACTO/CLEAN/FIX,
   with the Jira key in the body (`Refs NCTO-276`). Branch = Jira key.
 
+## Roles
+
+Three staff roles sign in, and the backend decides again on every request what each may do. The
+console only keeps from drawing what would be refused.
+
+- `core/roles.ts` says which areas a role opens (`canOpen`) and whether it changes anything
+  (`canAct`, `isAdmin`). `core/nav.ts` builds the sidebar and the landing page from it. Both are
+  pure and tested in `roles.spec.ts`.
+- An admin opens and does everything. A moderator opens moderation only. A viewer opens every area
+  and changes nothing: it gets each screen without the controls that write, never a disabled
+  button that explains nothing.
+- A route names its area through the `page()` helper of `app.routes.ts`, and `areaGuard` sends a
+  role that does not open it to where that role starts. A new page states its area there.
+- A control that writes is wrapped in `@if (auth.isAdmin())`, or `auth.canAct()` once moderators
+  share it. A read needs nothing.
+- An admin hands out the three roles on the Staff page (`features/admins`, still at `/admins`).
+  `STAFF_ROLES` and `roleGrant` in `core/roles.ts` say which roles there are and what each comes
+  to, which is the sentence the confirmation shows. The backend writes every change to the
+  moderation log.
+- Only an admin is given email addresses, so `email` is nullable on every account the API hands
+  over. Draw the address only when there is one.
+
 ## Timeline, posts and compare
 
 These pages read the backend's raw timeline (`core/timeline.api.ts`) between two instants rather
@@ -88,6 +110,43 @@ The Support group of the sidebar reads what people send from Naucto itself.
 - A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and shown
   through an object URL that the page revokes when it leaves the report. That is the reason for
   `blob:` in the CSP's `img-src`.
+
+## Moderation
+
+The Moderation group reads what users reported on Naucto and what staff did about it, from the
+backend's `admin/moderation` routes (`core/moderation.api.ts`).
+
+- "Report" already names bug reports, crashes and ratings in the code, so a user's report of a
+  game, a comment or a profile is a **flag** there, and every flag on one target makes a **case**.
+  The screens still say "report", which is the word people know.
+- The Queue (`features/moderation/queue.page`) lists cases, never single flags.
+  `core/case-count.store.ts` keeps the sidebar's count of open cases, read like the bug count.
+- `core/moderation-format.ts` holds the labels, the chip tones, what the dialog of each operation
+  asks for (`operationForm`) and the body it sends (`decisionOf`). It is pure and tested, so a
+  screen never decides by itself which fields a decision takes.
+- A case (`features/moderation/case.page`, `moderation/cases/:targetType/:targetId`) shows the
+  content as it is now, each report with what it kept when the content has changed since, what was
+  done, and the owner with their record.
+- Users (`users.page`, `user-detail.page`) lists every account with its standing and opens one on
+  its record, read from the log by `subjectUserId`. A directory searches through `nc-search-box`,
+  which settles once the typing pauses.
+- All games (`all-games.page`, `game-detail.page`) lists every game, published or not, and takes
+  `?creator=` for the games of one account. A cover is read as bytes like a bug screenshot, since
+  a hidden game's cover is no longer served.
+- Comments (`comments.page`) lists every comment and opens a row under the list, as Crashes does,
+  with its decisions and what was done about it. It takes `?author=` and `?game=`. A comment has
+  no page of its own, which is why `panelRoute` gives it none.
+- Log (`log.page`) reads every action, newest first, filtered by action, by what it was about and,
+  through `?actor=`, by staff member. The backend only ever appends to it, so the page has no
+  control that writes.
+- Every decision goes through `ModerationActions.run` (`features/moderation`): it finds the route
+  with `operationRequest`, asks through `ActionDialogService`, sends, toasts and refreshes the
+  count. A screen only reloads its own data when it resolves true. The yes or no of
+  `FeedbackService.confirm` is for everything else.
+- `nc-operation-buttons` draws one button per allowed operation, so a role never sees a button the
+  backend would refuse.
+- Which operations a screen offers comes from the `allowedActions` the backend sends with a
+  target, never from the role alone.
 
 ## Before finishing
 

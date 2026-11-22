@@ -8,8 +8,9 @@ import type { AccountSummary, RoleName } from './types';
 export class AccountsApi {
   private readonly api = inject(ApiService);
 
-  async admins(): Promise<AccountSummary[]> {
-    return (await this.api.get<{ items: AccountSummary[] }>('/admin/accounts/admins')).items;
+  /** Everyone holding a role that signs in to the console. */
+  async staff(): Promise<AccountSummary[]> {
+    return (await this.api.get<{ items: AccountSummary[] }>('/admin/accounts/staff')).items;
   }
 
   async search(term: string): Promise<AccountSummary[]> {

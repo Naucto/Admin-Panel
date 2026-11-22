@@ -1,0 +1,60 @@
+<nc-panel
+  heading="Users"
+  [hint]="hint()"
+  [state]="accountsState()"
+  [error]="panelError(accounts)"
+  emptyIcon="user"
+  emptyTitle="No account matches"
+  emptyHint="Try another name, or show every standing."
+  [minHeight]="160"
+  (retry)="accounts.reload()"
+>
+  <nc-search-box actions placeholder="Username or nickname" [(value)]="search" />
+  <nc-segmented actions label="Standing" [options]="standings" [(value)]="standing" />
+  @if (accounts.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>Account</th>
+            <th>Standing</th>
+            <th class="num">Warnings</th>
+            <th class="num">Games</th>
+            <th class="num">Comments</th>
+            <th class="num" title="Open reports about the account or what it made">Reported</th>
+            <th class="num" title="Reports the account filed">Filed</th>
+            <th>Joined</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (account of value.items; track account.id) {
+            <tr class="cursor-pointer" (click)="open(account)">
+              <td>
+                <div class="flex items-center gap-1">
+                  <nc-account-cell class="max-w-[260px]" [account]="account" />
+                  @if (account.role !== 'User') {
+                    <span class="nc-chip nc-chip-gold">{{ roleLabel(account.role) }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                <span [class]="standingChip(account.standing)" [title]="standingTitle(account)">{{
+                  standingLabels[account.standing]
+                }}</span>
+              </td>
+              <td class="num">{{ account.warnings }}</td>
+              <td class="num">{{ account.games }}</td>
+              <td class="num">{{ account.comments }}</td>
+              <td class="num" [class.text-orange-ink]="account.openFlags > 0">
+                {{ account.openFlags }}
+              </td>
+              <td class="num">{{ account.flagsFiled }}</td>
+              <td class="whitespace-nowrap text-ink-3">{{ joined(account.createdAt) }}</td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nc-pager [(page)]="page" [pages]="pages()" />
+  }
+</nc-panel>

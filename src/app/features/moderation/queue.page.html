@@ -1,0 +1,148 @@
+<nc-panel
+  heading="Reports"
+  hint="One row per game, comment or profile, however many people reported it."
+  [state]="casesState()"
+  [error]="panelError(cases)"
+  emptyIcon="check"
+  [emptyTitle]="emptyTitle()"
+  [emptyHint]="emptyHint()"
+  [minHeight]="160"
+  (retry)="cases.reload()"
+>
+  <nc-segmented actions label="Show" [options]="views" [(value)]="view" />
+  <select
+    actions
+    class="nc-select"
+    aria-label="What was reported"
+    [value]="targetType()"
+    (change)="setTargetType($any($event.target).value)"
+  >
+    <option value="">Everything</option>
+    @for (option of types; track option.value) {
+      <option [value]="option.value">{{ option.label }}s</option>
+    }
+  </select>
+  <select
+    actions
+    class="nc-select"
+    aria-label="Reason"
+    [value]="reason()"
+    (change)="setReason($any($event.target).value)"
+  >
+    <option value="">All reasons</option>
+    @for (option of reasons; track option.value) {
+      <option [value]="option.value">{{ option.label }}</option>
+    }
+  </select>
+  @if (cases.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>Type</th>
+            <th>Reported</th>
+            <th>Owner</th>
+            <th class="num">
+              <button
+                type="button"
+                class="nc-sort"
+                [attr.aria-pressed]="sort() === 'flags'"
+                (click)="sort.set('flags')"
+              >
+                Reports
+              </button>
+            </th>
+            <th>Reasons</th>
+            <th>First</th>
+            <th>
+              <button
+                type="button"
+                class="nc-sort"
+                [attr.aria-pressed]="sort() === 'lastFlagged'"
+                (click)="sort.set('lastFlagged')"
+              >
+                Last
+              </button>
+            </th>
+            <th>State</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (row of value.items; track row.target.type + ':' + row.target.id) {
+            <tr class="cursor-pointer" (click)="open(row)">
+              <td>
+                <span class="nc-chip nc-chip-quiet">{{ typeLabels[row.target.type] }}</span>
+              </td>
+              <td>
+                <div class="flex max-w-[320px] min-w-0 flex-col">
+                  <span class="flex min-w-0 items-center gap-0.25">
+                    <a
+                      class="truncate text-ink hover:underline"
+                      [routerLink]="caseRoute(row.target.type, row.target.id)"
+                      [title]="label(row)"
+                      (click)="$event.stopPropagation()"
+                    >
+                      {{ label(row) }}
+                    </a>
+                    @if (row.target.playUrl; as site) {
+                      <a
+                        class="shrink-0 text-ink-3 hover:text-ink"
+                        [href]="site"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        aria-label="Open on Naucto"
+                        title="Open on Naucto"
+                        (click)="$event.stopPropagation()"
+                      >
+                        <nc-icon name="external-link" [size]="12" />
+                      </a>
+                    }
+                  </span>
+                  @if (context(row); as where) {
+                    <span class="truncate text-meta text-ink-3" [title]="where">{{ where }}</span>
+                  }
+                </div>
+              </td>
+              <td>
+                @if (row.target.owner; as owner) {
+                  <nc-account-cell class="max-w-[220px]" [account]="owner" />
+                } @else {
+                  <span class="text-ink-4">--</span>
+                }
+              </td>
+              <td class="num" [title]="row.totalFlags + ' in all'">
+                <span [class.text-orange-ink]="row.openFlags > 0">{{ row.openFlags }}</span>
+                <span class="text-ink-4"> / {{ row.totalFlags }}</span>
+              </td>
+              <td>
+                <div class="flex max-w-[240px] flex-wrap gap-0.25">
+                  @for (reason of row.reasons; track reason) {
+                    <span class="nc-chip nc-chip-quiet">{{ reasonLabels[reason] }}</span>
+                  }
+                </div>
+              </td>
+              <td
+                class="whitespace-nowrap text-ink-3"
+                [title]="dayTime(row.firstFlaggedAt) + ' UTC'"
+              >
+                {{ shortAgo(row.firstFlaggedAt) }}
+              </td>
+              <td
+                class="whitespace-nowrap text-ink-3"
+                [title]="dayTime(row.lastFlaggedAt) + ' UTC'"
+              >
+                {{ shortAgo(row.lastFlaggedAt) }}
+              </td>
+              <td>
+                <span [class]="targetStateChip(row.target.state)">{{
+                  stateLabels[row.target.state]
+                }}</span>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nc-pager [(page)]="page" [pages]="pages()" />
+  }
+</nc-panel>

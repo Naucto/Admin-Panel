@@ -1,0 +1,188 @@
+<nc-panel
+  heading="Comments"
+  [hint]="hint()"
+  [state]="commentsState()"
+  [error]="panelError(comments)"
+  emptyIcon="message"
+  emptyTitle="No comment matches"
+  emptyHint="Try other words, or show every state."
+  [minHeight]="160"
+  (retry)="comments.reload()"
+>
+  @if (author(); as account) {
+    <a
+      actions
+      class="nc-button nc-button-ghost nc-button-sm"
+      routerLink="/moderation/comments"
+      [queryParams]="{ game: game() }"
+      title="Show the comments of every account"
+    >
+      Account #{{ account }} <nc-icon name="close" [size]="12" />
+    </a>
+  }
+  @if (game(); as project) {
+    <a
+      actions
+      class="nc-button nc-button-ghost nc-button-sm"
+      routerLink="/moderation/comments"
+      [queryParams]="{ author: author() }"
+      title="Show the comments on every game"
+    >
+      Game #{{ project }} <nc-icon name="close" [size]="12" />
+    </a>
+  }
+  <nc-search-box actions placeholder="Words in the comment" [(value)]="search" />
+  <nc-segmented actions label="State" [options]="states" [(value)]="state" />
+  @if (comments.value(); as value) {
+    <div class="-mx-1 overflow-x-auto">
+      <table class="nc-table">
+        <thead>
+          <tr>
+            <th>Comment</th>
+            <th>Author</th>
+            <th>Game</th>
+            <th>Written</th>
+            <th>State</th>
+            <th class="num" title="Open reports about the comment">Reported</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (comment of value.items; track comment.id) {
+            <tr
+              class="cursor-pointer"
+              [class.bg-raised]="selected()?.id === comment.id"
+              (click)="toggle(comment)"
+            >
+              <td>
+                <p class="max-w-[420px] truncate text-ink" [title]="comment.content">
+                  @if (comment.parentId !== null) {
+                    <nc-icon
+                      name="corner-down-right"
+                      [size]="12"
+                      class="mr-0.25 text-ink-3"
+                      role="img"
+                      aria-label="A reply"
+                      title="A reply"
+                    />
+                  }
+                  {{ comment.content }}
+                </p>
+              </td>
+              <td>
+                <nc-account-cell class="max-w-[200px]" [account]="comment.author" />
+              </td>
+              <td>
+                <a
+                  class="block max-w-[180px] truncate text-ink-body hover:underline"
+                  [routerLink]="['/moderation/games', comment.projectId]"
+                  [title]="comment.projectName"
+                  (click)="$event.stopPropagation()"
+                >
+                  {{ comment.projectName }}
+                </a>
+              </td>
+              <td
+                class="whitespace-nowrap text-ink-3"
+                [title]="dayTime(comment.createdAt) + ' UTC'"
+              >
+                {{ shortAgo(comment.createdAt) }}
+              </td>
+              <td>
+                <span [class]="commentStateChip(comment.state)">{{
+                  stateLabels[comment.state]
+                }}</span>
+              </td>
+              <td class="num" [class.text-orange-ink]="comment.openFlags > 0">
+                {{ comment.openFlags }}
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+    <nc-pager [(page)]="page" [pages]="pages()" />
+  }
+</nc-panel>
+
+@if (selected(); as comment) {
+  <nc-panel
+    class="mt-2"
+    heading="Comment"
+    [hint]="'#' + comment.id + ' on ' + comment.projectName"
+    [minHeight]="120"
+  >
+    <div actions class="flex flex-wrap items-center gap-0.75">
+      @if (comment.openFlags > 0) {
+        <a class="nc-button nc-button-sm" [routerLink]="caseRoute('COMMENT', comment.id)">
+          <nc-icon name="warning-box" [size]="12" /> {{ comment.openFlags }} open
+          {{ comment.openFlags === 1 ? 'report' : 'reports' }}
+        </a>
+      }
+      @if (comment.playUrl; as site) {
+        <a
+          class="nc-button nc-button-ghost nc-button-sm"
+          [href]="site"
+          target="_blank"
+          rel="noopener noreferrer"
+        >
+          <nc-icon name="external-link" [size]="12" /> Open on Naucto
+        </a>
+      }
+      @if (auth.canAct()) {
+        <nc-operation-buttons
+          [operations]="operations(comment)"
+          targetType="COMMENT"
+          [busy]="actions.busy()"
+          (choose)="run($event, comment)"
+        />
+      }
+      <button type="button" class="nc-button nc-button-ghost nc-button-sm" (click)="close()">
+        <nc-icon name="close" [size]="12" /> Close
+      </button>
+    </div>
+
+    <p class="flex flex-wrap items-center gap-1 text-meta text-ink-3">
+      <span [class]="commentStateChip(comment.state)">{{ stateLabels[comment.state] }}</span>
+      <span>Written {{ dayTime(comment.createdAt) }} UTC</span>
+      @if (comment.hiddenAt; as hidden) {
+        <span>Hidden {{ dayTime(hidden) }} UTC</span>
+      }
+      @if (comment.parentId !== null) {
+        <span>A reply to #{{ comment.parentId }}</span>
+      }
+    </p>
+    <p
+      class="mt-1 text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+      [textContent]="comment.content"
+    ></p>
+
+    <div class="mt-1.5 grid gap-2 md:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
+      <div class="min-w-0">
+        <p class="label mb-0.5">Author</p>
+        <nc-account-cell size="full" [account]="comment.author" />
+        @if (!comment.author.deleted) {
+          <a
+            class="nc-button nc-button-ghost nc-button-sm mt-1"
+            [routerLink]="['/moderation/users', comment.author.id]"
+          >
+            <nc-icon name="user" [size]="12" /> Open the account
+          </a>
+        }
+      </div>
+      <div class="min-w-0">
+        <p class="label mb-0.5">What was done about it</p>
+        @switch (historyState()) {
+          @case ('error') {
+            <p class="text-body text-hot-ink">{{ panelError(history) }}</p>
+          }
+          @case ('loading') {
+            <div class="nc-skeleton h-[48px] rounded-sm"></div>
+          }
+          @default {
+            <nc-history-list [entries]="history.value()?.items ?? []" [showTarget]="false" />
+          }
+        }
+      </div>
+    </div>
+  </nc-panel>
+}

@@ -1,0 +1,190 @@
+<a routerLink="/moderation/games" class="nc-button nc-button-ghost nc-button-sm mb-1.5">
+  <nc-icon name="arrow-left" [size]="12" /> All games
+</a>
+
+@switch (gameState()) {
+  @case ('loading') {
+    <div class="nc-card nc-skeleton h-[88px]"></div>
+    <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div class="nc-card nc-skeleton h-[320px]"></div>
+      <div class="nc-card nc-skeleton h-[320px]"></div>
+    </div>
+  }
+  @case ('error') {
+    <nc-panel state="error" [error]="panelError(game)" [minHeight]="160" (retry)="game.reload()" />
+  }
+  @default {
+    @if (game.value(); as found) {
+      <header class="nc-card px-2.5 py-2">
+        <p class="flex flex-wrap items-center gap-1">
+          <span [class]="projectStateChip(found.state)">{{ stateLabels[found.state] }}</span>
+          <span class="font-mono text-meta text-ink-3">#{{ found.id }}</span>
+          @if (found.forkedFromId; as source) {
+            <a
+              class="text-meta text-ink-3 underline-offset-2 hover:text-ink hover:underline"
+              [routerLink]="['/moderation/games', source]"
+            >
+              Forked from #{{ source }}
+            </a>
+          }
+        </p>
+        <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ found.name }}</h2>
+        @if (found.shortDesc) {
+          <p class="mt-0.25 text-body wrap-anywhere text-ink-body">{{ found.shortDesc }}</p>
+        }
+        <p class="mt-0.5 text-meta text-ink-3">
+          Created {{ dayTime(found.createdAt) }} UTC · Last saved {{ dayTime(found.updatedAt) }} UTC
+          @if (found.publishedAt; as published) {
+            · Published {{ dayTime(published) }} UTC
+          }
+          @if (found.hiddenAt; as hidden) {
+            · Hidden {{ dayTime(hidden) }} UTC
+          }
+        </p>
+        <div class="mt-1 flex flex-wrap gap-0.75">
+          @if (found.openFlags > 0) {
+            <a class="nc-button nc-button-sm" [routerLink]="caseRoute('PROJECT', found.id)">
+              <nc-icon name="warning-box" [size]="12" /> {{ found.openFlags }} open
+              {{ found.openFlags === 1 ? 'report' : 'reports' }}
+            </a>
+          }
+          @if (found.playUrl; as site) {
+            <a
+              class="nc-button nc-button-ghost nc-button-sm"
+              [href]="site"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <nc-icon name="external-link" [size]="12" /> Open on Naucto
+            </a>
+          }
+          <a
+            class="nc-button nc-button-ghost nc-button-sm"
+            routerLink="/moderation/comments"
+            [queryParams]="{ game: found.id }"
+          >
+            <nc-icon name="message" [size]="12" /> Its comments
+          </a>
+          @if (auth.canAct()) {
+            <a
+              class="nc-button nc-button-ghost nc-button-sm"
+              [href]="found.previewPlayUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Read only, and logged"
+            >
+              <nc-icon name="play" [size]="12" /> Preview in the player
+            </a>
+            <a
+              class="nc-button nc-button-ghost nc-button-sm"
+              [href]="found.previewEditUrl"
+              target="_blank"
+              rel="noopener noreferrer"
+              title="Read only, and logged"
+            >
+              <nc-icon name="code" [size]="12" /> Preview in the editor
+            </a>
+          }
+        </div>
+      </header>
+
+      <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div class="flex min-w-0 flex-col gap-2">
+          <nc-panel heading="Cover" [minHeight]="60">
+            @if (!found.hasCover) {
+              <p class="text-meta text-ink-4">No cover</p>
+            } @else if (cover.error()) {
+              <p class="text-body text-hot-ink">{{ panelError(cover) }}</p>
+            } @else if (cover.value(); as url) {
+              <img
+                class="mx-auto block max-h-[320px] max-w-full rounded-sm border border-line bg-inset"
+                [src]="url"
+                alt="Cover of the game"
+              />
+            } @else {
+              <div class="nc-skeleton h-[200px] rounded-sm"></div>
+            }
+          </nc-panel>
+
+          <nc-panel heading="Description" [minHeight]="60">
+            @if (found.longDesc) {
+              <p
+                class="text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+                [textContent]="found.longDesc"
+              ></p>
+            } @else {
+              <p class="text-meta text-ink-4">Nothing written</p>
+            }
+            @if (found.tags.length > 0) {
+              <p class="mt-1 flex flex-wrap gap-0.25">
+                @for (tag of found.tags; track tag) {
+                  <span class="nc-chip nc-chip-quiet">{{ tag }}</span>
+                }
+              </p>
+            }
+          </nc-panel>
+
+          <nc-panel
+            heading="What was done about it"
+            [state]="historyState()"
+            [error]="panelError(history)"
+            emptyIcon="check"
+            emptyTitle="Nothing done"
+            emptyHint="Hiding, restoring and staff previews of the game show here."
+            [minHeight]="120"
+            (retry)="history.reload()"
+          >
+            @if (history.value(); as value) {
+              <nc-history-list [entries]="value.items" [showTarget]="false" />
+              <nc-pager [(page)]="historyPage" [pages]="historyPages()" />
+            }
+          </nc-panel>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-2">
+          @if (auth.canAct()) {
+            <nc-panel heading="Decision" [minHeight]="60">
+              @if (operations().length === 0) {
+                <p class="text-meta text-ink-3">
+                  Nothing here is yours to decide: the game is yours, or belongs to an account of
+                  your rank or above.
+                </p>
+              } @else {
+                <nc-operation-buttons
+                  [operations]="operations()"
+                  targetType="PROJECT"
+                  [busy]="actions.busy()"
+                  (choose)="run($event)"
+                />
+              }
+            </nc-panel>
+          }
+
+          <nc-panel heading="Owner" [minHeight]="60">
+            <nc-account-cell size="full" [account]="found.owner" />
+            @if (!found.owner.deleted) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm mt-1"
+                [routerLink]="['/moderation/users', found.owner.id]"
+              >
+                <nc-icon name="user" [size]="12" /> Open the account
+              </a>
+            }
+          </nc-panel>
+
+          @if (collaborators().length > 0) {
+            <nc-panel heading="Collaborators" [minHeight]="60">
+              <ul class="flex flex-col gap-1">
+                @for (collaborator of collaborators(); track collaborator.id) {
+                  <li>
+                    <nc-account-cell [account]="collaborator" />
+                  </li>
+                }
+              </ul>
+            </nc-panel>
+          }
+        </div>
+      </div>
+    }
+  }
+}

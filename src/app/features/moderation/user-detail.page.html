@@ -1,0 +1,129 @@
+<a routerLink="/moderation/users" class="nc-button nc-button-ghost nc-button-sm mb-1.5">
+  <nc-icon name="arrow-left" [size]="12" /> Users
+</a>
+
+@switch (accountState()) {
+  @case ('loading') {
+    <div class="nc-card nc-skeleton h-[88px]"></div>
+    <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+      <div class="nc-card nc-skeleton h-[280px]"></div>
+      <div class="nc-card nc-skeleton h-[280px]"></div>
+    </div>
+  }
+  @case ('error') {
+    <nc-panel
+      state="error"
+      [error]="panelError(account)"
+      [minHeight]="160"
+      (retry)="account.reload()"
+    />
+  }
+  @default {
+    @if (account.value(); as found) {
+      <header class="nc-card flex flex-wrap items-start justify-between gap-1.5 px-2.5 py-2">
+        <div class="min-w-0">
+          <nc-account-cell size="full" [account]="found" />
+          <p class="mt-1 flex flex-wrap items-center gap-0.75 text-meta text-ink-3">
+            <span [class]="standingChip(found.standing)">{{ standingLabels[found.standing] }}</span>
+            @if (found.role !== 'User') {
+              <span class="nc-chip nc-chip-gold">{{ roleLabel(found.role) }}</span>
+            }
+            @if (found.suspension; as suspension) {
+              <span>{{ suspensionLabel(suspension) }}</span>
+            }
+            <span>Joined {{ joined(found.createdAt) }}</span>
+            <span class="font-mono text-ink-4">#{{ found.id }}</span>
+          </p>
+        </div>
+        @if (found.openFlags > 0) {
+          <a class="nc-button nc-button-sm" [routerLink]="caseRoute('USER', found.id)">
+            <nc-icon name="warning-box" [size]="12" /> Reports on the profile
+          </a>
+        }
+      </header>
+
+      <div class="mt-2 grid gap-2 xl:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
+        <div class="flex min-w-0 flex-col gap-2">
+          <nc-panel
+            heading="Profile text"
+            hint="What the account wrote about itself"
+            [minHeight]="60"
+          >
+            @if (found.description) {
+              <p
+                class="text-body whitespace-pre-wrap wrap-anywhere text-ink-body"
+                [textContent]="found.description"
+              ></p>
+            } @else {
+              <p class="text-meta text-ink-4">Nothing written</p>
+            }
+          </nc-panel>
+
+          <nc-panel
+            heading="Record"
+            hint="What staff did about the account and what it made"
+            [state]="recordState()"
+            [error]="panelError(record)"
+            emptyIcon="check"
+            emptyTitle="Nothing on record"
+            emptyHint="Warnings, suspensions and removed content show here."
+            [minHeight]="120"
+            (retry)="record.reload()"
+          >
+            @if (record.value(); as value) {
+              <nc-history-list [entries]="value.items" />
+              <nc-pager [(page)]="recordPage" [pages]="recordPages()" />
+            }
+          </nc-panel>
+        </div>
+
+        <div class="flex min-w-0 flex-col gap-2">
+          @if (auth.canAct()) {
+            <nc-panel heading="Decision" [minHeight]="60">
+              @if (found.allowedActions.length === 0) {
+                <p class="text-meta text-ink-3">
+                  Nothing here is yours to decide: this is your own account, or one of your rank or
+                  above.
+                </p>
+              } @else {
+                <nc-operation-buttons
+                  [operations]="found.allowedActions"
+                  targetType="USER"
+                  [busy]="actions.busy()"
+                  (choose)="run($event)"
+                />
+              }
+            </nc-panel>
+          }
+
+          <nc-panel heading="Figures" [minHeight]="60">
+            <dl class="grid grid-cols-[minmax(0,1fr)_auto] gap-x-1.5 gap-y-0.5 text-body">
+              @for (figure of figures(); track figure.label) {
+                <dt class="text-ink-3">{{ figure.label }}</dt>
+                <dd class="text-right font-mono text-ink">{{ figure.value }}</dd>
+              }
+            </dl>
+            @if (found.games > 0) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm mt-1"
+                routerLink="/moderation/games"
+                [queryParams]="{ creator: found.id }"
+              >
+                <nc-icon name="grid" [size]="12" /> See its games
+              </a>
+            }
+            @if (found.comments > 0) {
+              <a
+                class="nc-button nc-button-ghost nc-button-sm mt-1"
+                routerLink="/moderation/comments"
+                [queryParams]="{ author: found.id }"
+              >
+                <nc-icon name="message" [size]="12" /> See its comments
+              </a>
+            }
+          </nc-panel>
+        </div>
+      </div>
+    }
+  }
+}

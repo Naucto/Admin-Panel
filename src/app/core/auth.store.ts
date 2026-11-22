@@ -1,6 +1,7 @@
 import { computed, Injectable, signal } from '@angular/core';
 
 import { ApiError } from './api-error';
+import { canAct, isAdmin } from './roles';
 import type { AccountSummary, AdminSession } from './types';
 
 /** Where the dev server and the production nginx both forward to the Naucto API. */
@@ -25,7 +26,7 @@ async function post<T>(path: string, body?: unknown): Promise<T> {
 }
 
 /**
- * The admin session. The access token lives in memory only; the httpOnly session cookie the API
+ * The staff session. The access token lives in memory only; the httpOnly session cookie the API
  * sets is what brings it back after a reload, until the session's eight hours are up.
  */
 @Injectable({ providedIn: 'root' })
@@ -41,6 +42,10 @@ export class AuthStore {
   readonly status = computed(() => this.state().status);
   readonly account = computed(() => this.state().account);
   readonly token = computed(() => this.state().token);
+  readonly role = computed(() => this.state().account?.role ?? null);
+  /** False for a viewer, who sees every screen without the controls that change anything. */
+  readonly canAct = computed(() => canAct(this.role()));
+  readonly isAdmin = computed(() => isAdmin(this.role()));
 
   /** Picks the session back up from the cookie, if there still is one. */
   async boot(): Promise<void> {

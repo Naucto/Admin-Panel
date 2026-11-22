@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 
 import type { ChartInk } from '../../charts/palette';
 import { impactChart } from '../../charts/timeline-options';
+import { AuthStore } from '../../core/auth.store';
 import { errorMessage } from '../../core/api-error';
 import {
   addValues,
@@ -192,6 +193,7 @@ export function defaultCurve(marker: Marker): string {
 export default class PostsPage {
   private readonly api = inject(TimelineApi);
   private readonly feedback = inject(FeedbackService);
+  protected readonly auth = inject(AuthStore);
 
   protected readonly channels = CHANNELS;
   protected readonly audiences = AUDIENCES;
