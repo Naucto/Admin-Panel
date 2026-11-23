@@ -15,6 +15,7 @@ import {
   panelRoute,
   suspensionDays,
   suspensionLabel,
+  targetName,
 } from './moderation-format';
 import type { ModerationOperation } from './types';
 
@@ -205,6 +206,12 @@ describe('labels and links', () => {
     expect(
       suspensionLabel({ since: '2026-11-01T00:00:00.000Z', until: '2026-11-08T00:00:00.000Z' }),
     ).toMatch(/^Until .+ UTC$/);
+  });
+
+  it('calls a target by its label, or by what it is and its short id when it has none', () => {
+    expect(targetName({ type: 'PROJECT', id: GAME, label: 'Rain Room' })).toBe('Rain Room');
+    expect(targetName({ type: 'PROJECT', id: GAME, label: null })).toBe('Game 3f2b8c1e');
+    expect(targetName({ type: 'COMMENT', id: COMMENT, label: '' })).toBe('Comment b4d1f0a2');
   });
 
   it('links an account and a game to their page, and a comment nowhere', () => {

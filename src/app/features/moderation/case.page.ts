@@ -10,7 +10,6 @@ import { RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../core/auth.store';
 import { dayTime, shortAgo } from '../../core/dates';
-import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   bearsOnAccount,
@@ -21,6 +20,7 @@ import {
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
+  targetName,
   targetStateChip,
 } from '../../core/moderation-format';
 import type {
@@ -70,7 +70,7 @@ export default class CasePage {
 
   protected readonly title = computed(() => {
     const target = this.detail.value()?.target;
-    return target ? target.label || `${TARGET_TYPE_LABELS[target.type]} ${shortId(target.id)}` : '';
+    return target ? targetName(target) : '';
   });
   protected readonly targetOperations = computed(() =>
     (this.detail.value()?.allowedActions ?? []).filter((operation) => !bearsOnAccount(operation)),

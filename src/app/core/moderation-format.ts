@@ -1,7 +1,9 @@
 import { dayTime } from './dates';
+import { shortId } from './ids';
 import type {
   AccountStanding,
   CaseStatus,
+  CaseTarget,
   CaseView,
   CommentModerationState,
   FlagStatus,
@@ -40,6 +42,11 @@ export const TARGET_TYPE_LABELS: Record<ModerationTargetType, string> = {
   PROJECT: 'Game',
   COMMENT: 'Comment',
 };
+
+/** What to call a target: its label, or what it is and its short id when it has none. */
+export function targetName(target: Pick<CaseTarget, 'type' | 'id' | 'label'>): string {
+  return target.label || `${TARGET_TYPE_LABELS[target.type]} ${shortId(target.id)}`;
+}
 
 const TARGET_NOUNS: Record<ModerationTargetType, string> = {
   USER: 'account',

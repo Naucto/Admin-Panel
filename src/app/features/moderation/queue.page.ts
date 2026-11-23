@@ -10,7 +10,6 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { dayTime, shortAgo } from '../../core/dates';
-import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   CASE_VIEW_LABELS,
@@ -18,6 +17,7 @@ import {
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
+  targetName,
   targetStateChip,
 } from '../../core/moderation-format';
 import { optionsOf } from '../../core/support-format';
@@ -114,10 +114,6 @@ export default class QueuePage {
     void this.router.navigate(caseRoute(row.target.type, row.target.id));
   }
 
-  protected label(row: CaseSummary): string {
-    return row.target.label || `${TARGET_TYPE_LABELS[row.target.type]} ${shortId(row.target.id)}`;
-  }
-
   /** Under a comment, the game it was written on. */
   protected context(row: CaseSummary): string | null {
     return row.target.type === 'COMMENT' && row.target.projectName
@@ -129,6 +125,7 @@ export default class QueuePage {
   protected readonly typeLabels = TARGET_TYPE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
   protected readonly stateLabels = TARGET_STATE_LABELS;
+  protected readonly targetName = targetName;
   protected readonly targetStateChip = targetStateChip;
   protected readonly dayTime = dayTime;
   protected readonly shortAgo = shortAgo;
