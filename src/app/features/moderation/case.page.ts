@@ -20,6 +20,7 @@ import {
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
+  TARGET_VISIBILITY_LABELS,
   targetName,
   targetStateChip,
 } from '../../core/moderation-format';
@@ -30,6 +31,7 @@ import type {
   TargetContent,
 } from '../../core/types';
 import { AccountCellComponent } from '../../ui/account-cell.component';
+import { EntityLinkComponent } from '../../ui/entity-link.component';
 import { HistoryListComponent } from '../../ui/history-list.component';
 import { IconComponent } from '../../ui/icon.component';
 import { OperationButtonsComponent } from '../../ui/operation-buttons.component';
@@ -43,6 +45,7 @@ import { ModerationActions } from './moderation-actions.service';
   selector: 'nc-case-page',
   imports: [
     AccountCellComponent,
+    EntityLinkComponent,
     HistoryListComponent,
     IconComponent,
     OperationButtonsComponent,
@@ -107,6 +110,7 @@ export default class CasePage {
   protected readonly typeLabels = TARGET_TYPE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
   protected readonly stateLabels = TARGET_STATE_LABELS;
+  protected readonly visibilityLabels = TARGET_VISIBILITY_LABELS;
   protected readonly statusLabels = CASE_STATUS_LABELS;
   protected readonly flagStatusLabels = FLAG_STATUS_LABELS;
   protected readonly targetStateChip = targetStateChip;

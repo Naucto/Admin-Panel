@@ -27,6 +27,11 @@
           <span [class]="targetStateChip(found.target.state)">{{
             stateLabels[found.target.state]
           }}</span>
+          @if (found.visibility; as visibility) {
+            <span class="nc-chip nc-chip-quiet" title="Who its owner lets read it">{{
+              visibilityLabels[visibility]
+            }}</span>
+          }
           <nc-short-id class="text-meta text-ink-3" [id]="found.target.id" />
         </p>
         <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ title() }}</h2>
@@ -96,6 +101,24 @@
               <p class="text-meta text-ink-4">It is gone. The reports below kept what it said.</p>
             }
           </nc-panel>
+
+          @if (found.target.type === 'COLLECTION' && found.current) {
+            <nc-panel
+              heading="Games it lists"
+              hint="In the order its owner gave them"
+              [minHeight]="60"
+            >
+              <ol class="flex flex-col gap-0.5">
+                @for (game of found.games; track game.id) {
+                  <li class="flex min-w-0 text-body">
+                    <nc-entity-link type="PROJECT" [id]="game.id" [label]="game.name" />
+                  </li>
+                } @empty {
+                  <li class="text-meta text-ink-4">It lists no game</li>
+                }
+              </ol>
+            </nc-panel>
+          }
 
           <nc-panel heading="Reports" [hint]="found.flags.length + ' in all, newest first'">
             <ul class="flex flex-col">

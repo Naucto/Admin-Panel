@@ -666,6 +666,8 @@ export type AccountStanding = 'GOOD' | 'WARNED' | 'SUSPENDED';
 export type ProjectModerationState = 'PUBLISHED' | 'UNPUBLISHED' | 'HIDDEN';
 export type CommentModerationState = 'VISIBLE' | 'HIDDEN' | 'DELETED';
 export type ProfilePart = 'NICKNAME' | 'DESCRIPTION' | 'PICTURE' | 'BACKGROUND';
+/** Who the owner of a target lets read it: anyone, whoever holds its id, or the owner alone. */
+export type TargetVisibility = 'PUBLIC' | 'UNLISTED' | 'PRIVATE';
 
 export interface Page<T> {
   items: T[];
@@ -742,8 +744,18 @@ export interface CaseFlag {
   resolvedBy: ModerationAccountRef | null;
 }
 
+/** A game a target lists. */
+export interface CaseListedGame {
+  id: string;
+  name: string;
+}
+
 export interface CaseDetail extends CaseSummary {
   current: TargetContent | null;
+  /** Null for a target whose owner has no such choice. */
+  visibility: TargetVisibility | null;
+  /** In the order of the target. Empty for a target that lists none. */
+  games: CaseListedGame[];
   flags: CaseFlag[];
   history: ModerationAction[];
   ownerHistory: ModerationAction[];

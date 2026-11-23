@@ -16,6 +16,7 @@ import type {
   ProjectModerationState,
   Suspension,
   TargetState,
+  TargetVisibility,
 } from './types';
 
 /** The backend's limits on what a decision says. */
@@ -113,6 +114,12 @@ const TARGET_STATE_CHIPS: Record<TargetState, string> = {
 export function targetStateChip(state: TargetState): string {
   return TARGET_STATE_CHIPS[state];
 }
+
+export const TARGET_VISIBILITY_LABELS: Record<TargetVisibility, string> = {
+  PUBLIC: 'Public',
+  UNLISTED: 'Unlisted',
+  PRIVATE: 'Private',
+};
 
 export const STANDING_LABELS: Record<AccountStanding, string> = {
   GOOD: 'Good standing',
