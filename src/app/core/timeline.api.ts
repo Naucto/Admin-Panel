@@ -74,7 +74,7 @@ export class TimelineApi {
     });
   }
 
-  /** Published games by part of their name or their id (`12`, `#12`), a few at a time. */
+  /** Published games by part of their name or their full id, a few at a time. */
   async searchReleases(query: string, limit = 8): Promise<Release[]> {
     const answer = await this.api.get<{ releases: Release[] }>('/admin/analytics/releases', {
       query,

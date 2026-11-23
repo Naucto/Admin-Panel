@@ -12,6 +12,7 @@
     class="nc-select w-full min-w-[180px] normal-case"
     autocomplete="off"
     [placeholder]="label() || placeholder()"
+    [title]="placeholder()"
     [attr.aria-label]="placeholder()"
     [value]="term()"
     (input)="type($event)"
@@ -28,7 +29,9 @@
       @if (results.isLoading()) {
         <li class="px-1 py-0.5 text-meta text-ink-3">Searching…</li>
       } @else if ((results.value() ?? []).length === 0) {
-        <li class="px-1 py-0.5 text-meta text-ink-3">No published game matches.</li>
+        <li class="px-1 py-0.5 text-meta text-ink-3">
+          No published game matches. Search part of a name, or a full id.
+        </li>
       }
       @for (game of results.value() ?? []; track game.releaseId) {
         <li>
