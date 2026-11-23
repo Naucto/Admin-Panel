@@ -2,7 +2,6 @@ import type { EChartsCoreOption } from 'echarts/core';
 
 import { bucketLabel, instantLabel } from '../core/instants';
 import { formatCount } from '../core/metric-catalog';
-import type { InstantRange } from '../core/timeline.api';
 import { DERIVED_FROM, TIMELINE_LABELS, type TimelineRow } from '../core/timeline-catalog';
 import type { Marker, Timeline, TimelineBucket } from '../core/types';
 import { groupMarkers, markerLineOption } from './markers';
