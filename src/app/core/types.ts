@@ -309,6 +309,12 @@ export interface ArrivalGame {
   anonymousPlays: number;
 }
 
+export interface PlayedGame {
+  releaseId: string;
+  /** Null for a game since deleted. */
+  name: string | null;
+}
+
 export interface Arrival {
   journey: string;
   firstSeenAt: string;
@@ -321,7 +327,8 @@ export interface Arrival {
   sessions: number;
   plays: number;
   firstPlayAt: string | null;
-  games: string[];
+  /** The games played, most first. */
+  games: PlayedGame[];
   account: 'NEW' | 'EXISTING' | null;
   signedUpAt: string | null;
   projectCreatedAt: string | null;

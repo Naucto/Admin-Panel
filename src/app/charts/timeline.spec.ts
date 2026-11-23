@@ -4,7 +4,7 @@ import { bucketFor, bucketsFor, metricsOfRows, TIMELINE_ROWS } from '../core/tim
 import type { Marker, Timeline } from '../core/types';
 import { type CompareView, isView, requestGroups } from '../features/compare/compare.page';
 import { defaultCurve, type ImpactRow, orderRows } from '../features/posts/posts.page';
-import { linkedGame } from '../features/timeline/timeline.page';
+import { linkedGame, playedGames } from '../features/timeline/timeline.page';
 import { groupLabel, groupMarkers } from './markers';
 import type { ChartInk } from './palette';
 import { bucketIndexOf, rowSeries, timelineChart } from './timeline-options';
@@ -315,6 +315,21 @@ describe('the game a link to the timeline names', () => {
     expect(linkedGame('')).toBeNull();
     expect(linkedGame(undefined)).toBeNull();
     expect(linkedGame('00000000-0000-0000-0000-000000000000')).toBeNull();
+  });
+});
+
+describe('the games a newcomer played', () => {
+  it('are named in the order they come, and a deleted one shows its short id', () => {
+    const games = [
+      { releaseId: GAME, name: 'Kart Party' },
+      { releaseId: TRAILER, name: null },
+    ];
+
+    expect(playedGames(games)).toBe('Kart Party, 5a1c9e2b');
+  });
+
+  it('are nothing when none was played', () => {
+    expect(playedGames([])).toBe('');
   });
 });
 

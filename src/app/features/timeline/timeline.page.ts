@@ -14,7 +14,7 @@ import type { EChartsType } from 'echarts/core';
 
 import type { ChartInk } from '../../charts/palette';
 import { rowSeries, timelineChart, timelineHeight } from '../../charts/timeline-options';
-import { idOf, NO_RELEASE_ID } from '../../core/ids';
+import { idOf, NO_RELEASE_ID, shortId } from '../../core/ids';
 import { instantLabel, spanLabel, WEEK_MS } from '../../core/instants';
 import { formatCount } from '../../core/metric-catalog';
 import { TimeRangeStore } from '../../core/time-range.store';
@@ -35,6 +35,7 @@ import type {
   ActivityItem,
   ActivityKind,
   GameChoice,
+  PlayedGame,
   Timeline,
   TimelineMetric,
 } from '../../core/types';
@@ -106,6 +107,11 @@ const totalOf = (timeline: Timeline | undefined, metric: TimelineMetric): number
 export function linkedGame(value: string | undefined): string | null {
   const id = idOf(value);
   return id === undefined || id === NO_RELEASE_ID ? null : id;
+}
+
+/** The games a newcomer played, each by its name, or by its short id once it is deleted. */
+export function playedGames(games: PlayedGame[]): string {
+  return games.map((game) => game.name ?? shortId(game.releaseId)).join(', ');
 }
 
 @Component({
@@ -543,4 +549,5 @@ export default class TimelinePage {
   protected readonly formatCount = formatCount;
   protected readonly instantLabel = instantLabel;
   protected readonly panelError = panelError;
+  protected readonly playedGames = playedGames;
 }
