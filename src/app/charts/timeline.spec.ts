@@ -297,7 +297,6 @@ describe('a saved compare chart', () => {
   it('is left out when it names a game by a number, and the others stay', () => {
     const stored = [view(9), view(GAME), view('9'), { name: 'Broken', series: [null] }];
 
-    expect(isView(view(9))).toBe(false);
     expect(stored.filter(isView)).toEqual([view(GAME) as CompareView]);
   });
 });
