@@ -9,7 +9,7 @@ is and how to run it; this file is how the code is laid out and what to keep in 
 | ------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `src/app/core`     | Session (`auth.store.ts`), API access (`api.service.ts` and a `*.api.ts` per backend area), the response types (`types.ts`), shared filters, dates, metric labels and units |
 | `src/app/charts`   | ECharts setup, the theme read from the tokens, and pure option builders (`options.ts`)                                                                                      |
-| `src/app/ui`       | The console's small kit: panel, stat tile, segmented control, chart directive, breakdown view, icons, confirmations and toasts                                              |
+| `src/app/ui`       | The console's small kit: panel, stat tile, segmented control, chart directive, breakdown view, icons, short id, confirmations and toasts                                    |
 | `src/app/features` | One folder per page, each lazily loaded                                                                                                                                     |
 | `src/styles`       | `naucto-tokens.css`, copied from the Naucto Frontend                                                                                                                        |
 | `nginx/`           | The production server and its `/api` proxy                                                                                                                                  |
@@ -29,6 +29,12 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   Frontend (`packages/ui`). Refresh them by copying again, never by editing here.
 - `core/types.ts` mirrors the backend's `admin/*` responses by hand. When the backend contract
   changes, change it in the same branch.
+- Every id the backend answers is a UUID in lower case, a `string` here. It names one thing and
+  says nothing else: compare it for equality, never order by it, never compute on it. A screen
+  shows one with `nc-short-id`: its first eight characters, the whole id copied on a click and read
+  by assistive technology, and `plain` inside a link or a button, where a second control cannot
+  nest. A name built in code takes the same short form from `shortId` (`core/ids.ts`). An id read
+  from a URL or from `localStorage` goes through `idOf`, which gives nothing for anything else.
 - No inline scripts and no third-party origins: the production CSP refuses both. That is also why
   critical CSS inlining is off in `angular.json`.
 - `img-src` allows `blob:` besides `'self'`: bug screenshots need the bearer, so they are fetched
@@ -83,13 +89,15 @@ and the top bar's range does not apply.
 - `core/impact.ts` compares the hours after a post with the median of the same hours of the same
   weekday in the three weeks before, falling back on the hours just before when no earlier week is kept. It is
   pure, so its arithmetic is tested apart from the page.
-- A game is always chosen through `nc-game-picker`, which searches the backend a few at a time.
-  Never put every game in a `<select>`: the list only grows.
+- A game is always chosen through `nc-game-picker`, which searches the backend a few at a time, by
+  part of a name or by a full id. Never put every game in a `<select>`: the list only grows.
 - Posts falling on the same point of an axis draw one line (`charts/markers.ts`), labelled with how
   many share it. `MarkerVisibilityStore` holds the posts an admin hid, and every chart drawing
   posts reads them through it, so `nc-marker-filter` hides a post everywhere at once.
 - Saved Compare charts, the chosen Timeline rows and the hidden posts live in `localStorage`, a
-  convenience of one browser. Posts themselves are server data (`admin/analytics/markers`).
+  convenience of one browser. What a browser holds in a shape the console no longer writes is left
+  out when read and gone at the next save, never migrated. Posts themselves are server data
+  (`admin/analytics/markers`).
 
 ## Support
 
