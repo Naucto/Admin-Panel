@@ -1,7 +1,7 @@
 import { shortId } from './ids';
 import type {
   BugCategory,
-  BugContext,
+  BugDetail,
   BugStatus,
   BugView,
   CrashSource,
@@ -173,11 +173,9 @@ export interface ContextRow {
 }
 
 /** The context a bug report carried, as label and value rows, with what is missing left out. */
-export function bugContextRows(bug: {
-  route: string;
-  release: { id: string; name: string } | null;
-  context: BugContext;
-}): ContextRow[] {
+export function bugContextRows(
+  bug: Pick<BugDetail, 'route' | 'release' | 'context'>,
+): ContextRow[] {
   const rows: [string, string | null | undefined][] = [
     ['Page', bug.route],
     ['Game', bug.release ? `${bug.release.name} ${shortId(bug.release.id)}` : null],

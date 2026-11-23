@@ -92,14 +92,15 @@ function write(key: string, value: unknown): void {
   }
 }
 
+interface RequestGroup {
+  releaseId: string | null;
+  source: string | null;
+  metrics: TimelineMetric[];
+}
+
 /** Groups series by what they are narrowed to, so each group is one request. */
-export function requestGroups(
-  series: readonly CompareSeries[],
-): { releaseId: string | null; source: string | null; metrics: TimelineMetric[] }[] {
-  const groups = new Map<
-    string,
-    { releaseId: string | null; source: string | null; metrics: TimelineMetric[] }
-  >();
+export function requestGroups(series: readonly CompareSeries[]): RequestGroup[] {
+  const groups = new Map<string, RequestGroup>();
   for (const one of series) {
     const key = `${String(one.releaseId)}|${one.source ?? ''}`;
     const group = groups.get(key) ?? { releaseId: one.releaseId, source: one.source, metrics: [] };
