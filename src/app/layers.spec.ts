@@ -33,6 +33,12 @@ const sources = (folder: string): Source[] =>
 const mentioning = (among: Source[], pattern: RegExp): string[] =>
   among.filter(({ text }) => pattern.test(text)).map(({ file }) => file);
 
+/**
+ * The files of core that name a route: the API files, the session, the request a moderation
+ * decision builds, and the types, whose comments say which route answers each.
+ */
+const ROUTE_HOLDERS = /^core\/(?:.+\.api|auth\.store|moderation-format|types)\.ts$/;
+
 const core = sources('core');
 const charts = sources('charts');
 const kit = sources('ui');
@@ -51,6 +57,9 @@ describe('the layers', () => {
     const above = [...charts, ...kit, ...pages];
 
     expect(mentioning(above, /['"`]\/admin\//)).toEqual([]);
+    expect(mentioning(core, /['"`]\/admin\//).filter((file) => !ROUTE_HOLDERS.test(file))).toEqual(
+      [],
+    );
     expect(mentioning(above, /from '[^']*\/api\.service'/)).toEqual([]);
     expect(
       mentioning(core, /from '[^']*\/api\.service'/).filter((file) => !file.endsWith('.api.ts')),
@@ -60,6 +69,7 @@ describe('the layers', () => {
   // What two pages share belongs to core, the charts or the kit, where a third page finds it.
   it('keep every page out of what another page imports', () => {
     expect(mentioning(pages, /from '\.\.\/(?!\.\.\/)/)).toEqual([]);
+    expect(mentioning(pages, /from '[^']*\/features\//)).toEqual([]);
     expect(mentioning([...core, ...charts, ...kit], /from '[^']*\/features\//)).toEqual([]);
   });
 
