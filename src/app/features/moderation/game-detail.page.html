@@ -18,13 +18,13 @@
       <header class="nc-card px-2.5 py-2">
         <p class="flex flex-wrap items-center gap-1">
           <span [class]="projectStateChip(found.state)">{{ stateLabels[found.state] }}</span>
-          <span class="font-mono text-meta text-ink-3">#{{ found.id }}</span>
+          <nc-short-id class="text-meta text-ink-3" [id]="found.id" />
           @if (found.forkedFromId; as source) {
             <a
               class="text-meta text-ink-3 underline-offset-2 hover:text-ink hover:underline"
               [routerLink]="['/moderation/games', source]"
             >
-              Forked from #{{ source }}
+              Forked from <nc-short-id plain [id]="source" />
             </a>
           }
         </p>

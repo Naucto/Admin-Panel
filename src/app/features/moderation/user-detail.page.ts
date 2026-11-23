@@ -27,6 +27,7 @@ import { OperationButtonsComponent } from '../../ui/operation-buttons.component'
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
 const RECORD_PAGE_SIZE = 10;
@@ -42,6 +43,7 @@ const RECORD_PAGE_SIZE = 10;
     PagerComponent,
     PanelComponent,
     RouterLink,
+    ShortIdComponent,
   ],
   templateUrl: './user-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

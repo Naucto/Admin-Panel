@@ -1,7 +1,7 @@
 @if (account().deleted) {
   <p class="flex items-center gap-0.5">
     <span class="nc-chip nc-chip-quiet">Deleted account</span>
-    <span class="font-mono text-micro text-ink-4">#{{ account().id }}</span>
+    <nc-short-id class="text-micro text-ink-4" [id]="account().id" />
   </p>
 } @else {
   <div class="flex items-center gap-1">

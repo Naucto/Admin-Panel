@@ -10,6 +10,7 @@ import { RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../core/auth.store';
 import { dayTime, shortAgo } from '../../core/dates';
+import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   bearsOnAccount,
@@ -34,6 +35,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { OperationButtonsComponent } from '../../ui/operation-buttons.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
 /** Every report on one game, comment or profile, what staff did about it and what they may do. */
@@ -46,6 +48,7 @@ import { ModerationActions } from './moderation-actions.service';
     OperationButtonsComponent,
     PanelComponent,
     RouterLink,
+    ShortIdComponent,
   ],
   templateUrl: './case.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -67,7 +70,7 @@ export default class CasePage {
 
   protected readonly title = computed(() => {
     const target = this.detail.value()?.target;
-    return target ? target.label || `${TARGET_TYPE_LABELS[target.type]} #${target.id}` : '';
+    return target ? target.label || `${TARGET_TYPE_LABELS[target.type]} ${shortId(target.id)}` : '';
   });
   protected readonly targetOperations = computed(() =>
     (this.detail.value()?.allowedActions ?? []).filter((operation) => !bearsOnAccount(operation)),

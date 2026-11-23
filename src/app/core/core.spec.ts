@@ -1,5 +1,5 @@
 import { addDays, dayTime, daysBetween, grainFor, periodLabel, shortAgo } from './dates';
-import { idOf } from './ids';
+import { idOf, shortId } from './ids';
 import { MarkerVisibilityStore } from './marker-visibility.store';
 import { formatDuration, formatMetric } from './metric-catalog';
 import {
@@ -36,6 +36,10 @@ describe('ids', () => {
     expect(idOf('')).toBeUndefined();
     expect(idOf(undefined)).toBeUndefined();
     expect(idOf(null)).toBeUndefined();
+  });
+
+  it('shows an id by its first eight characters', () => {
+    expect(shortId(GAME)).toBe('3f2b8c1e');
   });
 });
 
@@ -207,7 +211,7 @@ describe('support formatting', () => {
 
     expect(rows).toEqual([
       { label: 'Page', value: '/play/42' },
-      { label: 'Game', value: `Cave #${GAME}` },
+      { label: 'Game', value: 'Cave 3f2b8c1e' },
       { label: 'Viewport', value: '1920x1080' },
       { label: 'Browser', value: 'Chrome' },
     ]);

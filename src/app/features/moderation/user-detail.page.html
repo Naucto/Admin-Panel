@@ -32,7 +32,7 @@
               <span>{{ suspensionLabel(suspension) }}</span>
             }
             <span>Joined {{ joined(found.createdAt) }}</span>
-            <span class="font-mono text-ink-4">#{{ found.id }}</span>
+            <nc-short-id class="text-ink-4" [id]="found.id" />
           </p>
         </div>
         @if (found.openFlags > 0) {

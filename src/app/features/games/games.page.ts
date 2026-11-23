@@ -20,6 +20,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { SegmentedComponent } from '../../ui/segmented.component';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const PLAY_METRICS = ['plays', 'playtime_ms', 'players'] as const;
 const MULTIPLAYER_METRICS = [
@@ -34,7 +35,7 @@ const PAGE_SIZE = 10;
 
 @Component({
   selector: 'nc-games-page',
-  imports: [ChartDirective, IconComponent, PanelComponent, SegmentedComponent],
+  imports: [ChartDirective, IconComponent, PanelComponent, SegmentedComponent, ShortIdComponent],
   templateUrl: './games.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

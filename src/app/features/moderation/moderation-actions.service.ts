@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 
 import { errorMessage } from '../../core/api-error';
 import { CaseCountStore } from '../../core/case-count.store';
+import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   bearsOnAccount,
@@ -76,6 +77,6 @@ export class ModerationActions {
     if (target.owner && (bearsOnAccount(operation) || target.type === 'USER')) {
       return `Account @${target.owner.username}`;
     }
-    return `${TARGET_TYPE_LABELS[target.type]} ${target.label ? `"${target.label}"` : `#${target.id}`}`;
+    return `${TARGET_TYPE_LABELS[target.type]} ${target.label ? `"${target.label}"` : shortId(target.id)}`;
   }
 }

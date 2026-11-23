@@ -32,6 +32,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { type SegmentOption, SegmentedComponent } from '../../ui/segmented.component';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { StatTileComponent } from '../../ui/stat-tile.component';
 
 type RoleFilter = 'ALL' | ReportRole;
@@ -48,6 +49,7 @@ const PAGE_SIZE = 20;
     PanelComponent,
     RouterLink,
     SegmentedComponent,
+    ShortIdComponent,
     StatTileComponent,
   ],
   templateUrl: './ratings.page.html',

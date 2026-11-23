@@ -12,3 +12,8 @@ export function idOf(value: unknown): string | undefined {
   const id = typeof value === 'string' ? value.toLowerCase() : '';
   return ID_PATTERN.test(id) ? id : undefined;
 }
+
+/** An id as a screen shows it: enough to tell two apart, short enough to sit beside a name. */
+export function shortId(id: string): string {
+  return id.slice(0, 8);
+}

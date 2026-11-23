@@ -16,7 +16,7 @@
       routerLink="/moderation/games"
       title="Show the games of every account"
     >
-      Account #{{ account }} <nc-icon name="close" [size]="12" />
+      Account <nc-short-id plain [id]="account" /> <nc-icon name="close" [size]="12" />
     </a>
   }
   <nc-search-box actions placeholder="Game name" [(value)]="search" />

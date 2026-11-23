@@ -3,6 +3,7 @@ import { ChangeDetectionStrategy, Component, computed, inject, input } from '@an
 import type { FeedbackAccount } from '../core/types';
 import { FeedbackService } from './feedback.service';
 import { IconComponent } from './icon.component';
+import { ShortIdComponent } from './short-id.component';
 
 /**
  * Who sent a rating or a report: their name, their public profile and, for a reader who is given
@@ -11,7 +12,7 @@ import { IconComponent } from './icon.component';
  */
 @Component({
   selector: 'nc-account-cell',
-  imports: [IconComponent],
+  imports: [IconComponent, ShortIdComponent],
   templateUrl: './account-cell.component.html',
   host: { class: 'block min-w-0' },
   changeDetection: ChangeDetectionStrategy.OnPush,

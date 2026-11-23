@@ -20,6 +20,7 @@ import {
   impactOf,
   valuesOf,
 } from '../../core/impact';
+import { shortId } from '../../core/ids';
 import {
   DAY_MS,
   fromUtcInput,
@@ -321,7 +322,7 @@ export default class PostsPage {
         ? [build('plays_all', 'All plays', CONSENT_COLOURS.accepted, plays), ...metrics]
         : metrics;
     };
-    const name = marker.game ?? `#${String(marker.releaseId)}`;
+    const name = marker.game ?? (marker.releaseId === null ? '' : shortId(marker.releaseId));
     return orderRows(
       [
         ...(value.game ? rowsOf(value.game, 'game:', `${name} · `) : []),
@@ -424,7 +425,7 @@ export default class PostsPage {
       game:
         marker.releaseId === null
           ? null
-          : { releaseId: marker.releaseId, name: marker.game ?? `#${marker.releaseId}` },
+          : { releaseId: marker.releaseId, name: marker.game ?? 'Game' },
     });
   }
 

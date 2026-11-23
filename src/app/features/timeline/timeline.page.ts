@@ -163,7 +163,7 @@ export default class TimelinePage {
           this.range.show({ from, to });
         }
         if (game !== null) {
-          this.game.set({ releaseId: game, name: `#${game}` });
+          this.game.set({ releaseId: game, name: 'Game' });
           void this.api.releasesByIds([game]).then(([release]) => {
             if (release && this.game()?.releaseId === game) {
               this.game.set({ releaseId: game, name: release.name });

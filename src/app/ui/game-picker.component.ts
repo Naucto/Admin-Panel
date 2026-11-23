@@ -12,6 +12,7 @@ import {
 import { TimelineApi } from '../core/timeline.api';
 import type { GameChoice } from '../core/types';
 import { IconComponent } from './icon.component';
+import { ShortIdComponent } from './short-id.component';
 
 const DEBOUNCE_MS = 250;
 
@@ -21,7 +22,7 @@ const DEBOUNCE_MS = 250;
  */
 @Component({
   selector: 'nc-game-picker',
-  imports: [IconComponent],
+  imports: [IconComponent, ShortIdComponent],
   templateUrl: './game-picker.component.html',
   host: { class: 'relative block' },
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -35,6 +35,7 @@ import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { SearchBoxComponent } from '../../ui/search-box.component';
 import { SegmentedComponent } from '../../ui/segmented.component';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
 const PAGE_SIZE = 25;
@@ -55,6 +56,7 @@ type StateFilter = CommentModerationState | 'ALL';
     RouterLink,
     SearchBoxComponent,
     SegmentedComponent,
+    ShortIdComponent,
   ],
   templateUrl: './comments.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

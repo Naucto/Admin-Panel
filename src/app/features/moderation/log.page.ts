@@ -30,13 +30,21 @@ import { IconComponent } from '../../ui/icon.component';
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const PAGE_SIZE = 30;
 
 /** Everything staff did, newest first. Nothing here is ever edited or removed. */
 @Component({
   selector: 'nc-log-page',
-  imports: [EntityLinkComponent, IconComponent, PagerComponent, PanelComponent, RouterLink],
+  imports: [
+    EntityLinkComponent,
+    IconComponent,
+    PagerComponent,
+    PanelComponent,
+    RouterLink,
+    ShortIdComponent,
+  ],
   templateUrl: './log.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

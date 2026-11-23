@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+import { shortId } from '../core/ids';
 import { panelRoute, TARGET_TYPE_LABELS } from '../core/moderation-format';
 import type { ModerationTargetType } from '../core/types';
 import { IconComponent } from './icon.component';
@@ -24,6 +25,6 @@ export class EntityLinkComponent {
 
   protected readonly route = computed(() => panelRoute(this.type(), this.id()));
   protected readonly name = computed(
-    () => this.label() || `${TARGET_TYPE_LABELS[this.type()]} #${this.id()}`,
+    () => this.label() || `${TARGET_TYPE_LABELS[this.type()]} ${shortId(this.id())}`,
   );
 }

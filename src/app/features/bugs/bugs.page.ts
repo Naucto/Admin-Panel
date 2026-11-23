@@ -24,6 +24,7 @@ import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { SegmentedComponent } from '../../ui/segmented.component';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const PAGE_SIZE = 20;
 
@@ -37,7 +38,14 @@ const EMPTY_TITLES: Record<BugView, string> = {
 /** The bug reports people sent from Naucto, newest first, each opening on its own page. */
 @Component({
   selector: 'nc-bugs-page',
-  imports: [AccountCellComponent, IconComponent, PanelComponent, RouterLink, SegmentedComponent],
+  imports: [
+    AccountCellComponent,
+    IconComponent,
+    PanelComponent,
+    RouterLink,
+    SegmentedComponent,
+    ShortIdComponent,
+  ],
   templateUrl: './bugs.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

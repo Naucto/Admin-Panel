@@ -11,7 +11,7 @@ import {
 import { SERIES_COLOURS } from '../../charts/palette';
 import type { ChartInk } from '../../charts/palette';
 import { type CompareMode, compareChart, type DrawnSeries } from '../../charts/timeline-options';
-import { idOf } from '../../core/ids';
+import { idOf, shortId } from '../../core/ids';
 import { instantLabel } from '../../core/instants';
 import { formatCount } from '../../core/metric-catalog';
 import { TimeRangeStore } from '../../core/time-range.store';
@@ -242,7 +242,7 @@ export default class ComparePage {
   protected nameOf(one: CompareSeries): string {
     const parts = [TIMELINE_LABELS[one.metric].label];
     if (one.releaseId !== null && TIMELINE_LABELS[one.metric].byGame) {
-      parts.push(one.gameName ?? `game #${one.releaseId}`);
+      parts.push(one.gameName ?? `game ${shortId(one.releaseId)}`);
     }
     if (one.source !== null && TIMELINE_LABELS[one.metric].bySource) {
       parts.push(this.sourceName(one.source));
@@ -274,7 +274,7 @@ export default class ComparePage {
   protected gameOf(one: CompareSeries): GameChoice | null {
     return one.releaseId === null
       ? null
-      : { releaseId: one.releaseId, name: one.gameName ?? `#${one.releaseId}` };
+      : { releaseId: one.releaseId, name: one.gameName ?? 'Game' };
   }
 
   protected setGame(id: number, game: GameChoice | null): void {

@@ -27,7 +27,7 @@
           <span [class]="targetStateChip(found.target.state)">{{
             stateLabels[found.target.state]
           }}</span>
-          <span class="font-mono text-meta text-ink-3">#{{ found.target.id }}</span>
+          <nc-short-id class="text-meta text-ink-3" [id]="found.target.id" />
         </p>
         <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ title() }}</h2>
         @if (found.target.type === 'COMMENT' && found.target.projectName) {

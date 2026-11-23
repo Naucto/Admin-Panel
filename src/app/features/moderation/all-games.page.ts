@@ -23,6 +23,7 @@ import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
 import { SearchBoxComponent } from '../../ui/search-box.component';
 import { SegmentedComponent } from '../../ui/segmented.component';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const PAGE_SIZE = 25;
 
@@ -39,6 +40,7 @@ type StateFilter = ProjectModerationState | 'ALL';
     RouterLink,
     SearchBoxComponent,
     SegmentedComponent,
+    ShortIdComponent,
   ],
   templateUrl: './all-games.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,

@@ -31,13 +31,14 @@ import { FeedbackService } from '../../ui/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const ADMIN_NOTE_MAX = 2000;
 
 /** One bug report with everything it carried, and where the team sets its status and note. */
 @Component({
   selector: 'nc-bug-detail-page',
-  imports: [AccountCellComponent, IconComponent, PanelComponent, RouterLink],
+  imports: [AccountCellComponent, IconComponent, PanelComponent, RouterLink, ShortIdComponent],
   templateUrl: './bug-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })

@@ -1,3 +1,4 @@
+import { shortId } from './ids';
 import type {
   BugCategory,
   BugContext,
@@ -179,7 +180,7 @@ export function bugContextRows(bug: {
 }): ContextRow[] {
   const rows: [string, string | null | undefined][] = [
     ['Page', bug.route],
-    ['Game', bug.release ? `${bug.release.name} #${bug.release.id}` : null],
+    ['Game', bug.release ? `${bug.release.name} ${shortId(bug.release.id)}` : null],
     ['App release', bug.context.appRelease],
     ['Viewport', bug.context.viewport],
     ['Language', bug.context.language],

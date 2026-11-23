@@ -10,6 +10,7 @@ import {
 import { Router, RouterLink } from '@angular/router';
 
 import { dayTime, shortAgo } from '../../core/dates';
+import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   CASE_VIEW_LABELS,
@@ -114,7 +115,7 @@ export default class QueuePage {
   }
 
   protected label(row: CaseSummary): string {
-    return row.target.label || `${TARGET_TYPE_LABELS[row.target.type]} #${row.target.id}`;
+    return row.target.label || `${TARGET_TYPE_LABELS[row.target.type]} ${shortId(row.target.id)}`;
   }
 
   /** Under a comment, the game it was written on. */
