@@ -41,6 +41,7 @@ export const TARGET_TYPE_LABELS: Record<ModerationTargetType, string> = {
   USER: 'Profile',
   PROJECT: 'Game',
   COMMENT: 'Comment',
+  COLLECTION: 'Collection',
 };
 
 /** What to call a target: its label, or what it is and its short id when it has none. */
@@ -52,6 +53,7 @@ const TARGET_NOUNS: Record<ModerationTargetType, string> = {
   USER: 'account',
   PROJECT: 'game',
   COMMENT: 'comment',
+  COLLECTION: 'collection',
 };
 
 export const CASE_VIEW_LABELS: Record<CaseView, string> = {
@@ -180,6 +182,9 @@ export const ACTION_LABELS: Record<ModerationActionType, string> = {
   COMMENT_HIDDEN: 'Hid the comment',
   COMMENT_RESTORED: 'Restored the comment',
   COMMENT_DELETED: 'Deleted the comment',
+  COLLECTION_HIDDEN: 'Hid the collection',
+  COLLECTION_RESTORED: 'Restored the collection',
+  COLLECTION_DELETED: 'Deleted the collection',
   FLAGS_DISMISSED: 'Dismissed the reports',
   DRAFT_VIEWED: 'Previewed the game',
 };
@@ -199,6 +204,9 @@ const ACTION_TONES: Record<ModerationActionType, ActionTone> = {
   COMMENT_HIDDEN: 'danger',
   COMMENT_RESTORED: 'ok',
   COMMENT_DELETED: 'danger',
+  COLLECTION_HIDDEN: 'danger',
+  COLLECTION_RESTORED: 'ok',
+  COLLECTION_DELETED: 'danger',
   FLAGS_DISMISSED: 'quiet',
   DRAFT_VIEWED: 'quiet',
 };
@@ -207,7 +215,7 @@ export function actionChip(action: ModerationActionType): string {
   return `nc-chip nc-chip-${ACTION_TONES[action]}`;
 }
 
-/** Where the console shows a target. A comment has no page of its own. */
+/** Where the console shows a target. Null for a target with no page of its own. */
 export function panelRoute(type: ModerationTargetType, id: string): string[] | null {
   switch (type) {
     case 'USER':
@@ -215,6 +223,7 @@ export function panelRoute(type: ModerationTargetType, id: string): string[] | n
     case 'PROJECT':
       return ['/moderation/games', id];
     case 'COMMENT':
+    case 'COLLECTION':
       return null;
   }
 }
@@ -301,7 +310,7 @@ const ACCOUNT_OPERATION_LABELS: Record<
   DELETE_ACCOUNT: 'Delete the account',
 };
 
-/** An operation as a button names it. HIDE, RESTORE and DELETE name the game or the comment. */
+/** An operation as a button names it. HIDE, RESTORE and DELETE name the content they bear on. */
 export function operationLabel(
   operation: ModerationOperation,
   targetType: ModerationTargetType,
@@ -398,6 +407,7 @@ const ACCOUNT_STEPS: Partial<Record<ModerationOperation, string>> = {
 const CONTENT_ROOTS: Record<Exclude<ModerationTargetType, 'USER'>, string> = {
   PROJECT: '/admin/moderation/projects',
   COMMENT: '/admin/moderation/comments',
+  COLLECTION: '/admin/moderation/collections',
 };
 
 export interface OperationRequest {

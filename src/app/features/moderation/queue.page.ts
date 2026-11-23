@@ -43,7 +43,7 @@ const EMPTY_TITLES: Record<CaseView, string> = {
   ALL: 'Nothing was reported yet',
 };
 
-/** What users reported, one row per game, comment or profile, with every report on it counted. */
+/** What users reported, one row per target, with every report on it counted. */
 @Component({
   selector: 'nc-queue-page',
   imports: [
@@ -99,7 +99,7 @@ export default class QueuePage {
   protected readonly emptyHint = computed(() =>
     this.targetType() || this.reason()
       ? 'Nothing matches these filters. Clear them to see the rest.'
-      : 'A game, a comment or a profile shows here once someone reports it on Naucto.',
+      : 'Whatever someone reports on Naucto shows here.',
   );
 
   protected setTargetType(value: string): void {

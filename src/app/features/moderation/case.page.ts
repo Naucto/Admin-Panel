@@ -38,7 +38,7 @@ import { panelError, panelState } from '../../ui/panel-state';
 import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
-/** Every report on one game, comment or profile, what staff did about it and what they may do. */
+/** Every report on one target, what staff did about it and what they may do. */
 @Component({
   selector: 'nc-case-page',
   imports: [

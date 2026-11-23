@@ -607,7 +607,7 @@ export interface AdminReportList {
 
 /* Moderation: the backend's `admin/moderation/*` responses. */
 
-export type ModerationTargetType = 'USER' | 'PROJECT' | 'COMMENT';
+export type ModerationTargetType = 'USER' | 'PROJECT' | 'COMMENT' | 'COLLECTION';
 
 export type ModerationReason =
   | 'SPAM'
@@ -635,6 +635,9 @@ export type ModerationActionType =
   | 'COMMENT_HIDDEN'
   | 'COMMENT_RESTORED'
   | 'COMMENT_DELETED'
+  | 'COLLECTION_HIDDEN'
+  | 'COLLECTION_RESTORED'
+  | 'COLLECTION_DELETED'
   | 'FLAGS_DISMISSED'
   | 'DRAFT_VIEWED';
 
@@ -643,7 +646,7 @@ export type TargetState = 'VISIBLE' | 'UNPUBLISHED' | 'HIDDEN' | 'SUSPENDED' | '
 
 /**
  * What the signed-in staff member may do about a target, as the backend decided it. HIDE, RESTORE
- * and DELETE bear on the game or the comment, the others on the account that owns it.
+ * and DELETE bear on the content itself, the others on the account that owns it.
  */
 export type ModerationOperation =
   | 'DISMISS'
@@ -682,7 +685,7 @@ export interface ModerationAccountRef {
   email: string | null;
 }
 
-/** The text of a game, a comment or a profile at one moment. */
+/** The text of a target at one moment. */
 export interface TargetContent {
   title: string | null;
   body: string | null;
