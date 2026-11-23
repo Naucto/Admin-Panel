@@ -2,7 +2,6 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   linkedSignal,
@@ -23,6 +22,7 @@ import type { ModerationOperation } from '../../core/types';
 import { AccountCellComponent } from '../../ui/account-cell.component';
 import { HistoryListComponent } from '../../ui/history-list.component';
 import { IconComponent } from '../../ui/icon.component';
+import { objectUrl } from '../../ui/object-url';
 import { OperationButtonsComponent } from '../../ui/operation-buttons.component';
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
@@ -63,29 +63,21 @@ export default class GameDetailPage {
   });
   protected readonly gameState = computed(() => panelState(this.game, () => false));
 
-  protected readonly cover = resource({
-    params: () => {
+  protected readonly cover = objectUrl(
+    () => {
       const game = this.game.value();
       return game?.hasCover ? game.id : undefined;
     },
-    loader: async ({ params, abortSignal }) => {
-      const image = await this.api.projectCover(params);
-      abortSignal.throwIfAborted();
-      return URL.createObjectURL(image);
-    },
-  });
+    (id) => this.api.projectCover(id),
+  );
 
-  protected readonly clip = resource({
-    params: () => {
+  protected readonly clip = objectUrl(
+    () => {
       const game = this.game.value();
       return game?.hasClip ? game.id : undefined;
     },
-    loader: async ({ params, abortSignal }) => {
-      const video = await this.api.projectClip(params);
-      abortSignal.throwIfAborted();
-      return URL.createObjectURL(video);
-    },
-  });
+    (id) => this.api.projectClip(id),
+  );
 
   protected readonly historyPage = linkedSignal({ source: () => this.id(), computation: () => 1 });
   protected readonly history = resource({
@@ -113,20 +105,6 @@ export default class GameDetailPage {
     const found = this.game.value();
     return found ? found.collaborators.filter((account) => account.id !== found.owner.id) : [];
   });
-
-  constructor() {
-    for (const media of [this.cover, this.clip]) {
-      effect((onCleanup) => {
-        // `value()` throws once the load has failed.
-        const url = media.hasValue() ? media.value() : undefined;
-        if (url) {
-          onCleanup(() => {
-            URL.revokeObjectURL(url);
-          });
-        }
-      });
-    }
-  }
 
   protected async run(operation: ModerationOperation): Promise<void> {
     const found = this.game.value();
