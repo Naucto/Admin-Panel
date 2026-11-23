@@ -33,12 +33,12 @@ const sources = (folder: string): Source[] =>
 const mentioning = (among: Source[], pattern: RegExp): string[] =>
   among.filter(({ text }) => pattern.test(text)).map(({ file }) => file);
 
-describe('the layers', () => {
-  const core = sources('core');
-  const charts = sources('charts');
-  const kit = sources('ui');
-  const pages = sources('features');
+const core = sources('core');
+const charts = sources('charts');
+const kit = sources('ui');
+const pages = sources('features');
 
+describe('the layers', () => {
   it('finds the sources it reads', () => {
     for (const layer of [core, charts, kit, pages]) {
       expect(layer).not.toEqual([]);
@@ -91,7 +91,7 @@ describe('the production CSP', () => {
   // Nothing the backend serves the console is public: an image or a clip is fetched with the
   // bearer and shown through an object URL, which the policy refuses unless it says `blob:`.
   it('lets every element a template draws load an object URL', () => {
-    const templates = [...sources('ui'), ...sources('features')];
+    const templates = [...kit, ...pages];
     const refused = Object.entries(LOADED_UNDER)
       .filter(([element]) => mentioning(templates, new RegExp(`<${element}\\b`)).length > 0)
       .filter(([, directive]) => !directives.get(directive)?.includes('blob:'))
