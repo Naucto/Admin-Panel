@@ -143,8 +143,8 @@ describe('the case of a collection', () => {
     expect(host.querySelector(`a[href="/moderation/users/${OWNER.id}"]`)).not.toBeNull();
   });
 
-  it('draws no control that writes for a viewer', async () => {
-    const host = await render(caseOf('COLLECTION', []), false);
+  it('draws no control that writes for a viewer, whatever the case allows', async () => {
+    const host = await render(caseOf('COLLECTION', ['DISMISS', 'HIDE', 'DELETE']), false);
 
     expect(host.querySelector('nc-operation-buttons')).toBeNull();
     expect(host.querySelectorAll('button:not(nc-short-id button)')).toHaveLength(0);
