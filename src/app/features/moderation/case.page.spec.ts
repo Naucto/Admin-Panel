@@ -76,7 +76,7 @@ function caseOf(
   };
 }
 
-const read = vi.fn<(type: ModerationTargetType, id: string) => Promise<CaseDetail>>();
+const read = vi.fn<ModerationApi['case']>();
 const decide = vi.fn<ModerationApi['decide']>();
 const ask = vi.fn<ActionDialogService['ask']>();
 
