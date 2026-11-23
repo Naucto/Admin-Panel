@@ -57,15 +57,15 @@ export class UserFeedbackApi {
     ).count;
   }
 
-  async bug(id: number): Promise<BugDetail> {
+  async bug(id: string): Promise<BugDetail> {
     return toBugDetail(await this.api.get<AdminReportDetail>(`/admin/reports/${id}`));
   }
 
-  async updateBug(id: number, update: BugUpdate): Promise<BugDetail> {
+  async updateBug(id: string, update: BugUpdate): Promise<BugDetail> {
     return toBugDetail(await this.api.put<AdminReportDetail>(`/admin/reports/${id}`, update));
   }
 
-  screenshot(id: number): Promise<Blob> {
+  screenshot(id: string): Promise<Blob> {
     return this.api.getBlob(`/admin/reports/${id}/screenshot`);
   }
 }

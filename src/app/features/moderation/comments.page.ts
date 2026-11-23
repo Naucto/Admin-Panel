@@ -5,7 +5,6 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
@@ -13,6 +12,7 @@ import { RouterLink } from '@angular/router';
 
 import { AuthStore } from '../../core/auth.store';
 import { dayTime, shortAgo } from '../../core/dates';
+import { idOf } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   bearsOnAccount,
@@ -42,9 +42,6 @@ const HISTORY_SIZE = 20;
 
 type StateFilter = CommentModerationState | 'ALL';
 
-const optionalId = (value: unknown): number | undefined =>
-  value ? numberAttribute(value) : undefined;
-
 /** Every comment on Naucto, newest first. A row opens under the list with what staff did about it. */
 @Component({
   selector: 'nc-comments-page',
@@ -68,8 +65,8 @@ export default class CommentsPage {
   protected readonly auth = inject(AuthStore);
 
   /** `?author=` and `?game=`: the comments of one account or on one game. */
-  readonly author = input(undefined, { transform: optionalId });
-  readonly game = input(undefined, { transform: optionalId });
+  readonly author = input(undefined, { transform: idOf });
+  readonly game = input(undefined, { transform: idOf });
 
   protected readonly states: { value: StateFilter; label: string }[] = [
     { value: 'ALL', label: 'All' },
@@ -112,7 +109,7 @@ export default class CommentsPage {
     return total === undefined ? '' : `${total} ${total === 1 ? 'comment' : 'comments'}`;
   });
 
-  private readonly selectedId = signal<number | null>(null);
+  private readonly selectedId = signal<string | null>(null);
   /** The open row as the list holds it now, so a decision shows on it once the list reloads. */
   protected readonly selected = computed(
     () => this.comments.value()?.items.find((comment) => comment.id === this.selectedId()) ?? null,

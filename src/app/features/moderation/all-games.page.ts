@@ -5,13 +5,13 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 
 import { dayTime, shortAgo } from '../../core/dates';
+import { idOf } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import { PROJECT_STATE_LABELS, projectStateChip } from '../../core/moderation-format';
 import { optionsOf } from '../../core/support-format';
@@ -48,9 +48,7 @@ export default class AllGamesPage {
   private readonly router = inject(Router);
 
   /** `?creator=`: only the games of one account, as the account page links here. */
-  readonly creator = input(undefined, {
-    transform: (value: unknown) => (value ? numberAttribute(value) : undefined),
-  });
+  readonly creator = input(undefined, { transform: idOf });
 
   protected readonly states: { value: StateFilter; label: string }[] = [
     { value: 'ALL', label: 'All' },

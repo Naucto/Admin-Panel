@@ -174,7 +174,7 @@ export interface ContextRow {
 /** The context a bug report carried, as label and value rows, with what is missing left out. */
 export function bugContextRows(bug: {
   route: string;
-  release: { id: number; name: string } | null;
+  release: { id: string; name: string } | null;
   context: BugContext;
 }): ContextRow[] {
   const rows: [string, string | null | undefined][] = [

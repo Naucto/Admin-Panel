@@ -6,7 +6,6 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
@@ -49,7 +48,7 @@ export default class BugDetailPage {
   protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
-  readonly id = input.required({ transform: numberAttribute });
+  readonly id = input.required<string>();
 
   protected readonly bug = resource({
     params: () => this.id(),

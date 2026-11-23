@@ -145,35 +145,43 @@ describe('what a decision sends', () => {
   });
 });
 
+const OWNER = '7c9e6679-7425-40de-944b-e07fc1f90ae7';
+const GAME = '3f2b8c1e-9d4a-4e6f-8a7b-1c2d3e4f5a6b';
+const COMMENT = 'b4d1f0a2-5c3e-4f6a-9b8d-0e1f2a3b4c5d';
+
 describe('where an operation goes', () => {
-  const comment = { type: 'COMMENT', id: 7, ownerId: 3 } as const;
-  const game = { type: 'PROJECT', id: 5, ownerId: 3 } as const;
-  const profile = { type: 'USER', id: 3, ownerId: 3 } as const;
+  const comment = { type: 'COMMENT', id: COMMENT, ownerId: OWNER } as const;
+  const game = { type: 'PROJECT', id: GAME, ownerId: OWNER } as const;
+  const profile = { type: 'USER', id: OWNER, ownerId: OWNER } as const;
 
   it('dismisses the case of the target', () => {
     expect(operationRequest('DISMISS', comment)).toEqual({
       method: 'POST',
-      path: '/admin/moderation/cases/COMMENT/7/dismiss',
+      path: `/admin/moderation/cases/COMMENT/${COMMENT}/dismiss`,
     });
   });
 
   it('hides, restores and deletes the game or the comment itself', () => {
-    expect(operationRequest('HIDE', game)?.path).toBe('/admin/moderation/projects/5/hide');
-    expect(operationRequest('RESTORE', comment)?.path).toBe('/admin/moderation/comments/7/restore');
+    expect(operationRequest('HIDE', game)?.path).toBe(`/admin/moderation/projects/${GAME}/hide`);
+    expect(operationRequest('RESTORE', comment)?.path).toBe(
+      `/admin/moderation/comments/${COMMENT}/restore`,
+    );
     expect(operationRequest('DELETE', game)).toEqual({
       method: 'DELETE',
-      path: '/admin/moderation/projects/5',
+      path: `/admin/moderation/projects/${GAME}`,
     });
   });
 
   it('sends an account operation to the owner of the target', () => {
-    expect(operationRequest('WARN', comment)?.path).toBe('/admin/moderation/accounts/3/warn');
+    expect(operationRequest('WARN', comment)?.path).toBe(
+      `/admin/moderation/accounts/${OWNER}/warn`,
+    );
     expect(operationRequest('CLEAR_PROFILE', profile)?.path).toBe(
-      '/admin/moderation/accounts/3/clear-profile',
+      `/admin/moderation/accounts/${OWNER}/clear-profile`,
     );
     expect(operationRequest('DELETE_ACCOUNT', game)).toEqual({
       method: 'DELETE',
-      path: '/admin/moderation/accounts/3',
+      path: `/admin/moderation/accounts/${OWNER}`,
     });
   });
 
@@ -200,9 +208,9 @@ describe('labels and links', () => {
   });
 
   it('links an account and a game to their page, and a comment nowhere', () => {
-    expect(panelRoute('USER', 4)).toEqual(['/moderation/users', 4]);
-    expect(panelRoute('PROJECT', 9)).toEqual(['/moderation/games', 9]);
-    expect(panelRoute('COMMENT', 2)).toBeNull();
+    expect(panelRoute('USER', OWNER)).toEqual(['/moderation/users', OWNER]);
+    expect(panelRoute('PROJECT', GAME)).toEqual(['/moderation/games', GAME]);
+    expect(panelRoute('COMMENT', COMMENT)).toBeNull();
   });
 
   it('colours an action by what it did', () => {

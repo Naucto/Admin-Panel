@@ -201,7 +201,7 @@ export function actionChip(action: ModerationActionType): string {
 }
 
 /** Where the console shows a target. A comment has no page of its own. */
-export function panelRoute(type: ModerationTargetType, id: number): (string | number)[] | null {
+export function panelRoute(type: ModerationTargetType, id: string): string[] | null {
   switch (type) {
     case 'USER':
       return ['/moderation/users', id];
@@ -212,7 +212,7 @@ export function panelRoute(type: ModerationTargetType, id: number): (string | nu
   }
 }
 
-export function caseRoute(type: ModerationTargetType, id: number): (string | number)[] {
+export function caseRoute(type: ModerationTargetType, id: string): string[] {
   return ['/moderation/cases', type, id];
 }
 
@@ -404,7 +404,7 @@ export interface OperationRequest {
  */
 export function operationRequest(
   operation: ModerationOperation,
-  target: { type: ModerationTargetType; id: number; ownerId: number | null },
+  target: { type: ModerationTargetType; id: string; ownerId: string | null },
 ): OperationRequest | null {
   if (operation === 'DISMISS') {
     return { method: 'POST', path: `/admin/moderation/cases/${target.type}/${target.id}/dismiss` };

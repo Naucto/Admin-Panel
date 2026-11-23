@@ -18,7 +18,7 @@ import { IconComponent } from './icon.component';
 })
 export class EntityLinkComponent {
   readonly type = input.required<ModerationTargetType>();
-  readonly id = input.required<number>();
+  readonly id = input.required<string>();
   readonly label = input<string | null>(null);
   readonly siteUrl = input<string | null>(null);
 

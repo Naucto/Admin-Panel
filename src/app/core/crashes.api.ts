@@ -35,11 +35,11 @@ export class CrashesApi {
     return { ...list, items: list.items.map(toCrashGroup) };
   }
 
-  async crash(id: number): Promise<CrashDetail> {
+  async crash(id: string): Promise<CrashDetail> {
     return toCrashDetail(await this.api.get<AdminReportDetail>(`/admin/reports/${id}`));
   }
 
-  async setStatus(id: number, status: CrashStatus): Promise<CrashGroup> {
+  async setStatus(id: string, status: CrashStatus): Promise<CrashGroup> {
     return toCrashGroup(
       await this.api.put<AdminReportDetail>(`/admin/reports/${id}`, {
         status: REPORT_STATUS[status],

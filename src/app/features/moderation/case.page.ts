@@ -4,7 +4,6 @@ import {
   computed,
   inject,
   input,
-  numberAttribute,
   resource,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -58,7 +57,7 @@ export default class CasePage {
 
   /** The `:targetType` and `:targetId` of the route. */
   readonly targetType = input.required<ModerationTargetType>();
-  readonly targetId = input.required({ transform: numberAttribute });
+  readonly targetId = input.required<string>();
 
   protected readonly detail = resource({
     params: () => ({ type: this.targetType(), id: this.targetId() }),

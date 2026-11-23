@@ -14,6 +14,7 @@ import type { EChartsType } from 'echarts/core';
 
 import type { ChartInk } from '../../charts/palette';
 import { rowSeries, timelineChart, timelineHeight } from '../../charts/timeline-options';
+import { idOf, NO_RELEASE_ID } from '../../core/ids';
 import { instantLabel, spanLabel, WEEK_MS } from '../../core/instants';
 import { formatCount } from '../../core/metric-catalog';
 import { TimeRangeStore } from '../../core/time-range.store';
@@ -101,6 +102,12 @@ function summaryBucket(spanMs: number): Timeline['bucket'] {
 const totalOf = (timeline: Timeline | undefined, metric: TimelineMetric): number | null =>
   timeline?.series.find((series) => series.metric === metric)?.total ?? null;
 
+/** The game a link's `?game=` names, or null when it names none. */
+export function linkedGame(value: string | undefined): string | null {
+  const id = idOf(value);
+  return id === undefined || id === NO_RELEASE_ID ? null : id;
+}
+
 @Component({
   selector: 'nc-timeline-page',
   imports: [
@@ -150,13 +157,13 @@ export default class TimelinePage {
     effect(() => {
       const from = Date.parse(this.from() ?? '');
       const to = Date.parse(this.to() ?? '');
-      const game = Number(this.gameId());
+      const game = linkedGame(this.gameId());
       untracked(() => {
         if (!Number.isNaN(from) && !Number.isNaN(to) && from < to) {
           this.range.show({ from, to });
         }
-        if (Number.isInteger(game) && game > 0) {
-          this.game.set({ releaseId: game, name: `#${String(game)}` });
+        if (game !== null) {
+          this.game.set({ releaseId: game, name: `#${game}` });
           void this.api.releasesByIds([game]).then(([release]) => {
             if (release && this.game()?.releaseId === game) {
               this.game.set({ releaseId: game, name: release.name });

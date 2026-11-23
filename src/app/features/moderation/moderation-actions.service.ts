@@ -21,7 +21,7 @@ import { FeedbackService } from '../../ui/feedback.service';
 /** What a decision bears on, as the screen offering it knows it. */
 export interface ActionTarget {
   type: ModerationTargetType;
-  id: number;
+  id: string;
   label: string | null;
   owner: Pick<ModerationAccountRef, 'id' | 'username'> | null;
   openFlags: number;

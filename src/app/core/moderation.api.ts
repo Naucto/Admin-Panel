@@ -45,7 +45,7 @@ export interface AccountQuery {
 export interface ProjectQuery {
   search?: string;
   state?: ProjectModerationState;
-  creatorId?: number;
+  creatorId?: string;
   page: number;
   limit: number;
 }
@@ -53,18 +53,18 @@ export interface ProjectQuery {
 export interface CommentQuery {
   search?: string;
   state?: CommentModerationState;
-  projectId?: number;
-  authorId?: number;
+  projectId?: string;
+  authorId?: string;
   page: number;
   limit: number;
 }
 
 export interface LogQuery {
   action?: ModerationActionType;
-  actorId?: number;
-  subjectUserId?: number;
+  actorId?: string;
+  subjectUserId?: string;
   targetType?: ModerationTargetType;
-  targetId?: number;
+  targetId?: string;
   page: number;
   limit: number;
 }
@@ -83,7 +83,7 @@ export class ModerationApi {
   }
 
   /** Every report on one target, with what staff did about it and may still do. */
-  case(type: ModerationTargetType, id: number): Promise<CaseDetail> {
+  case(type: ModerationTargetType, id: string): Promise<CaseDetail> {
     return this.api.get(`/admin/moderation/cases/${type}/${id}`);
   }
 
@@ -91,7 +91,7 @@ export class ModerationApi {
     return this.api.get('/admin/moderation/accounts', { ...query });
   }
 
-  account(id: number): Promise<ModerationAccountDetail> {
+  account(id: string): Promise<ModerationAccountDetail> {
     return this.api.get(`/admin/moderation/accounts/${id}`);
   }
 
@@ -99,12 +99,12 @@ export class ModerationApi {
     return this.api.get('/admin/moderation/projects', { ...query });
   }
 
-  project(id: number): Promise<ModerationProjectDetail> {
+  project(id: string): Promise<ModerationProjectDetail> {
     return this.api.get(`/admin/moderation/projects/${id}`);
   }
 
   /** The cover as bytes, withheld or not: an `<img>` cannot send the bearer. */
-  projectCover(id: number): Promise<Blob> {
+  projectCover(id: string): Promise<Blob> {
     return this.api.getBlob(`/admin/moderation/projects/${id}/cover`);
   }
 

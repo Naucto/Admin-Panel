@@ -5,13 +5,13 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { dayTime } from '../../core/dates';
+import { idOf } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   ACTION_LABELS,
@@ -44,9 +44,7 @@ export default class LogPage {
   private readonly api = inject(ModerationApi);
 
   /** `?actor=`: only what one staff member did. A row's moderator links here. */
-  readonly actor = input(undefined, {
-    transform: (value: unknown) => (value ? numberAttribute(value) : undefined),
-  });
+  readonly actor = input(undefined, { transform: idOf });
 
   protected readonly actionOptions = optionsOf(ACTION_LABELS);
   protected readonly typeOptions = optionsOf(TARGET_TYPE_LABELS);

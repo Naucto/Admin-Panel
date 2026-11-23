@@ -6,7 +6,6 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -54,7 +53,7 @@ export default class GameDetailPage {
   protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
-  readonly id = input.required({ transform: numberAttribute });
+  readonly id = input.required<string>();
 
   protected readonly game = resource({
     params: () => this.id(),
