@@ -161,8 +161,9 @@ Shared code speaks of "a target"; a kind is named only in the entries below. In 
 2. `core/moderation-format.ts`, one entry in each: `TARGET_TYPE_LABELS`, `TARGET_NOUNS`,
    `ACTION_LABELS`, `ACTION_TONES`, `panelRoute` (a route only if the console has a page for the
    kind, else `null`) and `CONTENT_ROOTS` (its root under `admin/moderation`). The compiler stops
-   until each is there. Nothing else in the file names a kind: the labels of the operations, what
-   they do and `operationRequest` are built from these.
+   until each is there. Nothing else in the file names a kind of content: the labels of the
+   operations, what they do and `operationRequest` are built from these, and tell apart `USER`
+   alone, since a profile is its account.
 3. `core/moderation-format.spec.ts`: its label, its noun in the sentences, hide, restore and
    delete under its own root, dismiss, an account operation reaching its owner, `panelRoute`.
 4. Nothing to do for what is built from the registry: the type filters of the Queue and the Log,
