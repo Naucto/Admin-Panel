@@ -37,8 +37,8 @@ is and how to run it; this file is how the code is laid out and what to keep in 
   from a URL or from `localStorage` goes through `idOf`, which gives nothing for anything else.
 - No inline scripts and no third-party origins: the production CSP refuses both. That is also why
   critical CSS inlining is off in `angular.json`.
-- `img-src` allows `blob:` besides `'self'`: bug screenshots need the bearer, so they are fetched
-  and shown through object URLs.
+- `img-src` and `media-src` allow `blob:` besides `'self'`: a bug screenshot, the cover of a game
+  and its clip need the bearer, so they are fetched and shown through object URLs.
 - Component selectors, directives and global classes take the `nc` prefix (`nc-panel`,
   `ncChart`, `.nc-button`). Never name anything `ad-…`, `ads`, `banner` or `sponsor`: ad blockers
   (Opera's built-in one, uBlock, AdBlock) hide elements by such names through EasyList's generic
@@ -125,8 +125,13 @@ The Moderation group reads what users reported on Naucto and what staff did abou
 backend's `admin/moderation` routes (`core/moderation.api.ts`).
 
 - "Report" already names bug reports, crashes and ratings in the code, so a user's report of a
-  game, a comment or a profile is a **flag** there, and every flag on one target makes a **case**.
-  The screens still say "report", which is the word people know.
+  game, a comment, a collection or a profile is a **flag** there, and every flag on one target
+  makes a **case**. The screens still say "report", which is the word people know.
+- A kind of target is one entry in each map of `core/moderation-format.ts`: `TARGET_TYPE_LABELS`,
+  `TARGET_NOUNS`, the labels and tones of its actions, `panelRoute` and, for content,
+  `CONTENT_ROOTS`. The type filters of the Queue and the Log are built from `TARGET_TYPE_LABELS`.
+  A screen names a kind only for what that kind alone has (the game a comment sits on, the editor
+  of a game, the games of a collection); everything else speaks of a target.
 - The Queue (`features/moderation/queue.page`) lists cases, never single flags.
   `core/case-count.store.ts` keeps the sidebar's count of open cases, read like the bug count.
 - `core/moderation-format.ts` holds the labels, the chip tones, what the dialog of each operation
@@ -135,12 +140,19 @@ backend's `admin/moderation` routes (`core/moderation.api.ts`).
 - A case (`features/moderation/case.page`, `moderation/cases/:targetType/:targetId`) shows the
   content as it is now, each report with what it kept when the content has changed since, what was
   done, and the owner with their record.
+- A collection is read in its case and nowhere else: its title and description, who its owner lets
+  read it (`visibility`) and the games it lists, each linked to its page here. The backend lists no
+  collections, so the console has no directory of them and `panelRoute` gives a collection no page.
+  Staff hide, restore and delete one under `admin/moderation/collections`.
 - Users (`users.page`, `user-detail.page`) lists every account with its standing and opens one on
   its record, read from the log by `subjectUserId`. A directory searches through `nc-search-box`,
   which settles once the typing pauses.
 - All games (`all-games.page`, `game-detail.page`) lists every game, published or not, and takes
-  `?creator=` for the games of one account. A cover is read as bytes like a bug screenshot, since
-  a hidden game's cover is no longer served.
+  `?creator=` for the games of one account. A cover and a clip are read as bytes like a bug
+  screenshot, since those of a hidden game are no longer served.
+- A game has one staff address on the site, its `editUrl`: the normal editor, which opens read-only
+  for staff and writes the look to the log. The case of a game and its page link to it, for the
+  roles that act only, since the site refuses a viewer.
 - Comments (`comments.page`) lists every comment and opens a row under the list, as Crashes does,
   with its decisions and what was done about it. It takes `?author=` and `?game=`. A comment has
   no page of its own, which is why `panelRoute` gives it none.
