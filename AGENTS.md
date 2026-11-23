@@ -115,9 +115,10 @@ The Support group of the sidebar reads what people send from Naucto itself.
   another kind. `UserFeedbackApi` (`core/user-feedback.api.ts`, named apart from
   `ui/feedback.service.ts`, the console's own toasts and confirmations) reads ratings and bug
   reports, and `CrashesApi` reads crashes.
-- A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and shown
-  through an object URL that the page revokes when it leaves the report. That is the reason for
-  `blob:` in the CSP's `img-src`.
+- A screenshot is read with `ApiService.getBlob`, since an `<img>` cannot send the bearer, and held
+  by `objectUrl` (`ui/object-url.ts`), as the cover and the clip of a game are: it makes the object
+  URL, lets it go when the page leaves the report, and reads no address from a load that failed.
+  That is the reason for `blob:` in the CSP's `img-src`.
 
 ## Moderation
 
