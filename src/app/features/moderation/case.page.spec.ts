@@ -42,8 +42,7 @@ function caseOf(
       projectId: null,
       projectName: null,
       playUrl: null,
-      previewPlayUrl: null,
-      previewEditUrl: null,
+      editUrl: null,
     },
     status: 'OPEN',
     openFlags: 1,
@@ -222,5 +221,27 @@ describe('the case of a collection', () => {
 
     expect(host.querySelector('ol')).toBeNull();
     expect(host.textContent).toContain('It is gone.');
+  });
+});
+
+describe('the case of a game', () => {
+  const EDITOR = `https://naucto.net/edit/${FIRST_GAME}`;
+  const game = caseOf('PROJECT', [], { visibility: null, games: [] });
+  game.target = { ...game.target, id: FIRST_GAME, projectId: FIRST_GAME, editUrl: EDITOR };
+
+  const siteLinks = (host: HTMLElement) =>
+    [...host.querySelectorAll<HTMLAnchorElement>('header a[target="_blank"]')].map((link) => ({
+      name: link.textContent.trim(),
+      href: link.getAttribute('href'),
+    }));
+
+  it('opens the game in the editor through its one staff address', async () => {
+    expect(siteLinks(await render(game, true))).toEqual([
+      { name: 'Open in the editor', href: EDITOR },
+    ]);
+  });
+
+  it('draws no way into the editor for a viewer, whom the site would refuse', async () => {
+    expect(siteLinks(await render(game, false))).toEqual([]);
   });
 });

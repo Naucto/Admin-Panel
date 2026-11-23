@@ -718,8 +718,8 @@ export interface CaseTarget {
   projectId: string | null;
   projectName: string | null;
   playUrl: string | null;
-  previewPlayUrl: string | null;
-  previewEditUrl: string | null;
+  /** The game in the editor of the site, which staff open read-only. Null without a game. */
+  editUrl: string | null;
 }
 
 export interface CaseSummary {
@@ -800,8 +800,7 @@ export interface ModerationProject {
   hiddenAt: string | null;
   openFlags: number;
   playUrl: string | null;
-  previewPlayUrl: string;
-  previewEditUrl: string;
+  editUrl: string;
 }
 
 export interface ModerationProjectDetail extends ModerationProject {

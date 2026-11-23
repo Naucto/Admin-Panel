@@ -55,26 +55,15 @@
             </a>
           }
           @if (auth.canAct() && found.target.type === 'PROJECT') {
-            @if (found.target.previewPlayUrl; as preview) {
+            @if (found.target.editUrl; as editor) {
               <a
                 class="nc-button nc-button-ghost nc-button-sm"
-                [href]="preview"
+                [href]="editor"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Read only, and logged"
               >
-                <nc-icon name="play" [size]="12" /> Preview in the player
-              </a>
-            }
-            @if (found.target.previewEditUrl; as preview) {
-              <a
-                class="nc-button nc-button-ghost nc-button-sm"
-                [href]="preview"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Read only, and logged"
-              >
-                <nc-icon name="code" [size]="12" /> Preview in the editor
+                <nc-icon name="code" [size]="12" /> Open in the editor
               </a>
             }
           }

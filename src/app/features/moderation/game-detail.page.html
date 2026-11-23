@@ -68,21 +68,12 @@
           @if (auth.canAct()) {
             <a
               class="nc-button nc-button-ghost nc-button-sm"
-              [href]="found.previewPlayUrl"
+              [href]="found.editUrl"
               target="_blank"
               rel="noopener noreferrer"
               title="Read only, and logged"
             >
-              <nc-icon name="play" [size]="12" /> Preview in the player
-            </a>
-            <a
-              class="nc-button nc-button-ghost nc-button-sm"
-              [href]="found.previewEditUrl"
-              target="_blank"
-              rel="noopener noreferrer"
-              title="Read only, and logged"
-            >
-              <nc-icon name="code" [size]="12" /> Preview in the editor
+              <nc-icon name="code" [size]="12" /> Open in the editor
             </a>
           }
         </div>
