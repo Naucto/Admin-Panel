@@ -104,7 +104,8 @@ export default class GameDetailPage {
 
   constructor() {
     effect((onCleanup) => {
-      const url = this.cover.value();
+      // `value()` throws once the load has failed.
+      const url = this.cover.hasValue() ? this.cover.value() : undefined;
       if (url) {
         onCleanup(() => {
           URL.revokeObjectURL(url);

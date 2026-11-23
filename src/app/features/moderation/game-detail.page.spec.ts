@@ -43,6 +43,18 @@ function gameOf(changes: Partial<ModerationProjectDetail> = {}): ModerationProje
 }
 
 describe('the page of a game', () => {
+  const projectCover = vi.fn<ModerationApi['projectCover']>();
+  const createObjectURL = vi.fn<(blob: Blob) => string>();
+  const revokeObjectURL = vi.fn<(url: string) => void>();
+
+  beforeEach(() => {
+    projectCover.mockReset().mockResolvedValue(new Blob(['cover'], { type: 'image/png' }));
+    createObjectURL.mockReset().mockImplementation((blob) => `blob:${blob.type}`);
+    revokeObjectURL.mockReset();
+    // jsdom has neither.
+    Object.assign(URL, { createObjectURL, revokeObjectURL });
+  });
+
   async function render(game: ModerationProjectDetail, canAct: boolean): Promise<HTMLElement> {
     TestBed.configureTestingModule({
       providers: [
@@ -51,6 +63,7 @@ describe('the page of a game', () => {
           provide: ModerationApi,
           useValue: {
             project: () => Promise.resolve(game),
+            projectCover,
             log: () => Promise.resolve({ items: [], total: 0, page: 1, limit: 10 }),
           },
         },
@@ -89,5 +102,23 @@ describe('the page of a game', () => {
     const host = await render(gameOf(), false);
 
     expect(siteLinks(host)).toEqual([]);
+  });
+
+  it('shows the cover from the bytes the bearer fetched, and lets them go on leaving', async () => {
+    const host = await render(gameOf({ hasCover: true }), false);
+
+    expect(projectCover).toHaveBeenCalledWith(GAME);
+    expect(host.querySelector('img')?.getAttribute('src')).toBe('blob:image/png');
+
+    TestBed.resetTestingModule();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:image/png');
+  });
+
+  it('says why when the cover cannot be read', async () => {
+    projectCover.mockRejectedValue(new Error('The cover is not there'));
+    const host = await render(gameOf({ hasCover: true }), false);
+
+    expect(host.querySelector('img')).toBeNull();
+    expect(host.textContent).toContain('The cover is not there');
   });
 });
