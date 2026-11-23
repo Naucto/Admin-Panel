@@ -196,12 +196,12 @@ An `<img>` or a `<video>` cannot send the bearer, so its bytes are fetched and s
 object URL. Follow `features/moderation/game-detail.page.ts`:
 
 1. A method of the `*.api.ts` over `ApiService.getBlob`.
-2. A `resource` whose `params` are `undefined` unless the backend says there is something to
-   fetch (`hasCover`, `hasClip`), and whose loader answers `URL.createObjectURL(...)`.
-3. An effect that revokes the URL in its cleanup, reading `value()` only when `hasValue()`.
-4. In the template: the element, a skeleton while it loads, the error in words when it fails.
-5. A spec: jsdom has neither `URL.createObjectURL` nor `URL.revokeObjectURL`, so it assigns both.
-6. The directive of the element in `nginx/security-headers.conf` allows `blob:`
+2. `objectUrl` (`ui/object-url.ts`) over that method, with an id that is `undefined` unless the
+   backend says there is something to fetch (`hasCover`, `hasClip`). It makes the object URL and
+   revokes it: a page writes neither.
+3. In the template: the element, a skeleton while it loads, the error in words when it fails.
+4. A spec: jsdom has neither `URL.createObjectURL` nor `URL.revokeObjectURL`, so it assigns both.
+5. The directive of the element in `nginx/security-headers.conf` allows `blob:`
    (`img-src`, `media-src`). `src/app/layers.spec.ts` fails if it does not.
 
 The dev server sends no policy. Only the production image refuses, so either build it, run it
