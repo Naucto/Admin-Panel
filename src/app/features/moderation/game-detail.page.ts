@@ -75,6 +75,18 @@ export default class GameDetailPage {
     },
   });
 
+  protected readonly clip = resource({
+    params: () => {
+      const game = this.game.value();
+      return game?.hasClip ? game.id : undefined;
+    },
+    loader: async ({ params, abortSignal }) => {
+      const video = await this.api.projectClip(params);
+      abortSignal.throwIfAborted();
+      return URL.createObjectURL(video);
+    },
+  });
+
   protected readonly historyPage = linkedSignal({ source: () => this.id(), computation: () => 1 });
   protected readonly history = resource({
     params: () => ({
@@ -103,15 +115,17 @@ export default class GameDetailPage {
   });
 
   constructor() {
-    effect((onCleanup) => {
-      // `value()` throws once the load has failed.
-      const url = this.cover.hasValue() ? this.cover.value() : undefined;
-      if (url) {
-        onCleanup(() => {
-          URL.revokeObjectURL(url);
-        });
-      }
-    });
+    for (const media of [this.cover, this.clip]) {
+      effect((onCleanup) => {
+        // `value()` throws once the load has failed.
+        const url = media.hasValue() ? media.value() : undefined;
+        if (url) {
+          onCleanup(() => {
+            URL.revokeObjectURL(url);
+          });
+        }
+      });
+    }
   }
 
   protected async run(operation: ModerationOperation): Promise<void> {

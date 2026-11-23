@@ -108,6 +108,11 @@ export class ModerationApi {
     return this.api.getBlob(`/admin/moderation/projects/${id}/cover`);
   }
 
+  /** The clip as bytes, withheld or not: a `<video>` cannot send the bearer either. */
+  projectClip(id: string): Promise<Blob> {
+    return this.api.getBlob(`/admin/moderation/projects/${id}/clip`);
+  }
+
   comments(query: CommentQuery): Promise<Page<ModerationComment>> {
     return this.api.get('/admin/moderation/comments', { ...query });
   }

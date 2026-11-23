@@ -809,6 +809,7 @@ export interface ModerationProjectDetail extends ModerationProject {
   collaborators: ModerationAccountRef[];
   forkedFromId: string | null;
   hasCover: boolean;
+  hasClip: boolean;
   allowedActions: ModerationOperation[];
 }
 

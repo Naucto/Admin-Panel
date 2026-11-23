@@ -97,6 +97,24 @@
             }
           </nc-panel>
 
+          @if (found.hasClip) {
+            <nc-panel heading="Clip" [minHeight]="60">
+              @if (clip.error()) {
+                <p class="text-body text-hot-ink">{{ panelError(clip) }}</p>
+              } @else if (clip.value(); as url) {
+                <video
+                  class="mx-auto block max-h-[320px] max-w-full rounded-sm border border-line bg-inset"
+                  [src]="url"
+                  controls
+                  preload="metadata"
+                  aria-label="Clip of the game"
+                ></video>
+              } @else {
+                <div class="nc-skeleton h-[200px] rounded-sm"></div>
+              }
+            </nc-panel>
+          }
+
           <nc-panel heading="Description" [minHeight]="60">
             @if (found.longDesc) {
               <p

@@ -37,6 +37,7 @@ function gameOf(changes: Partial<ModerationProjectDetail> = {}): ModerationProje
     collaborators: [],
     forkedFromId: null,
     hasCover: false,
+    hasClip: false,
     allowedActions: [],
     ...changes,
   };
@@ -44,11 +45,13 @@ function gameOf(changes: Partial<ModerationProjectDetail> = {}): ModerationProje
 
 describe('the page of a game', () => {
   const projectCover = vi.fn<ModerationApi['projectCover']>();
+  const projectClip = vi.fn<ModerationApi['projectClip']>();
   const createObjectURL = vi.fn<(blob: Blob) => string>();
   const revokeObjectURL = vi.fn<(url: string) => void>();
 
   beforeEach(() => {
     projectCover.mockReset().mockResolvedValue(new Blob(['cover'], { type: 'image/png' }));
+    projectClip.mockReset().mockResolvedValue(new Blob(['clip'], { type: 'video/webm' }));
     createObjectURL.mockReset().mockImplementation((blob) => `blob:${blob.type}`);
     revokeObjectURL.mockReset();
     // jsdom has neither.
@@ -64,6 +67,7 @@ describe('the page of a game', () => {
           useValue: {
             project: () => Promise.resolve(game),
             projectCover,
+            projectClip,
             log: () => Promise.resolve({ items: [], total: 0, page: 1, limit: 10 }),
           },
         },
@@ -120,5 +124,33 @@ describe('the page of a game', () => {
 
     expect(host.querySelector('img')).toBeNull();
     expect(host.textContent).toContain('The cover is not there');
+  });
+
+  it('plays the clip from the bytes the bearer fetched, and lets them go on leaving', async () => {
+    const host = await render(gameOf({ hasClip: true }), false);
+
+    expect(projectClip).toHaveBeenCalledWith(GAME);
+    const video = host.querySelector('video');
+    expect(video?.getAttribute('src')).toBe('blob:video/webm');
+    expect(video?.hasAttribute('controls')).toBe(true);
+
+    TestBed.resetTestingModule();
+    expect(revokeObjectURL).toHaveBeenCalledWith('blob:video/webm');
+  });
+
+  it('asks for no clip and draws none for a game that has none', async () => {
+    const host = await render(gameOf(), false);
+
+    expect(projectClip).not.toHaveBeenCalled();
+    expect(host.querySelector('video')).toBeNull();
+    expect(host.textContent).not.toContain('Clip');
+  });
+
+  it('says why when the clip cannot be read', async () => {
+    projectClip.mockRejectedValue(new Error('The clip is not there'));
+    const host = await render(gameOf({ hasClip: true }), false);
+
+    expect(host.querySelector('video')).toBeNull();
+    expect(host.textContent).toContain('The clip is not there');
   });
 });
