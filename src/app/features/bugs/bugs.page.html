@@ -40,7 +40,7 @@
         <tbody>
           @for (bug of value.items; track bug.id) {
             <tr class="cursor-pointer" (click)="open(bug)">
-              <td class="font-mono text-ink-3">#{{ bug.id }}</td>
+              <td class="text-ink-3"><nc-short-id [id]="bug.id" /></td>
               <td>
                 <a
                   class="block max-w-[320px] truncate text-ink hover:underline"

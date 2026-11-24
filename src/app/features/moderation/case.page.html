@@ -27,7 +27,12 @@
           <span [class]="targetStateChip(found.target.state)">{{
             stateLabels[found.target.state]
           }}</span>
-          <span class="font-mono text-meta text-ink-3">#{{ found.target.id }}</span>
+          @if (found.visibility; as visibility) {
+            <span class="nc-chip nc-chip-quiet" title="Who its owner lets read it">{{
+              visibilityLabels[visibility]
+            }}</span>
+          }
+          <nc-short-id class="text-meta text-ink-3" [id]="found.target.id" />
         </p>
         <h2 class="mt-0.75 font-ui text-title wrap-anywhere text-ink">{{ title() }}</h2>
         @if (found.target.type === 'COMMENT' && found.target.projectName) {
@@ -50,26 +55,15 @@
             </a>
           }
           @if (auth.canAct() && found.target.type === 'PROJECT') {
-            @if (found.target.previewPlayUrl; as preview) {
+            @if (found.target.editUrl; as editor) {
               <a
                 class="nc-button nc-button-ghost nc-button-sm"
-                [href]="preview"
+                [href]="editor"
                 target="_blank"
                 rel="noopener noreferrer"
                 title="Read only, and logged"
               >
-                <nc-icon name="play" [size]="12" /> Preview in the player
-              </a>
-            }
-            @if (found.target.previewEditUrl; as preview) {
-              <a
-                class="nc-button nc-button-ghost nc-button-sm"
-                [href]="preview"
-                target="_blank"
-                rel="noopener noreferrer"
-                title="Read only, and logged"
-              >
-                <nc-icon name="code" [size]="12" /> Preview in the editor
+                <nc-icon name="code" [size]="12" /> Open in the editor
               </a>
             }
           }
@@ -96,6 +90,24 @@
               <p class="text-meta text-ink-4">It is gone. The reports below kept what it said.</p>
             }
           </nc-panel>
+
+          @if (found.target.type === 'COLLECTION' && found.current) {
+            <nc-panel
+              heading="Games it lists"
+              hint="In the order its owner gave them"
+              [minHeight]="60"
+            >
+              <ol class="flex flex-col gap-0.5">
+                @for (game of found.games; track game.id) {
+                  <li class="flex min-w-0 text-body">
+                    <nc-entity-link type="PROJECT" [id]="game.id" [label]="game.name" />
+                  </li>
+                } @empty {
+                  <li class="text-meta text-ink-4">It lists no game</li>
+                }
+              </ol>
+            </nc-panel>
+          }
 
           <nc-panel heading="Reports" [hint]="found.flags.length + ' in all, newest first'">
             <ul class="flex flex-col">

@@ -20,6 +20,7 @@ import {
   impactOf,
   valuesOf,
 } from '../../core/impact';
+import { shortId } from '../../core/ids';
 import {
   DAY_MS,
   fromUtcInput,
@@ -218,7 +219,7 @@ export default class PostsPage {
   );
 
   protected readonly draft = signal<Draft>(emptyDraft());
-  protected readonly editing = signal<number | null>(null);
+  protected readonly editing = signal<string | null>(null);
   protected readonly saving = signal(false);
   protected readonly draftAt = computed(() => fromUtcInput(this.draft().at));
   protected readonly draftLocal = computed(() => {
@@ -232,7 +233,7 @@ export default class PostsPage {
     this.draft().audience === 'CREATORS' ? 'Game to fork, if any' : 'Game, if any',
   );
 
-  protected readonly selectedId = signal<number | null>(null);
+  protected readonly selectedId = signal<string | null>(null);
   protected readonly selected = computed(() => {
     const markers = this.markers.value() ?? [];
     const id = this.selectedId();
@@ -321,7 +322,7 @@ export default class PostsPage {
         ? [build('plays_all', 'All plays', CONSENT_COLOURS.accepted, plays), ...metrics]
         : metrics;
     };
-    const name = marker.game ?? `#${String(marker.releaseId)}`;
+    const name = marker.game ?? (marker.releaseId === null ? '' : shortId(marker.releaseId));
     return orderRows(
       [
         ...(value.game ? rowsOf(value.game, 'game:', `${name} · `) : []),
@@ -389,7 +390,7 @@ export default class PostsPage {
     return {
       from: new Date(at - Math.max(6 * HOUR_MS, this.windowMs() / 4)).toISOString(),
       to: new Date(at + this.windowMs()).toISOString(),
-      ...(marker.releaseId === null ? {} : { game: String(marker.releaseId) }),
+      ...(marker.releaseId === null ? {} : { game: marker.releaseId }),
     };
   });
   protected readonly windowLabel = computed(() => spanLabel(this.windowMs()));
@@ -424,7 +425,7 @@ export default class PostsPage {
       game:
         marker.releaseId === null
           ? null
-          : { releaseId: marker.releaseId, name: marker.game ?? `#${String(marker.releaseId)}` },
+          : { releaseId: marker.releaseId, name: marker.game ?? 'Game' },
     });
   }
 

@@ -1,6 +1,9 @@
 /**
  * The backend's `admin/*` contract, as its OpenAPI document states it (`swagger.json` in the
  * Backend repo). Kept by hand: the panel reads a dozen routes and no generated client is published.
+ *
+ * Every id is a UUID in lower case. It names one thing and says nothing else: ids are compared for
+ * equality, never ordered and never computed on.
  */
 
 export type Grain = 'DAY' | 'WEEK' | 'MONTH';
@@ -86,7 +89,7 @@ export interface PresenceSample {
 }
 
 export interface GameNow {
-  releaseId: number;
+  releaseId: string;
   name: string | null;
   browsers: number;
   anonTabs: number;
@@ -138,7 +141,7 @@ export interface Funnel {
 export type GameSort = 'plays' | 'playtime_ms' | 'players' | 'mp_sessions';
 
 export interface GameStats {
-  releaseId: number;
+  releaseId: string;
   name: string | null;
   plays: number;
   playtimeMs: number;
@@ -178,7 +181,7 @@ export interface Health {
 }
 
 export interface AccountSummary {
-  id: number;
+  id: string;
   username: string;
   nickname: string | null;
   /** Null for a reader who does not read addresses: anyone but an admin. */
@@ -268,7 +271,7 @@ export interface ActivityItem {
   kind: ActivityKind;
   /** A short code for one consenting browser, stable while the backend runs. */
   journey: string | null;
-  releaseId: number | null;
+  releaseId: string | null;
   game: string | null;
   source: string | null;
   country: string | null;
@@ -299,11 +302,17 @@ export interface ArrivalSummary {
 }
 
 export interface ArrivalGame {
-  releaseId: number;
+  releaseId: string;
   name: string | null;
   players: number;
   plays: number;
   anonymousPlays: number;
+}
+
+export interface PlayedGame {
+  releaseId: string;
+  /** Null for a game since deleted. */
+  name: string | null;
 }
 
 export interface Arrival {
@@ -318,7 +327,8 @@ export interface Arrival {
   sessions: number;
   plays: number;
   firstPlayAt: string | null;
-  games: string[];
+  /** The games played, most first. */
+  games: PlayedGame[];
   account: 'NEW' | 'EXISTING' | null;
   signedUpAt: string | null;
   projectCreatedAt: string | null;
@@ -332,7 +342,7 @@ export interface Arrivals {
 }
 
 export interface Release {
-  releaseId: number;
+  releaseId: string;
   name: string;
   /** Null for a project not published, such as a fork. */
   publishedAt: string | null;
@@ -340,21 +350,21 @@ export interface Release {
 
 /** A game chosen in a picker: its id, and the name it had when chosen. */
 export interface GameChoice {
-  releaseId: number;
+  releaseId: string;
   name: string;
 }
 
 export type MarkerAudience = 'EVERYONE' | 'PLAYERS' | 'CREATORS';
 
 export interface Marker {
-  id: number;
+  id: string;
   at: string;
   label: string;
   channel: string | null;
   url: string | null;
   audience: MarkerAudience;
   /** The game to play, or for creators the game to fork. */
-  releaseId: number | null;
+  releaseId: string | null;
   game: string | null;
   createdAt: string;
   updatedAt: string;
@@ -366,7 +376,7 @@ export interface MarkerInput {
   channel?: string | null;
   url?: string | null;
   audience?: MarkerAudience;
-  releaseId?: number | null;
+  releaseId?: string | null;
 }
 
 /** What the person said they mostly do on Naucto. */
@@ -378,7 +388,7 @@ export type RatingReason =
   'BUGS' | 'PERFORMANCE' | 'HARD_TO_USE' | 'MISSING_FEATURE' | 'CONTENT' | 'OTHER';
 
 export interface FeedbackAccount {
-  id: number;
+  id: string;
   username: string;
   nickname: string | null;
   /** Null for a reader who does not read addresses: anyone but an admin. */
@@ -391,12 +401,12 @@ export interface FeedbackAccount {
 }
 
 export interface FeedbackRelease {
-  id: number;
+  id: string;
   name: string;
 }
 
 export interface Rating {
-  id: number;
+  id: string;
   score: number;
   reasons: RatingReason[];
   liked: string | null;
@@ -407,7 +417,7 @@ export interface Rating {
   account: FeedbackAccount;
   /** The game played just before a prompt. */
   release: FeedbackRelease | null;
-  bugReportIds: number[];
+  bugReportIds: string[];
 }
 
 export interface RatingList {
@@ -454,7 +464,7 @@ export type BugStatus = ReportStatus;
 export type BugView = 'NEW' | 'OPEN' | 'CLOSED' | 'ALL';
 
 export interface BugSummary {
-  id: number;
+  id: string;
   title: string;
   category: BugCategory;
   status: BugStatus;
@@ -487,10 +497,10 @@ export interface BugContext {
 export interface BugDetail extends BugSummary {
   description: string;
   route: string;
-  projectId: number | null;
+  projectId: string | null;
   context: BugContext;
   adminNote: string | null;
-  rating: { id: number; score: number; liked: string | null; improve: string | null } | null;
+  rating: { id: string; score: number; liked: string | null; improve: string | null } | null;
   screenshot: { mime: string; bytes: number } | null;
 }
 
@@ -504,7 +514,7 @@ export type CrashStatus = 'OPEN' | 'RESOLVED' | 'IGNORED';
 export type CrashSort = 'lastSeen' | 'count';
 
 export interface CrashGroup {
-  id: number;
+  id: string;
   source: CrashSource;
   name: string;
   message: string;
@@ -533,7 +543,7 @@ export interface CrashQuery {
 }
 
 export interface CrashEvent {
-  id: number;
+  id: string;
   createdAt: string;
   route: string;
   appRelease: string | null;
@@ -551,7 +561,7 @@ export interface CrashDetail extends CrashGroup {
 
 /** One report as `/admin/reports` answers it. The fields of the other kinds are null. */
 export interface AdminReport {
-  id: number;
+  id: string;
   kind: ReportKind;
   status: ReportStatus;
   createdAt: string;
@@ -568,9 +578,9 @@ export interface AdminReport {
   liked: string | null;
   improve: string | null;
   origin: RatingOrigin | null;
-  followUpIds: number[];
+  followUpIds: string[];
   category: BugCategory | null;
-  ratingId: number | null;
+  ratingId: string | null;
   hasScreenshot: boolean;
   source: CrashSource | null;
   count: number;
@@ -580,7 +590,7 @@ export interface AdminReport {
 
 export interface AdminReportDetail extends AdminReport {
   adminNote: string | null;
-  projectId: number | null;
+  projectId: string | null;
   context: Record<string, unknown> | null;
   rating: BugDetail['rating'];
   screenshot: BugDetail['screenshot'];
@@ -597,7 +607,7 @@ export interface AdminReportList {
 
 /* Moderation: the backend's `admin/moderation/*` responses. */
 
-export type ModerationTargetType = 'USER' | 'PROJECT' | 'COMMENT';
+export type ModerationTargetType = 'USER' | 'PROJECT' | 'COMMENT' | 'COLLECTION';
 
 export type ModerationReason =
   | 'SPAM'
@@ -625,6 +635,9 @@ export type ModerationActionType =
   | 'COMMENT_HIDDEN'
   | 'COMMENT_RESTORED'
   | 'COMMENT_DELETED'
+  | 'COLLECTION_HIDDEN'
+  | 'COLLECTION_RESTORED'
+  | 'COLLECTION_DELETED'
   | 'FLAGS_DISMISSED'
   | 'DRAFT_VIEWED';
 
@@ -633,7 +646,7 @@ export type TargetState = 'VISIBLE' | 'UNPUBLISHED' | 'HIDDEN' | 'SUSPENDED' | '
 
 /**
  * What the signed-in staff member may do about a target, as the backend decided it. HIDE, RESTORE
- * and DELETE bear on the game or the comment, the others on the account that owns it.
+ * and DELETE bear on the content itself, the others on the account that owns it.
  */
 export type ModerationOperation =
   | 'DISMISS'
@@ -653,6 +666,8 @@ export type AccountStanding = 'GOOD' | 'WARNED' | 'SUSPENDED';
 export type ProjectModerationState = 'PUBLISHED' | 'UNPUBLISHED' | 'HIDDEN';
 export type CommentModerationState = 'VISIBLE' | 'HIDDEN' | 'DELETED';
 export type ProfilePart = 'NICKNAME' | 'DESCRIPTION' | 'PICTURE' | 'BACKGROUND';
+/** Who the owner of a target lets read it: anyone, whoever holds its id, or the owner alone. */
+export type TargetVisibility = 'PUBLIC' | 'UNLISTED' | 'PRIVATE';
 
 export interface Page<T> {
   items: T[];
@@ -663,7 +678,7 @@ export interface Page<T> {
 
 /** An account as a moderation screen names it. */
 export interface ModerationAccountRef {
-  id: number;
+  id: string;
   username: string;
   nickname: string | null;
   role: RoleName;
@@ -672,18 +687,18 @@ export interface ModerationAccountRef {
   email: string | null;
 }
 
-/** The text of a game, a comment or a profile at one moment. */
+/** The text of a target at one moment. */
 export interface TargetContent {
   title: string | null;
   body: string | null;
 }
 
 export interface ModerationAction {
-  id: number;
+  id: string;
   action: ModerationActionType;
   actor: ModerationAccountRef;
   targetType: ModerationTargetType;
-  targetId: number;
+  targetId: string;
   targetLabel: string | null;
   subject: ModerationAccountRef | null;
   reason: ModerationReason | null;
@@ -696,15 +711,15 @@ export interface ModerationAction {
 
 export interface CaseTarget {
   type: ModerationTargetType;
-  id: number;
+  id: string;
   state: TargetState;
   label: string | null;
   owner: ModerationAccountRef | null;
-  projectId: number | null;
+  projectId: string | null;
   projectName: string | null;
   playUrl: string | null;
-  previewPlayUrl: string | null;
-  previewEditUrl: string | null;
+  /** The game in the editor of the site, which staff open read-only. Null without a game. */
+  editUrl: string | null;
 }
 
 export interface CaseSummary {
@@ -718,7 +733,7 @@ export interface CaseSummary {
 }
 
 export interface CaseFlag {
-  id: number;
+  id: string;
   reporter: ModerationAccountRef;
   reason: ModerationReason;
   details: string | null;
@@ -729,8 +744,18 @@ export interface CaseFlag {
   resolvedBy: ModerationAccountRef | null;
 }
 
+/** A game a target lists. */
+export interface CaseListedGame {
+  id: string;
+  name: string;
+}
+
 export interface CaseDetail extends CaseSummary {
   current: TargetContent | null;
+  /** Null for a target whose owner has no such choice. */
+  visibility: TargetVisibility | null;
+  /** In the order of the target. Empty for a target that lists none. */
+  games: CaseListedGame[];
   flags: CaseFlag[];
   history: ModerationAction[];
   ownerHistory: ModerationAction[];
@@ -764,7 +789,7 @@ export interface ModerationAccountDetail extends ModerationAccount {
 }
 
 export interface ModerationProject {
-  id: number;
+  id: string;
   name: string;
   shortDesc: string;
   owner: ModerationAccountRef;
@@ -775,26 +800,26 @@ export interface ModerationProject {
   hiddenAt: string | null;
   openFlags: number;
   playUrl: string | null;
-  previewPlayUrl: string;
-  previewEditUrl: string;
+  editUrl: string;
 }
 
 export interface ModerationProjectDetail extends ModerationProject {
   longDesc: string | null;
   tags: string[];
   collaborators: ModerationAccountRef[];
-  forkedFromId: number | null;
+  forkedFromId: string | null;
   hasCover: boolean;
+  hasClip: boolean;
   allowedActions: ModerationOperation[];
 }
 
 export interface ModerationComment {
-  id: number;
+  id: string;
   content: string;
   author: ModerationAccountRef;
-  projectId: number;
+  projectId: string;
   projectName: string;
-  parentId: number | null;
+  parentId: string | null;
   state: CommentModerationState;
   createdAt: string;
   hiddenAt: string | null;

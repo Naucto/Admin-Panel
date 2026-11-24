@@ -1,13 +1,14 @@
 import { Injectable, signal } from '@angular/core';
 
+import { idOf } from './ids';
 import type { Marker } from './types';
 
 const HIDDEN_KEY = 'nc-hidden-markers';
 
-function readHidden(): number[] {
+function readHidden(): string[] {
   try {
     const stored = JSON.parse(localStorage.getItem(HIDDEN_KEY) ?? '[]') as unknown;
-    return Array.isArray(stored) ? stored.filter((id): id is number => Number.isInteger(id)) : [];
+    return Array.isArray(stored) ? stored.flatMap((id) => idOf(id) ?? []) : [];
   } catch {
     return [];
   }
@@ -16,14 +17,14 @@ function readHidden(): number[] {
 /** Which posts the charts leave out, chosen by each admin in their own browser. */
 @Injectable({ providedIn: 'root' })
 export class MarkerVisibilityStore {
-  readonly hidden = signal<ReadonlySet<number>>(new Set(readHidden()));
+  readonly hidden = signal<ReadonlySet<string>>(new Set(readHidden()));
 
   visible(markers: readonly Marker[]): Marker[] {
     const hidden = this.hidden();
     return markers.filter((marker) => !hidden.has(marker.id));
   }
 
-  toggle(id: number): void {
+  toggle(id: string): void {
     this.update((hidden) => (hidden.delete(id) ? hidden : hidden.add(id)));
   }
 
@@ -41,7 +42,7 @@ export class MarkerVisibilityStore {
     });
   }
 
-  private update(change: (hidden: Set<number>) => Set<number>): void {
+  private update(change: (hidden: Set<string>) => Set<string>): void {
     const next = change(new Set(this.hidden()));
     this.hidden.set(next);
     try {

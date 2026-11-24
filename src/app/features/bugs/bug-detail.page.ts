@@ -2,11 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
@@ -30,15 +28,17 @@ import { UserFeedbackApi } from '../../core/user-feedback.api';
 import { AccountCellComponent } from '../../ui/account-cell.component';
 import { FeedbackService } from '../../ui/feedback.service';
 import { IconComponent } from '../../ui/icon.component';
+import { objectUrl } from '../../ui/object-url';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const ADMIN_NOTE_MAX = 2000;
 
 /** One bug report with everything it carried, and where the team sets its status and note. */
 @Component({
   selector: 'nc-bug-detail-page',
-  imports: [AccountCellComponent, IconComponent, PanelComponent, RouterLink],
+  imports: [AccountCellComponent, IconComponent, PanelComponent, RouterLink, ShortIdComponent],
   templateUrl: './bug-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -49,7 +49,7 @@ export default class BugDetailPage {
   protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
-  readonly id = input.required({ transform: numberAttribute });
+  readonly id = input.required<string>();
 
   protected readonly bug = resource({
     params: () => this.id(),
@@ -57,17 +57,13 @@ export default class BugDetailPage {
   });
   protected readonly bugState = computed(() => panelState(this.bug, () => false));
 
-  protected readonly screenshot = resource({
-    params: () => {
+  protected readonly screenshot = objectUrl(
+    () => {
       const bug = this.bug.value();
       return bug?.screenshot ? bug.id : undefined;
     },
-    loader: async ({ params, abortSignal }) => {
-      const image = await this.api.screenshot(params);
-      abortSignal.throwIfAborted();
-      return URL.createObjectURL(image);
-    },
-  });
+    (id) => this.api.screenshot(id),
+  );
 
   protected readonly contextRows = computed(() => {
     const bug = this.bug.value();
@@ -86,17 +82,6 @@ export default class BugDetailPage {
     const bug = this.bug.value();
     return !!bug && (this.status() !== bug.status || this.note().trim() !== (bug.adminNote ?? ''));
   });
-
-  constructor() {
-    effect((onCleanup) => {
-      const url = this.screenshot.value();
-      if (url) {
-        onCleanup(() => {
-          URL.revokeObjectURL(url);
-        });
-      }
-    });
-  }
 
   protected setStatus(value: string): void {
     this.status.set(value as BugStatus);

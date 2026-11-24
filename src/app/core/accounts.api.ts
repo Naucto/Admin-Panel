@@ -18,7 +18,7 @@ export class AccountsApi {
       .items;
   }
 
-  setRole(id: number, role: RoleName): Promise<AccountSummary> {
+  setRole(id: string, role: RoleName): Promise<AccountSummary> {
     return this.api.put(`/admin/accounts/${id}/role`, { role });
   }
 }

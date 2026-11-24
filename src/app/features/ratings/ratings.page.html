@@ -196,9 +196,10 @@
 @if (selected(); as rating) {
   <nc-panel
     class="mt-2"
-    [heading]="'Rating #' + rating.id"
+    heading="Rating"
     [hint]="dayTime(rating.createdAt) + ' UTC · ' + originLabels[rating.origin]"
   >
+    <nc-short-id actions class="text-meta text-ink-3" [id]="rating.id" />
     <button
       actions
       type="button"
@@ -226,7 +227,7 @@
           <dd class="text-ink">
             @if (rating.release; as release) {
               {{ release.name }}
-              <span class="font-mono text-micro text-ink-4">#{{ release.id }}</span>
+              <nc-short-id class="text-micro text-ink-4" [id]="release.id" />
             } @else {
               <span class="text-ink-4">None</span>
             }
@@ -251,7 +252,7 @@
                   class="inline-flex items-center gap-0.25 font-mono text-meta text-gold-ink hover:underline"
                   [routerLink]="['/bugs', id]"
                 >
-                  <nc-icon name="bug" [size]="12" /> #{{ id }}
+                  <nc-icon name="bug" [size]="12" /> <nc-short-id plain [id]="id" />
                 </a>
               }
             </p>

@@ -62,9 +62,9 @@ export default class AdminsPage {
     params: () => (this.term().length >= 2 ? this.term() : undefined),
     loader: ({ params }) => this.api.search(params),
   });
-  protected readonly busy = signal<number | null>(null);
+  protected readonly busy = signal<string | null>(null);
 
-  protected isMe(account: { id: number }): boolean {
+  protected isMe(account: { id: string }): boolean {
     return this.auth.account()?.id === account.id;
   }
 

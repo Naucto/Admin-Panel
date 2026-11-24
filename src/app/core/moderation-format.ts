@@ -1,7 +1,9 @@
 import { dayTime } from './dates';
+import { shortId } from './ids';
 import type {
   AccountStanding,
   CaseStatus,
+  CaseTarget,
   CaseView,
   CommentModerationState,
   FlagStatus,
@@ -14,6 +16,7 @@ import type {
   ProjectModerationState,
   Suspension,
   TargetState,
+  TargetVisibility,
 } from './types';
 
 /** The backend's limits on what a decision says. */
@@ -39,12 +42,19 @@ export const TARGET_TYPE_LABELS: Record<ModerationTargetType, string> = {
   USER: 'Profile',
   PROJECT: 'Game',
   COMMENT: 'Comment',
+  COLLECTION: 'Collection',
 };
+
+/** What to call a target: its label, or what it is and its short id when it has none. */
+export function targetName(target: Pick<CaseTarget, 'type' | 'id' | 'label'>): string {
+  return target.label || `${TARGET_TYPE_LABELS[target.type]} ${shortId(target.id)}`;
+}
 
 const TARGET_NOUNS: Record<ModerationTargetType, string> = {
   USER: 'account',
   PROJECT: 'game',
   COMMENT: 'comment',
+  COLLECTION: 'collection',
 };
 
 export const CASE_VIEW_LABELS: Record<CaseView, string> = {
@@ -104,6 +114,12 @@ const TARGET_STATE_CHIPS: Record<TargetState, string> = {
 export function targetStateChip(state: TargetState): string {
   return TARGET_STATE_CHIPS[state];
 }
+
+export const TARGET_VISIBILITY_LABELS: Record<TargetVisibility, string> = {
+  PUBLIC: 'Public',
+  UNLISTED: 'Unlisted',
+  PRIVATE: 'Private',
+};
 
 export const STANDING_LABELS: Record<AccountStanding, string> = {
   GOOD: 'Good standing',
@@ -173,6 +189,9 @@ export const ACTION_LABELS: Record<ModerationActionType, string> = {
   COMMENT_HIDDEN: 'Hid the comment',
   COMMENT_RESTORED: 'Restored the comment',
   COMMENT_DELETED: 'Deleted the comment',
+  COLLECTION_HIDDEN: 'Hid the collection',
+  COLLECTION_RESTORED: 'Restored the collection',
+  COLLECTION_DELETED: 'Deleted the collection',
   FLAGS_DISMISSED: 'Dismissed the reports',
   DRAFT_VIEWED: 'Previewed the game',
 };
@@ -192,6 +211,9 @@ const ACTION_TONES: Record<ModerationActionType, ActionTone> = {
   COMMENT_HIDDEN: 'danger',
   COMMENT_RESTORED: 'ok',
   COMMENT_DELETED: 'danger',
+  COLLECTION_HIDDEN: 'danger',
+  COLLECTION_RESTORED: 'ok',
+  COLLECTION_DELETED: 'danger',
   FLAGS_DISMISSED: 'quiet',
   DRAFT_VIEWED: 'quiet',
 };
@@ -200,19 +222,20 @@ export function actionChip(action: ModerationActionType): string {
   return `nc-chip nc-chip-${ACTION_TONES[action]}`;
 }
 
-/** Where the console shows a target. A comment has no page of its own. */
-export function panelRoute(type: ModerationTargetType, id: number): (string | number)[] | null {
+/** Where the console shows a target. Null for a target with no page of its own. */
+export function panelRoute(type: ModerationTargetType, id: string): string[] | null {
   switch (type) {
     case 'USER':
       return ['/moderation/users', id];
     case 'PROJECT':
       return ['/moderation/games', id];
     case 'COMMENT':
+    case 'COLLECTION':
       return null;
   }
 }
 
-export function caseRoute(type: ModerationTargetType, id: number): (string | number)[] {
+export function caseRoute(type: ModerationTargetType, id: string): string[] {
   return ['/moderation/cases', type, id];
 }
 
@@ -294,7 +317,7 @@ const ACCOUNT_OPERATION_LABELS: Record<
   DELETE_ACCOUNT: 'Delete the account',
 };
 
-/** An operation as a button names it. HIDE, RESTORE and DELETE name the game or the comment. */
+/** An operation as a button names it. HIDE, RESTORE and DELETE name the content they bear on. */
 export function operationLabel(
   operation: ModerationOperation,
   targetType: ModerationTargetType,
@@ -391,6 +414,7 @@ const ACCOUNT_STEPS: Partial<Record<ModerationOperation, string>> = {
 const CONTENT_ROOTS: Record<Exclude<ModerationTargetType, 'USER'>, string> = {
   PROJECT: '/admin/moderation/projects',
   COMMENT: '/admin/moderation/comments',
+  COLLECTION: '/admin/moderation/collections',
 };
 
 export interface OperationRequest {
@@ -404,7 +428,7 @@ export interface OperationRequest {
  */
 export function operationRequest(
   operation: ModerationOperation,
-  target: { type: ModerationTargetType; id: number; ownerId: number | null },
+  target: { type: ModerationTargetType; id: string; ownerId: string | null },
 ): OperationRequest | null {
   if (operation === 'DISMISS') {
     return { method: 'POST', path: `/admin/moderation/cases/${target.type}/${target.id}/dismiss` };

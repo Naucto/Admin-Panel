@@ -20,7 +20,7 @@
       routerLink="/moderation/log"
       title="Show what every staff member did"
     >
-      Staff #{{ staff }} <nc-icon name="close" [size]="12" />
+      Staff <nc-short-id plain [id]="staff" /> <nc-icon name="close" [size]="12" />
     </a>
   }
   <select
@@ -91,7 +91,7 @@
                 <div class="flex max-w-[260px] min-w-0 flex-col">
                   @if (entry.targetLabel) {
                     <span class="text-micro text-ink-4">
-                      {{ typeLabels[entry.targetType] }} #{{ entry.targetId }}
+                      {{ typeLabels[entry.targetType] }} <nc-short-id [id]="entry.targetId" />
                     </span>
                   }
                   <nc-entity-link

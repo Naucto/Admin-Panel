@@ -21,7 +21,7 @@ export interface InstantRange {
 }
 
 export interface TimelineFilters {
-  releaseId?: number | null;
+  releaseId?: string | null;
   /** As `referrer:youtube.com`. */
   source?: string | null;
 }
@@ -74,7 +74,7 @@ export class TimelineApi {
     });
   }
 
-  /** Published games by part of their name or their id (`12`, `#12`), a few at a time. */
+  /** Published games by part of their name or their full id, a few at a time. */
   async searchReleases(query: string, limit = 8): Promise<Release[]> {
     const answer = await this.api.get<{ releases: Release[] }>('/admin/analytics/releases', {
       query,
@@ -84,7 +84,7 @@ export class TimelineApi {
   }
 
   /** The names of projects by id, published or not. */
-  async releasesByIds(ids: readonly number[]): Promise<Release[]> {
+  async releasesByIds(ids: readonly string[]): Promise<Release[]> {
     if (ids.length === 0) {
       return [];
     }
@@ -106,11 +106,11 @@ export class TimelineApi {
     return this.api.post('/admin/analytics/markers', marker);
   }
 
-  updateMarker(id: number, marker: Partial<MarkerInput>): Promise<Marker> {
-    return this.api.patch(`/admin/analytics/markers/${String(id)}`, marker);
+  updateMarker(id: string, marker: Partial<MarkerInput>): Promise<Marker> {
+    return this.api.patch(`/admin/analytics/markers/${id}`, marker);
   }
 
-  deleteMarker(id: number): Promise<void> {
-    return this.api.delete(`/admin/analytics/markers/${String(id)}`);
+  deleteMarker(id: string): Promise<void> {
+    return this.api.delete(`/admin/analytics/markers/${id}`);
   }
 }

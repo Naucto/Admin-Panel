@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, input } from '@angular/core';
 
 import { donutChart, rankedBars } from '../charts/options';
+import { shortId } from '../core/ids';
 import { formatMetric } from '../core/metric-catalog';
 import type { Breakdown } from '../core/types';
 import { ChartDirective } from './chart.directive';
@@ -46,11 +47,15 @@ export class BreakdownViewComponent {
   readonly preferDonut = input(false);
   readonly colour = input<string | undefined>(undefined);
 
-  protected readonly items = computed(() =>
-    this.breakdown()
+  protected readonly items = computed(() => {
+    const byGame = this.breakdown().dimension === 'release';
+    return this.breakdown()
       .values.filter((value) => value.value > 0)
-      .map((value) => ({ label: KEY_LABELS[value.key] ?? value.key, value: value.value })),
-  );
+      .map((value) => ({
+        label: KEY_LABELS[value.key] ?? (byGame ? shortId(value.key) : value.key),
+        value: value.value,
+      }));
+  });
 
   protected readonly single = computed(() =>
     formatMetric(this.breakdown().metric, this.items()[0]?.value ?? 0),

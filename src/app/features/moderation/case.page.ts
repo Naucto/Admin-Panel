@@ -4,7 +4,6 @@ import {
   computed,
   inject,
   input,
-  numberAttribute,
   resource,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
@@ -21,6 +20,8 @@ import {
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
+  TARGET_VISIBILITY_LABELS,
+  targetName,
   targetStateChip,
 } from '../../core/moderation-format';
 import type {
@@ -30,23 +31,27 @@ import type {
   TargetContent,
 } from '../../core/types';
 import { AccountCellComponent } from '../../ui/account-cell.component';
+import { EntityLinkComponent } from '../../ui/entity-link.component';
 import { HistoryListComponent } from '../../ui/history-list.component';
 import { IconComponent } from '../../ui/icon.component';
 import { OperationButtonsComponent } from '../../ui/operation-buttons.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
-/** Every report on one game, comment or profile, what staff did about it and what they may do. */
+/** Every report on one target, what staff did about it and what they may do. */
 @Component({
   selector: 'nc-case-page',
   imports: [
     AccountCellComponent,
+    EntityLinkComponent,
     HistoryListComponent,
     IconComponent,
     OperationButtonsComponent,
     PanelComponent,
     RouterLink,
+    ShortIdComponent,
   ],
   templateUrl: './case.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -58,7 +63,7 @@ export default class CasePage {
 
   /** The `:targetType` and `:targetId` of the route. */
   readonly targetType = input.required<ModerationTargetType>();
-  readonly targetId = input.required({ transform: numberAttribute });
+  readonly targetId = input.required<string>();
 
   protected readonly detail = resource({
     params: () => ({ type: this.targetType(), id: this.targetId() }),
@@ -68,7 +73,7 @@ export default class CasePage {
 
   protected readonly title = computed(() => {
     const target = this.detail.value()?.target;
-    return target ? target.label || `${TARGET_TYPE_LABELS[target.type]} #${target.id}` : '';
+    return target ? targetName(target) : '';
   });
   protected readonly targetOperations = computed(() =>
     (this.detail.value()?.allowedActions ?? []).filter((operation) => !bearsOnAccount(operation)),
@@ -105,6 +110,7 @@ export default class CasePage {
   protected readonly typeLabels = TARGET_TYPE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
   protected readonly stateLabels = TARGET_STATE_LABELS;
+  protected readonly visibilityLabels = TARGET_VISIBILITY_LABELS;
   protected readonly statusLabels = CASE_STATUS_LABELS;
   protected readonly flagStatusLabels = FLAG_STATUS_LABELS;
   protected readonly targetStateChip = targetStateChip;

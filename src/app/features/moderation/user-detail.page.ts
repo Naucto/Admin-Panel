@@ -5,7 +5,6 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -28,6 +27,7 @@ import { OperationButtonsComponent } from '../../ui/operation-buttons.component'
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
 const RECORD_PAGE_SIZE = 10;
@@ -43,6 +43,7 @@ const RECORD_PAGE_SIZE = 10;
     PagerComponent,
     PanelComponent,
     RouterLink,
+    ShortIdComponent,
   ],
   templateUrl: './user-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +55,7 @@ export default class UserDetailPage {
   protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
-  readonly id = input.required({ transform: numberAttribute });
+  readonly id = input.required<string>();
 
   protected readonly account = resource({
     params: () => this.id(),

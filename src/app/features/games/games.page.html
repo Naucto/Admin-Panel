@@ -91,7 +91,7 @@
                 } @else {
                   <span class="text-ink-3">Deleted game</span>
                 }
-                <span class="ml-0.5 font-mono text-micro text-ink-4">#{{ game.releaseId }}</span>
+                <nc-short-id class="ml-0.5 text-micro text-ink-4" [id]="game.releaseId" />
               </td>
               <td class="num">{{ formatCount(game.plays) }}</td>
               <td class="num">{{ formatMetric('playtime_ms', game.playtimeMs) }}</td>

@@ -17,6 +17,7 @@ import {
   REASON_LABELS,
   TARGET_STATE_LABELS,
   TARGET_TYPE_LABELS,
+  targetName,
   targetStateChip,
 } from '../../core/moderation-format';
 import { optionsOf } from '../../core/support-format';
@@ -42,7 +43,7 @@ const EMPTY_TITLES: Record<CaseView, string> = {
   ALL: 'Nothing was reported yet',
 };
 
-/** What users reported, one row per game, comment or profile, with every report on it counted. */
+/** What users reported, one row per target, with every report on it counted. */
 @Component({
   selector: 'nc-queue-page',
   imports: [
@@ -98,7 +99,7 @@ export default class QueuePage {
   protected readonly emptyHint = computed(() =>
     this.targetType() || this.reason()
       ? 'Nothing matches these filters. Clear them to see the rest.'
-      : 'A game, a comment or a profile shows here once someone reports it on Naucto.',
+      : 'Whatever someone reports on Naucto shows here.',
   );
 
   protected setTargetType(value: string): void {
@@ -113,10 +114,6 @@ export default class QueuePage {
     void this.router.navigate(caseRoute(row.target.type, row.target.id));
   }
 
-  protected label(row: CaseSummary): string {
-    return row.target.label || `${TARGET_TYPE_LABELS[row.target.type]} #${row.target.id}`;
-  }
-
   /** Under a comment, the game it was written on. */
   protected context(row: CaseSummary): string | null {
     return row.target.type === 'COMMENT' && row.target.projectName
@@ -128,6 +125,7 @@ export default class QueuePage {
   protected readonly typeLabels = TARGET_TYPE_LABELS;
   protected readonly reasonLabels = REASON_LABELS;
   protected readonly stateLabels = TARGET_STATE_LABELS;
+  protected readonly targetName = targetName;
   protected readonly targetStateChip = targetStateChip;
   protected readonly dayTime = dayTime;
   protected readonly shortAgo = shortAgo;

@@ -2,6 +2,7 @@ import { inject, Injectable, signal } from '@angular/core';
 
 import { errorMessage } from '../../core/api-error';
 import { CaseCountStore } from '../../core/case-count.store';
+import { shortId } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   bearsOnAccount,
@@ -21,7 +22,7 @@ import { FeedbackService } from '../../ui/feedback.service';
 /** What a decision bears on, as the screen offering it knows it. */
 export interface ActionTarget {
   type: ModerationTargetType;
-  id: number;
+  id: string;
   label: string | null;
   owner: Pick<ModerationAccountRef, 'id' | 'username'> | null;
   openFlags: number;
@@ -76,6 +77,6 @@ export class ModerationActions {
     if (target.owner && (bearsOnAccount(operation) || target.type === 'USER')) {
       return `Account @${target.owner.username}`;
     }
-    return `${TARGET_TYPE_LABELS[target.type]} ${target.label ? `"${target.label}"` : `#${target.id}`}`;
+    return `${TARGET_TYPE_LABELS[target.type]} ${target.label ? `"${target.label}"` : shortId(target.id)}`;
   }
 }

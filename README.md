@@ -37,6 +37,8 @@ reload keeps the session and closing it for good means signing in again.
 
 It needs the Naucto backend (`NCTO-276-website-kpi` or later,
 `NCTO-309-website-bug-report-and-feedback` or later for the Support pages) and an admin account.
+Every id is a UUID, which the backend answers from `hub-05` on: an older one answers numbers, and
+this console does not read them.
 
 ```sh
 npm install

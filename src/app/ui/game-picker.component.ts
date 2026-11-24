@@ -12,16 +12,17 @@ import {
 import { TimelineApi } from '../core/timeline.api';
 import type { GameChoice } from '../core/types';
 import { IconComponent } from './icon.component';
+import { ShortIdComponent } from './short-id.component';
 
 const DEBOUNCE_MS = 250;
 
 /**
- * Picks one published game by searching its name or id, so no page has to list every game there
- * is. Shows the chosen game as a chip that clears back to the search.
+ * Picks one published game by searching part of its name or its full id, so no page has to list
+ * every game there is. Shows the chosen game as a chip that clears back to the search.
  */
 @Component({
   selector: 'nc-game-picker',
-  imports: [IconComponent],
+  imports: [IconComponent, ShortIdComponent],
   templateUrl: './game-picker.component.html',
   host: { class: 'relative block' },
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -30,7 +31,7 @@ export class GamePickerComponent {
   private readonly api = inject(TimelineApi);
 
   readonly value = model<GameChoice | null>(null);
-  readonly placeholder = input('Search a game by name or #id');
+  readonly placeholder = input('Search a game by name or full id');
   /** The words shown on the chip when nothing is chosen in a filter, such as `Every game`. */
   readonly label = input('');
 

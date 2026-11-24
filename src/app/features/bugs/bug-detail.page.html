@@ -17,7 +17,7 @@
     @if (bug.value(); as bug) {
       <header class="nc-card px-2.5 py-2">
         <p class="flex flex-wrap items-center gap-1">
-          <span class="font-mono text-meta text-ink-3">#{{ bug.id }}</span>
+          <nc-short-id class="text-meta text-ink-3" [id]="bug.id" />
           <span class="nc-chip nc-chip-quiet">{{ categoryLabels[bug.category] }}</span>
           <span [class]="bugStatusChip(bug.status)">{{ statusLabels[bug.status] }}</span>
         </p>
@@ -116,7 +116,7 @@
             <nc-panel heading="Rating" hint="The rating this report was opened from">
               <p class="flex items-center gap-1">
                 <span [class]="scoreChip(rating.score)">{{ rating.score }} / 10</span>
-                <span class="font-mono text-micro text-ink-4">#{{ rating.id }}</span>
+                <nc-short-id class="text-micro text-ink-4" [id]="rating.id" />
               </p>
               <p class="mt-1 label">Liked</p>
               <p

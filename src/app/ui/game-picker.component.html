@@ -1,7 +1,7 @@
 @if (value(); as chosen) {
   <span class="nc-chip nc-chip-gold flex max-w-full items-center gap-0.5">
     <span class="truncate normal-case">{{ chosen.name }}</span>
-    <span class="text-micro opacity-70">#{{ chosen.releaseId }}</span>
+    <nc-short-id class="text-micro opacity-70" [id]="chosen.releaseId" />
     <button type="button" aria-label="Clear the game" (click)="clear()">
       <nc-icon name="close" [size]="12" />
     </button>
@@ -12,6 +12,7 @@
     class="nc-select w-full min-w-[180px] normal-case"
     autocomplete="off"
     [placeholder]="label() || placeholder()"
+    [title]="placeholder()"
     [attr.aria-label]="placeholder()"
     [value]="term()"
     (input)="type($event)"
@@ -28,7 +29,9 @@
       @if (results.isLoading()) {
         <li class="px-1 py-0.5 text-meta text-ink-3">Searching…</li>
       } @else if ((results.value() ?? []).length === 0) {
-        <li class="px-1 py-0.5 text-meta text-ink-3">No published game matches.</li>
+        <li class="px-1 py-0.5 text-meta text-ink-3">
+          No published game matches. Search part of a name, or a full id.
+        </li>
       }
       @for (game of results.value() ?? []; track game.releaseId) {
         <li>
@@ -40,7 +43,7 @@
             (click)="choose({ releaseId: game.releaseId, name: game.name })"
           >
             <span class="min-w-0 flex-1 truncate">{{ game.name }}</span>
-            <span class="font-mono text-micro text-ink-4">#{{ game.releaseId }}</span>
+            <nc-short-id plain class="text-micro text-ink-4" [id]="game.releaseId" />
           </button>
         </li>
       }

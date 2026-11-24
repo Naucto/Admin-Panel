@@ -3,8 +3,12 @@ import { describe, expect, it } from 'vitest';
 import { crashStatus, toBugDetail, toCrashGroup, toRating } from './report-views';
 import type { AdminReport, AdminReportDetail } from './types';
 
+const RATING = 'd2a8f1c4-6b7e-4a39-8c5d-9e0f1a2b3c4d';
+const BUG = 'a1b2c3d4-e5f6-4789-8abc-def012345678';
+const GAME = '3f2b8c1e-9d4a-4e6f-8a7b-1c2d3e4f5a6b';
+
 const account = {
-  id: 9,
+  id: '7c9e6679-7425-40de-944b-e07fc1f90ae7',
   username: 'kay',
   nickname: 'Kay',
   email: 'kay@example.com',
@@ -15,7 +19,7 @@ const account = {
 };
 
 const report: AdminReport = {
-  id: 5,
+  id: RATING,
   kind: 'RATING',
   status: 'NEW',
   createdAt: '2026-10-20T10:00:00.000Z',
@@ -32,7 +36,7 @@ const report: AdminReport = {
   liked: null,
   improve: 'Loading',
   origin: 'PROMPT',
-  followUpIds: [31],
+  followUpIds: [BUG],
   category: null,
   ratingId: null,
   hasScreenshot: false,
@@ -57,11 +61,11 @@ const detail = (fields: Partial<AdminReportDetail>): AdminReportDetail => ({
 describe('report views', () => {
   it('reads a rating with its role and the bug reports it led to', () => {
     expect(toRating(report)).toMatchObject({
-      id: 5,
+      id: RATING,
       score: 3,
       role: 'CREATOR',
       origin: 'PROMPT',
-      bugReportIds: [31],
+      bugReportIds: [BUG],
     });
   });
 
@@ -74,6 +78,9 @@ describe('report views', () => {
         category: 'SOUND',
         appRelease: '0.1.0+8f78127',
         context: { viewport: '1280x720' },
+        projectId: GAME,
+        ratingId: RATING,
+        rating: { id: RATING, score: 3, liked: null, improve: 'Loading' },
       }),
     );
 
@@ -82,6 +89,8 @@ describe('report views', () => {
       description: 'The song never starts.',
       category: 'SOUND',
       context: { viewport: '1280x720', appRelease: '0.1.0+8f78127' },
+      projectId: GAME,
+      rating: { id: RATING },
     });
   });
 

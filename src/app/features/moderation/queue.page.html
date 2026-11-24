@@ -1,6 +1,6 @@
 <nc-panel
   heading="Reports"
-  hint="One row per game, comment or profile, however many people reported it."
+  hint="One row for each thing reported, however many people reported it."
   [state]="casesState()"
   [error]="panelError(cases)"
   emptyIcon="check"
@@ -79,10 +79,10 @@
                     <a
                       class="truncate text-ink hover:underline"
                       [routerLink]="caseRoute(row.target.type, row.target.id)"
-                      [title]="label(row)"
+                      [title]="targetName(row.target)"
                       (click)="$event.stopPropagation()"
                     >
-                      {{ label(row) }}
+                      {{ targetName(row.target) }}
                     </a>
                     @if (row.target.playUrl; as site) {
                       <a

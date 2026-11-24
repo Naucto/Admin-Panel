@@ -1,4 +1,6 @@
 import { addDays, dayTime, daysBetween, grainFor, periodLabel, shortAgo } from './dates';
+import { idOf, shortId } from './ids';
+import { MarkerVisibilityStore } from './marker-visibility.store';
 import { formatDuration, formatMetric } from './metric-catalog';
 import {
   BUG_CATEGORY_LABELS,
@@ -16,6 +18,70 @@ import {
   scoreChip,
   scoreInk,
 } from './support-format';
+
+const GAME = '3f2b8c1e-9d4a-4e6f-8a7b-1c2d3e4f5a6b';
+
+describe('ids', () => {
+  it('reads an id from outside the API in the lower case the backend answers', () => {
+    expect(idOf(GAME)).toBe(GAME);
+    expect(idOf(GAME.toUpperCase())).toBe(GAME);
+  });
+
+  it('reads no id from a number, a short form or anything around one', () => {
+    expect(idOf(12)).toBeUndefined();
+    expect(idOf('12')).toBeUndefined();
+    expect(idOf('3f2b8c1e')).toBeUndefined();
+    expect(idOf(`#${GAME}`)).toBeUndefined();
+    expect(idOf(`${GAME} `)).toBeUndefined();
+    expect(idOf('')).toBeUndefined();
+    expect(idOf(undefined)).toBeUndefined();
+    expect(idOf(null)).toBeUndefined();
+  });
+
+  it('shows an id by its first eight characters', () => {
+    expect(shortId(GAME)).toBe('3f2b8c1e');
+  });
+});
+
+describe('hidden posts', () => {
+  const KEY = 'nc-hidden-markers';
+  const storage = new Map<string, string>();
+  const stored = (value: string): ReadonlySet<string> => {
+    storage.set(KEY, value);
+    return new MarkerVisibilityStore().hidden();
+  };
+
+  beforeEach(() => {
+    storage.clear();
+    vi.stubGlobal('localStorage', {
+      getItem: (key: string) => storage.get(key) ?? null,
+      setItem: (key: string, value: string) => storage.set(key, value),
+    });
+  });
+
+  afterEach(() => {
+    vi.unstubAllGlobals();
+  });
+
+  it('keeps the posts hidden by id', () => {
+    expect([...stored(JSON.stringify([GAME]))]).toEqual([GAME]);
+  });
+
+  it('leaves out what was stored as a number, without an error', () => {
+    expect([...stored(JSON.stringify([4, '7', GAME, null]))]).toEqual([GAME]);
+    expect(stored('[4, 7]').size).toBe(0);
+    expect(stored('{"4":true}').size).toBe(0);
+    expect(stored('not json').size).toBe(0);
+  });
+
+  it('stores what is hidden now, so what it left out goes at the first change', () => {
+    const store = new MarkerVisibilityStore();
+    storage.set(KEY, '[4, 7]');
+    store.toggle(GAME);
+
+    expect(storage.get(KEY)).toBe(JSON.stringify([GAME]));
+  });
+});
 
 describe('dates', () => {
   it('counts both ends of a range', () => {
@@ -139,13 +205,13 @@ describe('support formatting', () => {
   it('lists the context a report carried and skips what it did not', () => {
     const rows = bugContextRows({
       route: '/play/42',
-      release: { id: 42, name: 'Cave' },
+      release: { id: GAME, name: 'Cave' },
       context: { viewport: '1920x1080', browser: 'Chrome', language: '' },
     });
 
     expect(rows).toEqual([
       { label: 'Page', value: '/play/42' },
-      { label: 'Game', value: 'Cave #42' },
+      { label: 'Game', value: 'Cave 3f2b8c1e' },
       { label: 'Viewport', value: '1920x1080' },
       { label: 'Browser', value: 'Chrome' },
     ]);

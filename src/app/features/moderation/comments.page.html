@@ -17,7 +17,7 @@
       [queryParams]="{ game: game() }"
       title="Show the comments of every account"
     >
-      Account #{{ account }} <nc-icon name="close" [size]="12" />
+      Account <nc-short-id plain [id]="account" /> <nc-icon name="close" [size]="12" />
     </a>
   }
   @if (game(); as project) {
@@ -28,7 +28,7 @@
       [queryParams]="{ author: author() }"
       title="Show the comments on every game"
     >
-      Game #{{ project }} <nc-icon name="close" [size]="12" />
+      Game <nc-short-id plain [id]="project" /> <nc-icon name="close" [size]="12" />
     </a>
   }
   <nc-search-box actions placeholder="Words in the comment" [(value)]="search" />
@@ -105,12 +105,7 @@
 </nc-panel>
 
 @if (selected(); as comment) {
-  <nc-panel
-    class="mt-2"
-    heading="Comment"
-    [hint]="'#' + comment.id + ' on ' + comment.projectName"
-    [minHeight]="120"
-  >
+  <nc-panel class="mt-2" heading="Comment" [hint]="'On ' + comment.projectName" [minHeight]="120">
     <div actions class="flex flex-wrap items-center gap-0.75">
       @if (comment.openFlags > 0) {
         <a class="nc-button nc-button-sm" [routerLink]="caseRoute('COMMENT', comment.id)">
@@ -143,12 +138,13 @@
 
     <p class="flex flex-wrap items-center gap-1 text-meta text-ink-3">
       <span [class]="commentStateChip(comment.state)">{{ stateLabels[comment.state] }}</span>
+      <nc-short-id [id]="comment.id" />
       <span>Written {{ dayTime(comment.createdAt) }} UTC</span>
       @if (comment.hiddenAt; as hidden) {
         <span>Hidden {{ dayTime(hidden) }} UTC</span>
       }
-      @if (comment.parentId !== null) {
-        <span>A reply to #{{ comment.parentId }}</span>
+      @if (comment.parentId; as parent) {
+        <span>A reply to <nc-short-id [id]="parent" /></span>
       }
     </p>
     <p

@@ -11,6 +11,7 @@ import {
 import { SERIES_COLOURS } from '../../charts/palette';
 import type { ChartInk } from '../../charts/palette';
 import { type CompareMode, compareChart, type DrawnSeries } from '../../charts/timeline-options';
+import { idOf, shortId } from '../../core/ids';
 import { instantLabel } from '../../core/instants';
 import { formatCount } from '../../core/metric-catalog';
 import { TimeRangeStore } from '../../core/time-range.store';
@@ -34,7 +35,7 @@ export const MAX_SERIES = SERIES_COLOURS.length;
 export interface CompareSeries {
   id: number;
   metric: TimelineMetric;
-  releaseId: number | null;
+  releaseId: string | null;
   /** The game's name when it was chosen, so a saved chart needs no lookup to label it. */
   gameName?: string;
   source: string | null;
@@ -59,12 +60,18 @@ const DEFAULT_VIEW: CompareView = {
   ],
 };
 
-function isView(value: unknown): value is CompareView {
+/** A stored chart this page can draw. One that names a game by anything but an id is not. */
+export function isView(value: unknown): value is CompareView {
   const view = value as Partial<CompareView> | null;
   return (
     typeof view?.name === 'string' &&
     Array.isArray(view.series) &&
-    view.series.every((series) => TIMELINE_METRIC_NAMES.includes(series.metric))
+    view.series.every(
+      (series: CompareSeries | null) =>
+        series !== null &&
+        TIMELINE_METRIC_NAMES.includes(series.metric) &&
+        (series.releaseId === null || idOf(series.releaseId) !== undefined),
+    )
   );
 }
 
@@ -85,14 +92,15 @@ function write(key: string, value: unknown): void {
   }
 }
 
+interface RequestGroup {
+  releaseId: string | null;
+  source: string | null;
+  metrics: TimelineMetric[];
+}
+
 /** Groups series by what they are narrowed to, so each group is one request. */
-export function requestGroups(
-  series: readonly CompareSeries[],
-): { releaseId: number | null; source: string | null; metrics: TimelineMetric[] }[] {
-  const groups = new Map<
-    string,
-    { releaseId: number | null; source: string | null; metrics: TimelineMetric[] }
-  >();
+export function requestGroups(series: readonly CompareSeries[]): RequestGroup[] {
+  const groups = new Map<string, RequestGroup>();
   for (const one of series) {
     const key = `${String(one.releaseId)}|${one.source ?? ''}`;
     const group = groups.get(key) ?? { releaseId: one.releaseId, source: one.source, metrics: [] };
@@ -142,10 +150,7 @@ export default class ComparePage {
   protected readonly kind = signal<'line' | 'bar'>(this.start.kind);
   private readonly visibility = inject(MarkerVisibilityStore);
   protected readonly views = signal<CompareView[]>(
-    read(
-      VIEWS_KEY,
-      (value): value is CompareView[] => Array.isArray(value) && value.every(isView),
-    ) ?? [],
+    read(VIEWS_KEY, (value): value is unknown[] => Array.isArray(value))?.filter(isView) ?? [],
   );
   protected readonly viewName = signal('');
 
@@ -238,7 +243,7 @@ export default class ComparePage {
   protected nameOf(one: CompareSeries): string {
     const parts = [TIMELINE_LABELS[one.metric].label];
     if (one.releaseId !== null && TIMELINE_LABELS[one.metric].byGame) {
-      parts.push(one.gameName ?? `game #${String(one.releaseId)}`);
+      parts.push(one.gameName ?? `game ${shortId(one.releaseId)}`);
     }
     if (one.source !== null && TIMELINE_LABELS[one.metric].bySource) {
       parts.push(this.sourceName(one.source));
@@ -270,7 +275,7 @@ export default class ComparePage {
   protected gameOf(one: CompareSeries): GameChoice | null {
     return one.releaseId === null
       ? null
-      : { releaseId: one.releaseId, name: one.gameName ?? `#${String(one.releaseId)}` };
+      : { releaseId: one.releaseId, name: one.gameName ?? 'Game' };
   }
 
   protected setGame(id: number, game: GameChoice | null): void {

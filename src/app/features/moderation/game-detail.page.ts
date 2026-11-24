@@ -2,11 +2,9 @@ import {
   ChangeDetectionStrategy,
   Component,
   computed,
-  effect,
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
 } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
@@ -24,10 +22,12 @@ import type { ModerationOperation } from '../../core/types';
 import { AccountCellComponent } from '../../ui/account-cell.component';
 import { HistoryListComponent } from '../../ui/history-list.component';
 import { IconComponent } from '../../ui/icon.component';
+import { objectUrl } from '../../ui/object-url';
 import { OperationButtonsComponent } from '../../ui/operation-buttons.component';
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 import { ModerationActions } from './moderation-actions.service';
 
 const HISTORY_PAGE_SIZE = 10;
@@ -43,6 +43,7 @@ const HISTORY_PAGE_SIZE = 10;
     PagerComponent,
     PanelComponent,
     RouterLink,
+    ShortIdComponent,
   ],
   templateUrl: './game-detail.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -54,7 +55,7 @@ export default class GameDetailPage {
   protected readonly auth = inject(AuthStore);
 
   /** The `:id` of the route. */
-  readonly id = input.required({ transform: numberAttribute });
+  readonly id = input.required<string>();
 
   protected readonly game = resource({
     params: () => this.id(),
@@ -62,17 +63,21 @@ export default class GameDetailPage {
   });
   protected readonly gameState = computed(() => panelState(this.game, () => false));
 
-  protected readonly cover = resource({
-    params: () => {
+  protected readonly cover = objectUrl(
+    () => {
       const game = this.game.value();
       return game?.hasCover ? game.id : undefined;
     },
-    loader: async ({ params, abortSignal }) => {
-      const image = await this.api.projectCover(params);
-      abortSignal.throwIfAborted();
-      return URL.createObjectURL(image);
+    (id) => this.api.projectCover(id),
+  );
+
+  protected readonly clip = objectUrl(
+    () => {
+      const game = this.game.value();
+      return game?.hasClip ? game.id : undefined;
     },
-  });
+    (id) => this.api.projectClip(id),
+  );
 
   protected readonly historyPage = linkedSignal({ source: () => this.id(), computation: () => 1 });
   protected readonly history = resource({
@@ -100,17 +105,6 @@ export default class GameDetailPage {
     const found = this.game.value();
     return found ? found.collaborators.filter((account) => account.id !== found.owner.id) : [];
   });
-
-  constructor() {
-    effect((onCleanup) => {
-      const url = this.cover.value();
-      if (url) {
-        onCleanup(() => {
-          URL.revokeObjectURL(url);
-        });
-      }
-    });
-  }
 
   protected async run(operation: ModerationOperation): Promise<void> {
     const found = this.game.value();

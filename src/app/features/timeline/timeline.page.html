@@ -394,8 +394,8 @@
                 <td class="whitespace-nowrap">{{ whereOf(visitor.country, visitor.device) }}</td>
                 <td class="num">{{ visitor.sessions }}</td>
                 <td class="num">{{ visitor.plays }}</td>
-                <td class="max-w-[200px] truncate" [title]="visitor.games.join(', ')">
-                  {{ visitor.games.join(', ') || '--' }}
+                <td class="max-w-[200px] truncate" [title]="playedGames(visitor.games)">
+                  {{ playedGames(visitor.games) || '--' }}
                 </td>
                 <td class="whitespace-nowrap">
                   @switch (visitor.account) {

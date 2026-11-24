@@ -2,8 +2,9 @@ import { addValues, cumulativeOf, impactOf, median, windowSum } from '../core/im
 import { fromUtcInput, HOUR_MS, toUtcInput, WEEK_MS } from '../core/instants';
 import { bucketFor, bucketsFor, metricsOfRows, TIMELINE_ROWS } from '../core/timeline-catalog';
 import type { Marker, Timeline } from '../core/types';
-import { requestGroups } from '../features/compare/compare.page';
+import { type CompareView, isView, requestGroups } from '../features/compare/compare.page';
 import { defaultCurve, type ImpactRow, orderRows } from '../features/posts/posts.page';
+import { linkedGame, playedGames } from '../features/timeline/timeline.page';
 import { groupLabel, groupMarkers } from './markers';
 import type { ChartInk } from './palette';
 import { bucketIndexOf, rowSeries, timelineChart } from './timeline-options';
@@ -18,6 +19,9 @@ const INK: ChartInk = {
   raised: '#1a1a1a',
   page: '#000',
 };
+
+const GAME = '3f2b8c1e-9d4a-4e6f-8a7b-1c2d3e4f5a6b';
+const TRAILER = '5a1c9e2b-7d3f-4b8a-9c6e-0f1a2b3c4d5e';
 
 const POST = Date.parse('2026-10-21T18:20:00Z');
 const HOUR_OF_POST = Date.parse('2026-10-21T18:00:00Z');
@@ -232,7 +236,7 @@ describe('the timeline chart', () => {
 
   it('gives every row its own grid and axis, and draws posts on each', () => {
     const marker: Marker = {
-      id: 1,
+      id: TRAILER,
       at: '2026-10-21T19:30:00.000Z',
       label: 'Trailer',
       channel: 'YouTube',
@@ -262,20 +266,74 @@ describe('compare requests', () => {
   it('asks once per game and source, with every metric of that group', () => {
     const groups = requestGroups([
       { id: 1, metric: 'visitors_new', releaseId: null, source: null, colour: 'a' },
-      { id: 2, metric: 'plays_consented', releaseId: 9, source: null, colour: 'b' },
-      { id: 3, metric: 'plays_anonymous', releaseId: 9, source: null, colour: 'c' },
+      { id: 2, metric: 'plays_consented', releaseId: GAME, source: null, colour: 'b' },
+      { id: 3, metric: 'plays_anonymous', releaseId: GAME, source: null, colour: 'c' },
       { id: 4, metric: 'sessions', releaseId: null, source: null, colour: 'd' },
     ]);
 
     expect(groups).toEqual([
       { releaseId: null, source: null, metrics: ['visitors_new', 'sessions'] },
-      { releaseId: 9, source: null, metrics: ['plays_consented', 'plays_anonymous'] },
+      { releaseId: GAME, source: null, metrics: ['plays_consented', 'plays_anonymous'] },
     ]);
   });
 });
 
-const post = (id: number, at: string, label: string): Marker => ({
-  id,
+describe('a saved compare chart', () => {
+  const view = (releaseId: unknown): unknown => ({
+    name: 'Launch',
+    mode: 'counts',
+    kind: 'line',
+    series: [
+      { id: 1, metric: 'visitors_new', releaseId: null, source: null, colour: 'a' },
+      { id: 2, metric: 'plays_consented', releaseId, source: null, colour: 'b' },
+    ],
+  });
+
+  it('is kept when it names its game by id, or names none', () => {
+    expect(isView(view(GAME))).toBe(true);
+    expect(isView(view(null))).toBe(true);
+  });
+
+  it('is left out when it names a game by a number, and the others stay', () => {
+    const stored = [view(9), view(GAME), view('9'), { name: 'Broken', series: [null] }];
+
+    expect(stored.filter(isView)).toEqual([view(GAME) as CompareView]);
+  });
+});
+
+describe('the game a link to the timeline names', () => {
+  it('is the id it gives, in lower case', () => {
+    expect(linkedGame(GAME)).toBe(GAME);
+    expect(linkedGame(GAME.toUpperCase())).toBe(GAME);
+  });
+
+  it('is none for anything else, and for the id that stands for no game', () => {
+    expect(linkedGame('9')).toBeNull();
+    expect(linkedGame('0')).toBeNull();
+    expect(linkedGame('3f2b8c1e')).toBeNull();
+    expect(linkedGame('')).toBeNull();
+    expect(linkedGame(undefined)).toBeNull();
+    expect(linkedGame('00000000-0000-0000-0000-000000000000')).toBeNull();
+  });
+});
+
+describe('the games a newcomer played', () => {
+  it('are named in the order they come, and a deleted one shows its short id', () => {
+    const games = [
+      { releaseId: GAME, name: 'Kart Party' },
+      { releaseId: TRAILER, name: null },
+    ];
+
+    expect(playedGames(games)).toBe('Kart Party, 5a1c9e2b');
+  });
+
+  it('are nothing when none was played', () => {
+    expect(playedGames([])).toBe('');
+  });
+});
+
+const post = (at: string, label: string): Marker => ({
+  id: TRAILER,
   at,
   label,
   channel: null,
@@ -291,10 +349,10 @@ describe('posts on a chart', () => {
   it('draws posts of the same point as one line, labelled with how many share it', () => {
     const groups = groupMarkers(
       [
-        post(1, '2026-10-21T18:05:00Z', 'Trailer'),
-        post(2, '2026-10-21T18:40:00Z', 'Reddit thread'),
-        post(3, '2026-10-21T20:00:00Z', 'A rather long title for a single post on TikTok'),
-        post(4, '2026-10-30T00:00:00Z', 'Outside'),
+        post('2026-10-21T18:05:00Z', 'Trailer'),
+        post('2026-10-21T18:40:00Z', 'Reddit thread'),
+        post('2026-10-21T20:00:00Z', 'A rather long title for a single post on TikTok'),
+        post('2026-10-30T00:00:00Z', 'Outside'),
       ],
       (at) => {
         const index = Math.floor((at - Date.parse('2026-10-21T18:00:00Z')) / HOUR_MS);
@@ -343,12 +401,12 @@ describe('the impact of a post', () => {
   });
 
   it('opens on the game when the post is about one', () => {
-    expect(defaultCurve({ ...post(1, '', ''), audience: 'PLAYERS', releaseId: 9 })).toBe(
+    expect(defaultCurve({ ...post('', ''), audience: 'PLAYERS', releaseId: GAME })).toBe(
       'game:plays_all',
     );
-    expect(defaultCurve({ ...post(1, '', ''), audience: 'CREATORS', releaseId: 9 })).toBe(
+    expect(defaultCurve({ ...post('', ''), audience: 'CREATORS', releaseId: GAME })).toBe(
       'game:projects_forked',
     );
-    expect(defaultCurve({ ...post(1, '', ''), audience: 'CREATORS' })).toBe('projects_created');
+    expect(defaultCurve({ ...post('', ''), audience: 'CREATORS' })).toBe('projects_created');
   });
 });

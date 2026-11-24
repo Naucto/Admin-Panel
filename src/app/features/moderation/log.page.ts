@@ -5,13 +5,13 @@ import {
   inject,
   input,
   linkedSignal,
-  numberAttribute,
   resource,
   signal,
 } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 import { dayTime } from '../../core/dates';
+import { idOf } from '../../core/ids';
 import { ModerationApi } from '../../core/moderation.api';
 import {
   ACTION_LABELS,
@@ -30,13 +30,21 @@ import { IconComponent } from '../../ui/icon.component';
 import { PagerComponent } from '../../ui/pager.component';
 import { PanelComponent } from '../../ui/panel.component';
 import { panelError, panelState } from '../../ui/panel-state';
+import { ShortIdComponent } from '../../ui/short-id.component';
 
 const PAGE_SIZE = 30;
 
 /** Everything staff did, newest first. Nothing here is ever edited or removed. */
 @Component({
   selector: 'nc-log-page',
-  imports: [EntityLinkComponent, IconComponent, PagerComponent, PanelComponent, RouterLink],
+  imports: [
+    EntityLinkComponent,
+    IconComponent,
+    PagerComponent,
+    PanelComponent,
+    RouterLink,
+    ShortIdComponent,
+  ],
   templateUrl: './log.page.html',
   changeDetection: ChangeDetectionStrategy.OnPush,
 })
@@ -44,9 +52,7 @@ export default class LogPage {
   private readonly api = inject(ModerationApi);
 
   /** `?actor=`: only what one staff member did. A row's moderator links here. */
-  readonly actor = input(undefined, {
-    transform: (value: unknown) => (value ? numberAttribute(value) : undefined),
-  });
+  readonly actor = input(undefined, { transform: idOf });
 
   protected readonly actionOptions = optionsOf(ACTION_LABELS);
   protected readonly typeOptions = optionsOf(TARGET_TYPE_LABELS);
